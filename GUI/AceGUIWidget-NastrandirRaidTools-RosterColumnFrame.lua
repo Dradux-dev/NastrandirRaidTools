@@ -58,7 +58,16 @@ local methods = {
         self.widget_group:SetHeight(self.widget.frame:GetHeight() - self.title.frame:GetHeight() - self.button_add.frame:GetHeight() - 20)
     end,
     ["Sort"] = function(self)
-        table.sort(self.members, function(a, b)
+        local actual_shown = {}
+        for index, child in ipairs(self.scroll_frame.children) do
+            table.insert(actual_shown, {
+                name = child:GetName(),
+                class = child:GetClass(),
+                uid = child:GetKey()
+            })
+        end
+
+        table.sort(actual_shown, function(a, b)
             local new_player = "New Player"
 
             if a.name == new_player and b.name ~= new_player then
@@ -77,7 +86,7 @@ local methods = {
         end)
 
         self.scroll_frame:ReleaseChildren()
-        for index, entry in ipairs(self.members) do
+        for index, entry in ipairs(actual_shown) do
             local button = AceGUI:Create("NastrandirRaidToolsRosterClassButton")
             button:Initialize()
             button:SetName(entry.name)

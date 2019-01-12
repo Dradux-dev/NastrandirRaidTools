@@ -193,12 +193,12 @@ function NastrandirRaidTools.RosterFrame:LoadRoster(current_roster)
         end
     end
 
+    NastrandirRaidTools.RosterFrame:FilterAll(current_roster)
+
     current_roster.tank_column:Sort()
     current_roster.healer_column:Sort()
     current_roster.ranged_column:Sort()
     current_roster.melee_column:Sort()
-
-    NastrandirRaidTools.RosterFrame:FilterAll(current_roster)
 end
 
 function NastrandirRaidTools.RosterFrame:FilterAll(current_roster)
