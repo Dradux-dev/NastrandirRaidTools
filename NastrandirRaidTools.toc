@@ -1,0 +1,47 @@
+## Interface: 80000
+## Title: Nastrandir Raid Tools
+## Author: Dradux
+## Version: 0.1
+## Notes: Tool to setup your wished loot spec automatically.
+## OptionalDeps: ElvUI, LibStub, LibUIDropDownMenu, Ace3
+## SavedVariables: NastrandirRaidToolsDB
+
+#@no-lib-strip@
+libs\load_libs.xml
+#@end-no-lib-strip@
+
+Core.lua
+Skin.lua
+GUI\AceGUIWidget-NastrandirRaidTools-Spacer.lua
+GUI\AceGUIWidget-NastrandirRaidTools-SpinBox.lua
+GUI\AceGUIWidget-NastrandirRaidTools-Table.lua
+GUI\AceGUIWidget-NastrandirRaidTools-TableCell.lua
+GUI\AceGUIWidget-NastrandirRaidTools-MainFrame.lua
+GUI\AceGUIWidget-NastrandirRaidTools-MenuButton.lua
+GUI\AceGUIWidget-NastrandirRaidTools-Roster.lua
+GUI\AceGUIWidget-NastrandirRaidTools-RosterDetails.lua
+GUI\AceGUIWidget-NastrandirRaidTools-RosterClassButton.lua
+GUI\AceGUIWidget-NastrandirRaidTools-RosterColumnFrame.lua
+GUI\AceGUIWidget-NastrandirRaidTools-Attendance.lua
+GUI\AceGUIWidget-NastrandirRaidTools-AttendanceConfiguration.lua
+GUI\AceGUIWidget-NastrandirRaidTools-AttendanceConfigurationAnalytics.lua
+GUI\AceGUIWidget-NastrandirRaidTools-AttendanceConfigurationAnalyticsColor.lua
+GUI\AceGUIWIdget-NastrandirRaidTools-AttendanceConfigurationAnalyticsEdit.lua
+GUI\AceGUIWidget-NastrandirRaidTools-AttendanceConfigurationStates.lua
+GUI\AceGUIWidget-NastrandirRaidTools-AttendanceConfigurationStatesEdit.lua
+GUI\AceGUIWidget-NastrandirRaidTools-AttendancePlayerDetails.lua
+GUI\AceGUIWidget-NastrandirRaidTools-AttendanceRaidLogEntry.lua
+GUI\AceGUIWidget-NastrandirRaidTools-AttendanceRaidRecording.lua
+GUI\AceGUIWidget-NastrandirRaidTools-AttendanceRaidRecordingPlayer.lua
+GUI\AceGUIWidget-NastrandirRaidTools-AttendanceRaidRecordingRoster.lua
+GUI\AceGUIWidget-NastrandirRaidTools-AttendanceRaidRecordingStateColumn.lua
+GUI\AceGUIWidget-NastrandirRaidTools-AttendanceRaids.lua
+GUI\AceGUIWidget-NastrandirRaidTools-AttendanceRaidsRaid.lua
+GUI\MainFrame.lua
+GUI\RosterFrame.lua
+GUI\RosterFrame_Details.lua
+NastrandirRaidTools.lua
+Roster.lua
+Attendance.lua
+
+

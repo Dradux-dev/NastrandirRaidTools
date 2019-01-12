@@ -39,3 +39,7 @@ luac.out
 *.x86_64
 *.hex
 
+/.idea/NastrandirRaidTools.iml
+/.idea/modules.xml
+/.idea/workspace.xml
+/NastrandirRaidTools.iml
