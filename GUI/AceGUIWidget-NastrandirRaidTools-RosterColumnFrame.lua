@@ -105,7 +105,7 @@ local methods = {
             local character = Roster:GetCharacter(entry.uid)
 
             -- Hide name mismatch
-            if name ~= "" and not character.name:match(name) then
+            if name ~= "" and not character.name:lower():match(name:lower()) then
                 add = false
             end
 
