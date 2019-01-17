@@ -229,3 +229,34 @@ function NastrandirRaidTools:GetSortedKeySet(t, func)
 
     return keys
 end
+
+function NastrandirRaidTools:SplitDate(date)
+    return {
+        day = date % 100,
+        month = (date / 100) % 100,
+        year = (date / 10000) % 10000
+    }
+end
+
+function NastrandirRaidTools:PackDate(date)
+    return (date.year * 10000) + (date.month * 100) + date.day
+end
+
+function NastrandirRaidTools:SplitTime(time)
+    return {
+        hours = (time / 100) % 100,
+        minutes = time % 100
+    }
+end
+
+function NastrandirRaidTools:PackTime(time)
+    return (time.hours * 100) + time.minutes
+end
+
+function NastrandirRaidTools:CreateUID(type)
+    local name = UnitName("player")
+    local today = date("%d%m%y")
+    local now = date("%H%M%S")
+
+    return string.format("%s-%s-%s-%s", (type or "Generic"), name, today, now)
+end

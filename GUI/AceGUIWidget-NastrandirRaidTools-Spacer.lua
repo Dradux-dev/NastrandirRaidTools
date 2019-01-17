@@ -18,7 +18,6 @@ local methods = {
         self.frame:SetHeight(h)
     end,
     ["SetBackdropColor"] = function(self, r, g, b, a)
-        print("SetBackdropColor()", r, g, b, a)
         self.background:SetVertexColor(r, g, b, a)
     end
 }

@@ -1,4 +1,5 @@
 local Attendance = NastrandirRaidTools:NewModule("Attendance")
+local AceGUI = LibStub("AceGUI-3.0")
 
 --[[
 Attendance = {
@@ -11,48 +12,60 @@ Attendance = {
         }
     },
     states = {
-        ["Im Raid"] = {
+        ["Shielddux-20181207-124507"] = {
+            name = "Im Raid"
             CountIn = true,
+            order = 1,
             LogMessages = {
                 Enter = "<Main> tritt dem Raid bei.",
                 CharacterSwap = "<Main> hat auf <Character> umgeloggt.",
                 Leave = "<Main> verlässt den Raid."
             }
         },
-        ["Ersatzbank"] = {
+        ["Shielddux-20181207-124603"] = {
+            name = "Ersatzbank",
             CountIn = true,
+            order = 2,
             LogMessages = {
                 Enter = "<Main> geht auf die Ersatzbank.",
                 CharacterSwap = "<Main> hat auf <Character> umgeloggt.",
                 Leave = "<Main> verlässt die Ersatzbank."
             }
         },
-        ["Abgemeldet"] = {
+        ["Shielddux-20181207-124643"] = {
+            name = "Abgemeldet",
             CountIn = true,
+            order = 3,
             LogMessages = {
                 Enter = "<Main> ist jetzt abgemeldet.",
                 CharacterSwap = "<Main> hat auf <Character> umgeloggt.",
                 Leave = "<Main> ist jetzt nicht mehr abgemeldet.",
             }
         },
-        ["Fehlt"] = {
+        ["Shielddux-20181207-124720"] = {
+            name = "Fehlt",
             CountIn = true,
+            order = 4,
             LogMessages = {
                 Enter = "<Main> fehlt.",
                 CharacterSwap = "<Main> hat auf <Character> umgeloggt.",
                 Leave = "<Main> fehlt jetzt nicht mehr.
             }
         },
-        ["Frei"] = {
+        ["Shielddux-20181207-124900"] = {
+            name = "Frei",
             CountIn = true,
+            order = 5,
             LogMessages = {
                 Enter = "<Main> hat jetzt frei.",
                 CharacterSwap = "<Main> hat auf <Character> umgeloggt.",
                 Leave = "<Main> hat jetzt nicht mehr frei.",
             }
         }
-        ["Urlaub"] = {
-            CountIn = false, -- Don't take care of this raid
+        ["Shielddux-20181207-125007"] = {
+            name = "Urlaub",
+            CountIn = true, -- Don't take care of this raid
+            order = 6,
             LogMessages = {
                 Enter = "<Main> ist jetzt im Urlaub.",
                 CharacterSwap = "<Main> hat auf <Character> umgeloggt.",
@@ -61,11 +74,13 @@ Attendance = {
         }
     },
     analytics = {
-        ["Teilgenommen"] = {
+        ["Shielddux-20181207-134509"] = {
+            name = "Teilgenommen",
+            order = 1,
             states = {
-                "Im Raid",
-                "Ersatzbank",
-                "Frei"
+                "Shielddux-20181207-124507", -- Im Raid,
+                "Shielddux-20181207-124603", -- Ersatzbank
+                "Shielddux-20181207-124900", -- Frei
             },
             colors = {
                 {
@@ -82,8 +97,12 @@ Attendance = {
                 }
             }
         },
-        ["Im Raid"] = {
-            "Im Raid",
+        ["Shielddux-20181207-134712"] = {
+            name = "Im Raid",
+            order = 2,
+            states = {
+                "Shielddux-20181207-124507", -- Im Raid
+            }
         },
         ["Abgemeldet"] = {
             "Abgemeldet"
@@ -128,9 +147,23 @@ function Attendance:OnEnable()
 end
 
 function Attendance:ShowRaidList()
-
+    NastrandirRaidTools:ReleaseContent()
+    local content_panel = NastrandirRaidTools:GetContentPanel()
+    local attendance_frame = AceGUI:Create("NastrandirRaidToolsAttendance")
+    attendance_frame:Initialize()
+    attendance_frame:SetWidth(content_panel.frame:GetWidth())
+    content_panel:AddChild(attendance_frame)
 end
 
 function Attendance:ShowRaidLog(raid_id)
 
+end
+
+function Attendance:ShowConfiguration()
+    NastrandirRaidTools:ReleaseContent()
+    local content_panel = NastrandirRaidTools:GetContentPanel()
+    local attendance_frame = AceGUI:Create("NastrandirRaidToolsAttendanceConfiguration")
+    attendance_frame:Initialize()
+    attendance_frame:SetWidth(content_panel.frame:GetWidth())
+    content_panel:AddChild(attendance_frame)
 end

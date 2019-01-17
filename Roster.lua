@@ -63,11 +63,7 @@ function Roster:ShowDetails(uid)
 end
 
 function Roster:CreateUID()
-    local name = UnitName("player")
-    local today = date("%d%m%y")
-    local now = date("%H%M%S")
-
-    return string.format("%s-%s-%s", name, today, now)
+    return NastrandirRaidTools:CreateUID("Roster-Character")
 end
 
 function Roster:GetCharacter(uid)

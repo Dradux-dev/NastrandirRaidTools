@@ -1,4 +1,4 @@
-local Type, Version = "NastrandirRaidToolsRosterTableCell", 1
+local Type, Version = "NastrandirRaidToolsTableCell", 1
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 
 local width = 120
