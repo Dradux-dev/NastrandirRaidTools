@@ -30,6 +30,7 @@ GUI\AceGUIWIdget-NastrandirRaidTools-AttendanceConfigurationAnalyticsEdit.lua
 GUI\AceGUIWidget-NastrandirRaidTools-AttendanceConfigurationStates.lua
 GUI\AceGUIWidget-NastrandirRaidTools-AttendanceConfigurationStatesEdit.lua
 GUI\AceGUIWidget-NastrandirRaidTools-AttendancePlayerDetails.lua
+GUI\AceGUIWidget-NastrandirRaidTools-AttendanceRaidDetails.lua
 GUI\AceGUIWidget-NastrandirRaidTools-AttendanceRaidLogEntry.lua
 GUI\AceGUIWidget-NastrandirRaidTools-AttendanceRaidRecording.lua
 GUI\AceGUIWidget-NastrandirRaidTools-AttendanceRaidRecordingPlayer.lua

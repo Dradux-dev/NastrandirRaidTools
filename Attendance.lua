@@ -7,14 +7,14 @@ Attendance = {
         [20181219] = {
             name = "Uldir",
             date = 20181219,
-            start = 1915,
-            end = 2245
+            start_time = 1915,
+            end_time = 2245
         }
     },
     states = {
         ["Shielddux-20181207-124507"] = {
             name = "Im Raid"
-            CountIn = true,
+            TrackAlts = true,
             order = 1,
             LogMessages = {
                 Enter = "<Main> tritt dem Raid bei.",
@@ -24,7 +24,7 @@ Attendance = {
         },
         ["Shielddux-20181207-124603"] = {
             name = "Ersatzbank",
-            CountIn = true,
+            TrackAlts = true,
             order = 2,
             LogMessages = {
                 Enter = "<Main> geht auf die Ersatzbank.",
@@ -34,7 +34,7 @@ Attendance = {
         },
         ["Shielddux-20181207-124643"] = {
             name = "Abgemeldet",
-            CountIn = true,
+            TrackAlts = true,
             order = 3,
             LogMessages = {
                 Enter = "<Main> ist jetzt abgemeldet.",
@@ -44,7 +44,7 @@ Attendance = {
         },
         ["Shielddux-20181207-124720"] = {
             name = "Fehlt",
-            CountIn = true,
+            TrackAlts = true,
             order = 4,
             LogMessages = {
                 Enter = "<Main> fehlt.",
@@ -54,7 +54,7 @@ Attendance = {
         },
         ["Shielddux-20181207-124900"] = {
             name = "Frei",
-            CountIn = true,
+            TrackAlts = true,
             order = 5,
             LogMessages = {
                 Enter = "<Main> hat jetzt frei.",
@@ -64,7 +64,7 @@ Attendance = {
         }
         ["Shielddux-20181207-125007"] = {
             name = "Urlaub",
-            CountIn = true, -- Don't take care of this raid
+            TrackAlts = true, -- Don't take care of this raid
             order = 6,
             LogMessages = {
                 Enter = "<Main> ist jetzt im Urlaub.",
@@ -117,13 +117,15 @@ Attendance = {
                 -- Entered raid
                 member = "Shielddux-20181219-1223",
                 time = 1915,
-                state = "In Raid"
+                state = "In Raid",
+                order = 1
             },
             {
                 -- Swapped to an alt
                 member = "Shielddux-20181219-1227"
                 time = 1930,
-                state = "In Raid"
+                state = "In Raid",
+                order = 2
             }
         }
     }
@@ -140,16 +142,25 @@ function Attendance:OnEnable()
             text = "Attendance",
             priority = 1,
             onClick = function(button, mouseButton)
-                Attendance:ShowRaidList()
+                Attendance:ShowAttendance()
             end
         }
     })
 end
 
-function Attendance:ShowRaidList()
+function Attendance:ShowAttendance()
     NastrandirRaidTools:ReleaseContent()
     local content_panel = NastrandirRaidTools:GetContentPanel()
     local attendance_frame = AceGUI:Create("NastrandirRaidToolsAttendance")
+    attendance_frame:Initialize()
+    attendance_frame:SetWidth(content_panel.frame:GetWidth())
+    content_panel:AddChild(attendance_frame)
+end
+
+function Attendance:ShowRaidList()
+    NastrandirRaidTools:ReleaseContent()
+    local content_panel = NastrandirRaidTools:GetContentPanel()
+    local attendance_frame = AceGUI:Create("NastrandirRaidToolsAttendanceRaids")
     attendance_frame:Initialize()
     attendance_frame:SetWidth(content_panel.frame:GetWidth())
     content_panel:AddChild(attendance_frame)
@@ -166,4 +177,60 @@ function Attendance:ShowConfiguration()
     attendance_frame:Initialize()
     attendance_frame:SetWidth(content_panel.frame:GetWidth())
     content_panel:AddChild(attendance_frame)
+end
+
+function Attendance:ShowRaid(uid)
+    NastrandirRaidTools:ReleaseContent()
+    local content_panel = NastrandirRaidTools:GetContentPanel()
+    local raid_frame = AceGUI:Create("NastrandirRaidToolsAttendanceRaidDetails")
+    raid_frame:Initialize()
+    raid_frame:SetUID(uid)
+    raid_frame:Load()
+    raid_frame:SetWidth(content_panel.frame:GetWidth())
+    content_panel:AddChild(raid_frame)
+end
+
+function Attendance:ShowRaidLog(uid)
+    print("Showing raid log", uid)
+end
+
+function Attendance:ShowRaidRecording(uid)
+    NastrandirRaidTools:ReleaseContent()
+    local content_panel = NastrandirRaidTools:GetContentPanel()
+    local raid_frame = AceGUI:Create("NastrandirRaidToolsAttendanceRaidRecording")
+    raid_frame:Initialize()
+    raid_frame:SetUID(uid)
+    raid_frame:Load()
+    raid_frame:SetWidth(content_panel.frame:GetWidth())
+    content_panel:AddChild(raid_frame)
+end
+
+function Attendance:GetRaidList(start_date)
+    local db = NastrandirRaidTools:GetModuleDB("Attendance")
+
+    if not db.raids then
+        db.raids = {}
+    end
+
+    local raid_list = {
+        list = {},
+        order = {}
+    }
+
+    for raid_uid, info in pairs(db.raids) do
+        if info.date >= (start_date or 19700101)then
+            local date = NastrandirRaidTools:SplitDate(info.date)
+            raid_list.list[raid_uid] = string.format("%s, %02d.%02d.%04d", info.name, date.day, date.month, date.year)
+            table.insert(raid_list.order, raid_uid)
+        end
+    end
+
+    table.sort(raid_list.order, function(a, b)
+        local date_a = db.raids[a].date
+        local date_b = db.raids[b].date
+
+        return date_a < date_b
+    end)
+
+    return raid_list
 end

@@ -139,3 +139,57 @@ function Roster:DeleteCharacter(uid)
 
     RosterDB.characters[uid] = nil
 end
+
+function Roster:GetCharacterName(uid)
+    local db = NastrandirRaidTools:GetModuleDB("Roster")
+
+    if not db.characters then
+        db.characters = {}
+    end
+
+    if not db.characters[uid] then
+        return "Unknown"
+    end
+
+    return db.characters[uid].name
+end
+
+function Roster:GetCharacterClass(uid)
+    local db = NastrandirRaidTools:GetModuleDB("Roster")
+
+    if not db.characters then
+        db.characters = {}
+    end
+
+    if not db.characters[uid] then
+        return "MONK"
+    end
+
+    return db.characters[uid].class
+end
+
+function Roster:GetCharacterRole(uid)
+    local db = NastrandirRaidTools:GetModuleDB("Roster")
+
+    if not db.characters then
+        db.characters = {}
+    end
+
+    if not db.characters[uid] then
+        return "TANK"
+    end
+
+    return db.characters[uid].role
+end
+
+function Roster:GetMainUID(uid)
+    local character = Roster:GetCharacter(uid)
+
+    if character.main then
+        print(character.name, "is an alt of", Roster:GetCharacter(character.main).name)
+        return character.main
+    end
+
+    print(character.name, "is a main")
+    return uid
+end

@@ -39,6 +39,7 @@ local function Constructor()
     background:SetPoint("BOTTOM", frame, "BOTTOM")
     background:SetPoint("LEFT", frame, "LEFT")
     background:SetPoint("RIGHT", frame, "RIGHT")
+    background:SetVertexColor(0, 0, 0, 0)
 
     local widget = {
         frame = frame,

@@ -26,7 +26,8 @@ local methods = {
             print("Analyse clicked")
         end)
         self.raids:SetCallback("OnClick", function(button, mouseButton)
-            print("Raids clicked")
+            local Attendance = NastrandirRaidTools:GetModule("Attendance")
+            Attendance:ShowRaidList()
         end)
         self.configuration:SetCallback("OnClick", function(button, mouseButton)
             local Attendance  = NastrandirRaidTools:GetModule("Attendance")
@@ -49,39 +50,12 @@ local methods = {
         self.top_bar.spacer:SetWidth(width - 2 * WIDTH.DROPDOWN - 3 * WIDTH.BUTTON - 7)
     end,
     ["GetRaidList"] = function(self)
-        return {
-            list = {
-                [20181219] = "Uldir, 19.12.2018",
-                [20181220] = "Uldir, 20.12.2018",
-                [20181229] = "Uldir, 29.12.2018"
-            },
-            order = {
-                20181219,
-                20181220,
-                20181229
-            }
-        }
+        local Attendance = NastrandirRaidTools:GetModule("Attendance")
+        return Attendance:GetRaidList()
     end,
     ["FilterRaidList"] = function(self, start_date)
-        local filtered = {
-            list = {},
-            order = {}
-        }
-
-        local raids = self:GetRaidList()
-        for index, date in ipairs(raids.order) do
-            if date >= start_date then
-                print("Adding", date)
-                filtered.list[date] = raids.list[date]
-                table.insert(filtered.order, date)
-            end
-        end
-
-        for index, date in ipairs(filtered.order) do
-            print(index, date, filtered.list[date])
-        end
-
-        return filtered
+        local Attendance = NastrandirRaidTools:GetModule("Attendance")
+        return Attendance:GetRaidList(start_date)
     end
 }
 

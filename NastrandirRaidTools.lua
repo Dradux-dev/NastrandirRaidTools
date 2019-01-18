@@ -15,7 +15,7 @@ local defaultSavedVars = {
         window = {
             x = 0,
             y = 150,
-            width = 1000,
+            width = 1400,
             height = 600,
             anchromFrom = "TOP",
             anchorTo = "TOP",
@@ -51,11 +51,10 @@ function NastrandirRaidTools:InitFrames()
 
     NastrandirRaidTools:AddMenu({
         {
-            text = "Configuration",
+            text = "Profile",
             priority = 100,
             onClick = function(button, mouseButton)
-                local frame = AceGUI:Create("NastrandirRaidToolsMainFrame")
-                print("Frame", frame)
+                print("Profile")
             end
         }
     })
@@ -259,4 +258,8 @@ function NastrandirRaidTools:CreateUID(type)
     local now = date("%H%M%S")
 
     return string.format("%s-%s-%s-%s", (type or "Generic"), name, today, now)
+end
+
+function NastrandirRaidTools:Today()
+    return tonumber(date("%Y%m%d"))
 end
