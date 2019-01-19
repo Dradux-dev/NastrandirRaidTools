@@ -221,6 +221,10 @@ local methods = {
         local characters = self:GetCharacterList()
         self:RemoveCharacter(characters, self.key)
         if table.getn(characters) >= 1 then
+            table.sort(characters, function(a, b)
+                return a.name < b.name
+            end)
+
             table.insert(self.menu, {
                 text = " ",
                 notCheckable = 1,
@@ -235,11 +239,10 @@ local methods = {
                     text = info.name,
                     notCheckable = 1,
                     func = function()
-                        print("Adding", info.uid)
+                        self.column:lockButtons()
                         self.column:AddPlayer(info.uid)
-
-                        print("Removing", self.key)
                         self.column:RemovePlayer(self.key)
+                        self.column:unlockButtons()
                     end
                 })
             end

@@ -24,12 +24,27 @@ local methods = {
         self.scroll_frame:SetWidth(width)
     end,
     ["AddPlayer"] = function(self, player)
+        print("AddPlayer()", player)
         if not self:FindPlayer(player) then
+            print("Adding")
             table.insert(self.players, player)
             self:CreatePlayerButtons()
         end
     end,
+    ["lockButtons"] = function(self)
+        self.buttons_locked = true
+    end,
+    ["unlockButtons"] = function(self)
+        if self.buttons_locked then
+            self.buttons_locked = false
+            self:CreatePlayerButtons()
+        end
+    end,
     ["CreatePlayerButtons"] = function(self)
+        if self.buttons_locked then
+            return
+        end
+
         self.scroll_frame:ReleaseChildren()
 
         if self.sortCallback then
@@ -58,9 +73,12 @@ local methods = {
         -- Ignore
     end,
     ["RemovePlayer"] = function(self, uid)
+        print("RemovePlayer()", uid)
         local pos = self:FindPlayer(uid)
 
+        print("pos=", pos)
         if pos then
+            print("Removing")
             table.remove(self.players, pos)
             self:CreatePlayerButtons()
         end
@@ -79,7 +97,6 @@ local methods = {
         self.roster = roster
     end,
     ["RemovePlayerByMain"] = function(self, player_uid)
-        print("RemovePlayerByMain()")
         local pos = self:FindPlayerByMain(self:GetMainUID(player_uid))
 
         if pos then
@@ -92,7 +109,6 @@ local methods = {
         return Roster:GetMainUID(player_uid)
     end,
     ["FindPlayerByMain"] = function(self, main_uid)
-        print("FindPlayerByMain()")
         for index, uid in ipairs(self.players) do
             local compare = self:GetMainUID(uid)
             if main_uid == compare then

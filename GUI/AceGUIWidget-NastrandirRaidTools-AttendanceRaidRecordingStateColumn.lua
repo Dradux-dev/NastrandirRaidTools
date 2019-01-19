@@ -55,7 +55,20 @@ local methods = {
     ["SetPlayerAddedCallback"] = function(self, func)
         self.playerAddedCallback = func
     end,
+    ["lockButtons"] = function(self)
+        self.buttons_locked = true
+    end,
+    ["unlockButtons"] = function(self)
+        if self.buttons_locked then
+            self.buttons_locked = false
+            self:CreatePlayerButtons()
+        end
+    end,
     ["CreatePlayerButtons"] = function(self)
+        if self.buttons_locked then
+            return
+        end
+
         self.scroll_frame:ReleaseChildren()
 
         if self.sortCallback then

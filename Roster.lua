@@ -186,10 +186,8 @@ function Roster:GetMainUID(uid)
     local character = Roster:GetCharacter(uid)
 
     if character.main then
-        print(character.name, "is an alt of", Roster:GetCharacter(character.main).name)
         return character.main
     end
 
-    print(character.name, "is a main")
     return uid
 end
