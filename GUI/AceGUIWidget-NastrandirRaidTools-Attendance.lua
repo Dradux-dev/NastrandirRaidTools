@@ -16,11 +16,21 @@ local methods = {
     end,
     ["Initialize"] = function(self)
         local raids = self:GetRaidList()
-        self.start_raid:SetList(raids.list)
-        self.end_raid:SetList(raids.list, raids.order)
-        self.start_raid:SetCallback("OnValueChanged", function(dropdown, event, value)
-            local raids = self:FilterRaidList(value)
+        if table.getn(raids.order) >= 1 then
+            self.start_raid:SetList(raids.list, raids.order)
+            self.start_raid:SetValue(raids.order[math.min(12, table.getn(raids.order))])
+
             self.end_raid:SetList(raids.list, raids.order)
+            self.end_raid:SetValue(raids.order[1])
+
+        end
+
+        self.start_raid:SetCallback("OnValueChanged", function(dropdown, event, value)
+            local Attendance = NastrandirRaidTools:GetModule("Attendance")
+            local date = Attendance:GetRaid(value).date
+            local raids = self:FilterRaidList(date)
+            self.end_raid:SetList(raids.list, raids.order)
+            self.end_raid:SetValue(raids.order[1])
         end)
         self.analyse:SetCallback("OnClick", function(button, mouseButton)
             print("Analyse clicked")
@@ -55,7 +65,7 @@ local methods = {
     end,
     ["FilterRaidList"] = function(self, start_date)
         local Attendance = NastrandirRaidTools:GetModule("Attendance")
-        return Attendance:GetRaidList(start_date)
+        return Attendance:GetRaidList(tonumber(start_date))
     end
 }
 

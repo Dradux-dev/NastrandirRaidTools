@@ -229,8 +229,23 @@ function Attendance:GetRaidList(start_date)
         local date_a = db.raids[a].date
         local date_b = db.raids[b].date
 
-        return date_a < date_b
+        return date_a > date_b
     end)
 
     return raid_list
+end
+
+function Attendance:GetRaid(raid_uid)
+    local db = NastrandirRaidTools:GetModuleDB("Attendance")
+
+    if not db.raids then
+        db.raids = {}
+    end
+
+    return db.raids[raid_uid] or {
+        name = "Unknown",
+        date = 19700101,
+        start_time = 1900,
+        end_time = 2300
+    }
 end
