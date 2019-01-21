@@ -18,12 +18,14 @@ GUI\AceGUIWidget-NastrandirRaidTools-Table.lua
 GUI\AceGUIWidget-NastrandirRaidTools-TableCell.lua
 GUI\AceGUIWidget-NastrandirRaidTools-MainFrame.lua
 GUI\AceGUIWidget-NastrandirRaidTools-MenuButton.lua
+GUI\AceGUIWidget-NastrandirRaidTools-Profiles.lua
 GUI\AceGUIWidget-NastrandirRaidTools-Roster.lua
 GUI\AceGUIWidget-NastrandirRaidTools-RosterDetails.lua
 GUI\AceGUIWidget-NastrandirRaidTools-RosterClassButton.lua
 GUI\AceGUIWidget-NastrandirRaidTools-RosterColumnFrame.lua
 GUI\AceGUIWidget-NastrandirRaidTools-Attendance.lua
 GUI\AceGUIWidget-NastrandirRaidTools-AttendanceConfiguration.lua
+GUI\AceGUIWidget-NastrandirRaidTools-AttendanceConfigurationGeneral.lua
 GUI\AceGUIWidget-NastrandirRaidTools-AttendanceConfigurationAnalytics.lua
 GUI\AceGUIWidget-NastrandirRaidTools-AttendanceConfigurationAnalyticsColor.lua
 GUI\AceGUIWIdget-NastrandirRaidTools-AttendanceConfigurationAnalyticsEdit.lua

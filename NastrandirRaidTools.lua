@@ -54,7 +54,7 @@ function NastrandirRaidTools:InitFrames()
             text = "Profile",
             priority = 100,
             onClick = function(button, mouseButton)
-                print("Profile")
+                NastrandirRaidTools:ShowProfiles()
             end
         }
     })
@@ -103,6 +103,14 @@ function NastrandirRaidTools:GetMenu()
     end
 
     return self.menu
+end
+
+function NastrandirRaidTools:GetDB()
+    if not NastrandirRaidTools.db then
+        NastrandirRaidTools.db = LibStub("AceDB-3.0"):New("NastrandirRaidToolsDB", defaultSavedVars)
+    end
+
+    return NastrandirRaidTools.db
 end
 
 function NastrandirRaidTools:GetModuleDB(moduleName)
@@ -262,4 +270,13 @@ end
 
 function NastrandirRaidTools:Today()
     return tonumber(date("%Y%m%d"))
+end
+
+function NastrandirRaidTools:ShowProfiles()
+    NastrandirRaidTools:ReleaseContent()
+    local content_panel = NastrandirRaidTools:GetContentPanel()
+    local profiles = AceGUI:Create("NastrandirRaidToolsProfiles")
+    profiles:Initialize()
+    profiles:SetWidth(content_panel.frame:GetWidth())
+    content_panel:AddChild(profiles)
 end

@@ -120,6 +120,23 @@ function Roster:GetMainCharacters()
     return t
 end
 
+function Roster:GetRaidmember()
+    local db = NastrandirRaidTools:GetModuleDB("Roster")
+
+    if not db.characters then
+        db.characters = {}
+    end
+
+    local t = {}
+    for uid, data in pairs(db.characters) do
+        if not data.main and data.raidmember then
+            table.insert(t, uid)
+        end
+    end
+
+    return t
+end
+
 function Roster:GetMainCharacter(uid)
     local character = Roster:GetCharacter(uid)
 

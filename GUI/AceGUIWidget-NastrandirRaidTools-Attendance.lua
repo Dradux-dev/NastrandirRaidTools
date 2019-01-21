@@ -22,7 +22,36 @@ local methods = {
 
             self.end_raid:SetList(raids.list, raids.order)
             self.end_raid:SetValue(raids.order[1])
+        end
 
+        local Attendance = NastrandirRaidTools:GetModule("Attendance")
+        local Roster = NastrandirRaidTools:GetModule("Roster")
+        self.states = Attendance:GetStates()
+        self.roster = Roster:GetRaidmember()
+        self.data:SetRows(table.getn(self.roster) + 1)
+        self.data:SetColumns(table.getn(self.states) + 1)
+
+        table.sort(self.roster, function(a, b)
+            local name_a = Roster:GetCharacterName(a)
+            local name_b = Roster:GetCharacterName(b)
+
+            return name_a < name_b
+        end)
+
+        table.sort(self.states, function(a, b)
+            local order_a = Attendance:GetState(a).Order
+            local order_b = Attendance:GetState(b).Order
+
+            return order_a < order_b
+        end)
+
+        for i=1,table.getn(self.roster) do
+            self.data:SetText(i+1, 1, Roster:GetCharacterName(self.roster[i]))
+        end
+
+        for i=1,table.getn(self.states) do
+            local state = Attendance:GetState(self.states[i])
+            self.data:SetText(1, i+1, state.Name)
         end
 
         self.start_raid:SetCallback("OnValueChanged", function(dropdown, event, value)
@@ -125,6 +154,7 @@ local function Constructor()
     widget.view = view
     view:SetLayout("Fill")
     view:SetWidth(widget.frame:GetWidth())
+    view:SetHeight(widget.frame:GetHeight() - 50)
     view.frame:SetBackdropColor(0, 0, 0, 0)
     widget:AddChild(view)
 

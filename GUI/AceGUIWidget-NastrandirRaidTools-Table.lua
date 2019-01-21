@@ -93,8 +93,9 @@ local methods = {
             return
         end
 
-        local row_height = height / rows
-        local column_width = width / columns
+        local factor = 0.98
+        local row_height = (height * factor) / rows
+        local column_width = (width * factor) / columns
 
         for index, button in pairs(self.widget.children) do
             button:SetHeight(row_height)

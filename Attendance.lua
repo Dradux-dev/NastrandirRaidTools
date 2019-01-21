@@ -249,3 +249,28 @@ function Attendance:GetRaid(raid_uid)
         end_time = 2300
     }
 end
+
+function Attendance:GetStates()
+    local db = NastrandirRaidTools:GetModuleDB("Attendance")
+
+    if not db.states then
+        db.states = {}
+    end
+
+    local t = {}
+    for uid, data in pairs(db.states) do
+        table.insert(t, uid)
+    end
+
+    return t
+end
+
+function Attendance:GetState(uid)
+    local db = NastrandirRaidTools:GetModuleDB("Attendance")
+
+    if not db.states then
+        db.states = {}
+    end
+
+    return db.states[uid]
+end
