@@ -240,8 +240,8 @@ end
 function NastrandirRaidTools:SplitDate(date)
     return {
         day = date % 100,
-        month = (date / 100) % 100,
-        year = (date / 10000) % 10000
+        month = math.floor(date / 100) % 100,
+        year = math.floor(date / 10000)
     }
 end
 
@@ -251,13 +251,38 @@ end
 
 function NastrandirRaidTools:SplitTime(time)
     return {
-        hours = (time / 100) % 100,
+        hours = math.floor(time / 100),
         minutes = time % 100
     }
 end
 
 function NastrandirRaidTools:PackTime(time)
     return (time.hours * 100) + time.minutes
+end
+
+function NastrandirRaidTools:GetDuration(start_time, end_time)
+    local duration = 0
+
+    if end_time < start_time then
+        end_time = end_time + 2400
+    end
+
+    local s = NastrandirRaidTools:SplitTime(start_time)
+    local e = NastrandirRaidTools:SplitTime(end_time)
+
+    while(NastrandirRaidTools:PackTime(s) < NastrandirRaidTools:PackTime(e)) do
+        if s.hours < e.hours then
+            duration = duration + (60 - s.minutes)
+            s.minutes = 0
+            s.hours = s.hours + 1
+        else
+            duration = duration + (e.minutes - s.minutes)
+            s.minutes = e.minutes
+            s.hours = e.hours
+        end
+    end
+
+    return duration
 end
 
 function NastrandirRaidTools:CreateUID(type)

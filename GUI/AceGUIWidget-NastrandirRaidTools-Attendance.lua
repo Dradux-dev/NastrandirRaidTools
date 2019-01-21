@@ -47,11 +47,13 @@ local methods = {
 
         for i=1,table.getn(self.roster) do
             self.data:SetText(i+1, 1, Roster:GetCharacterName(self.roster[i]))
+            self.data:SetData(i+1, 1, self.roster[i])
         end
 
         for i=1,table.getn(self.states) do
             local state = Attendance:GetState(self.states[i])
             self.data:SetText(1, i+1, state.Name)
+            self.data:SetData(1, i+1, self.states[i])
         end
 
         self.start_raid:SetCallback("OnValueChanged", function(dropdown, event, value)
@@ -62,7 +64,7 @@ local methods = {
             self.end_raid:SetValue(raids.order[1])
         end)
         self.analyse:SetCallback("OnClick", function(button, mouseButton)
-            print("Analyse clicked")
+            self:Analyse()
         end)
         self.raids:SetCallback("OnClick", function(button, mouseButton)
             local Attendance = NastrandirRaidTools:GetModule("Attendance")
@@ -95,6 +97,85 @@ local methods = {
     ["FilterRaidList"] = function(self, start_date)
         local Attendance = NastrandirRaidTools:GetModule("Attendance")
         return Attendance:GetRaidList(tonumber(start_date))
+    end,
+    ["Analyse"] = function(self)
+        local Attendance = NastrandirRaidTools:GetModule("Attendance")
+        local Roster = NastrandirRaidTools:GetModule("Roster")
+
+        local start_raid = self.start_raid:GetValue()
+        local end_raid = self.end_raid:GetValue()
+        local start_date = Attendance:GetRaid(start_raid).date
+        local end_date = Attendance:GetRaid(end_raid).date
+
+        local attendance_data = {}
+        local raid_list = Attendance:GetRaidList(start_date, end_date).order
+        for _, raid_uid in ipairs(raid_list) do
+            local raid = Attendance:GetRaid(raid_uid)
+
+            for index, entry in ipairs(Attendance:GetRaidParticipation(raid_uid)) do
+                local main_uid = Roster:GetMainUID(entry.member)
+
+                if not attendance_data[main_uid] then
+                    attendance_data[main_uid] = {
+                        state = nil,
+                        timestamp = nil,
+                        duration = 0,
+                        states = {}
+                    }
+                end
+
+                local player = attendance_data[main_uid]
+                if not player.state then
+                    -- First occurence in the actual raid
+                    player.state = entry.state
+                    player.timestamp = entry.time
+                else
+                    local duration = NastrandirRaidTools:GetDuration(player.timestamp, entry.time)
+                    player.duration = player.duration + duration
+                    player.states[player.state] = (player.states[player.state] or 0) + duration
+                    player.state = entry.state
+                    player.timestamp = entry.time
+                end
+            end
+
+            for main_uid, player in pairs(attendance_data) do
+                if player.state then
+                    local duration = NastrandirRaidTools:GetDuration(player.timestamp, raid.end_time)
+                    player.duration = player.duration + duration
+                    player.states[player.state] = (player.states[player.state] or 0) + duration
+                    player.state = nil
+                    player.timestamp = nil
+                end
+            end
+        end
+
+        local tmp_db = NastrandirRaidTools:GetModuleDB("Temporary")
+        tmp_db = attendance_data
+
+        for p=1,table.getn(self.roster) do
+            for s=1,table.getn(self.states) do
+                local player_uid = self.data:GetData(p+1, 1)
+                local state_uid = self.data:GetData(1, s+1)
+
+                if attendance_data[player_uid] then
+                    local total = attendance_data[player_uid].duration
+                    local time = 0
+                    if attendance_data[player_uid].states[state_uid] then
+                        time = attendance_data[player_uid].states[state_uid]
+                    else
+                        print("State not found", self.data:GetText(1, s+1), ":", self.data:GetData(1, s+1))
+                    end
+
+                    local str = string.format("%d%%", ((time / total) * 100) + 0.5)
+                    self.data:SetText(p+1, s+1, str)
+                else
+                    print("Player not found", self.data:GetText(p+1, 1), ":", self.data:GetData(p+1, 1))
+                    self.data:SetText(p+1, s+1, "0%")
+                end
+
+
+            end
+        end
     end
 }
 

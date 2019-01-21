@@ -205,7 +205,7 @@ function Attendance:ShowRaidRecording(uid)
     content_panel:AddChild(raid_frame)
 end
 
-function Attendance:GetRaidList(start_date)
+function Attendance:GetRaidList(start_date, end_date)
     local db = NastrandirRaidTools:GetModuleDB("Attendance")
 
     if not db.raids then
@@ -218,7 +218,7 @@ function Attendance:GetRaidList(start_date)
     }
 
     for raid_uid, info in pairs(db.raids) do
-        if info.date >= (start_date or 19700101)then
+        if info.date >= (start_date or 19700101) and info.date <= (end_date or 20480101) then
             local date = NastrandirRaidTools:SplitDate(info.date)
             raid_list.list[raid_uid] = string.format("%s, %02d.%02d.%04d", info.name, date.day, date.month, date.year)
             table.insert(raid_list.order, raid_uid)
@@ -273,4 +273,14 @@ function Attendance:GetState(uid)
     end
 
     return db.states[uid]
+end
+
+function Attendance:GetRaidParticipation(raid_uid)
+    local db = NastrandirRaidTools:GetModuleDB("Attendance")
+
+    if not db.participation then
+        db.participation = {}
+    end
+
+    return db.participation[raid_uid] or {}
 end

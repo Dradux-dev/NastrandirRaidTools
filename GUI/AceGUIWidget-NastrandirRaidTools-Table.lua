@@ -34,7 +34,10 @@ local methods = {
     ["SetData"] = function(self, row, column, data)
         local cell = self:GetCell(row, column)
         cell.data = data
-        cell.child:SetData(data)
+
+        if cell.child then
+            cell.child:SetData(data)
+        end
     end,
     ["GetData"] = function(self, row, column)
         local cell = self:GetCell(row, column)
