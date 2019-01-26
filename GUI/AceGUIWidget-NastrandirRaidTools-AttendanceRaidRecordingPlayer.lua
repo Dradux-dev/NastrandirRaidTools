@@ -27,6 +27,12 @@ local methods = {
             self:Drop()
         end
 
+        function self.callbacks.OnEvent(frame, event, ...)
+            if event == "GROUP_ROSTER_UPDATE" then
+                self:CreateInfoText()
+            end
+        end
+
         self.frame:SetScript("OnClick", self.callbacks.OnClickNormal)
 
         self.classColors = {
@@ -81,17 +87,25 @@ local methods = {
         }
 
         self.frame:RegisterForDrag("LeftButton")
-        self.frame:SetScript("OnClick", self.callbacks.OnClickNormal);
-        self.frame:SetScript("OnDragStart", self.callbacks.OnDragStart);
-        self.frame:SetScript("OnDragStop", self.callbacks.OnDragStop);
+        self.frame:SetScript("OnClick", self.callbacks.OnClickNormal)
+        self.frame:SetScript("OnDragStart", self.callbacks.OnDragStart)
+        self.frame:SetScript("OnDragStop", self.callbacks.OnDragStop)
+
+        self.frame:RegisterEvent("GROUP_ROSTER_UPDATE")
+        self.frame:SetScript("OnEvent", self.callbacks.OnEvent)
+
         self:Enable()
     end,
     ["SetName"] = function(self, title)
-        self.titletext = title
         self.title:SetText(title)
     end,
     ["GetName"] = function(self)
-        return self.titletext
+        if self.key then
+            local Roster = NastrandirRaidTools:GetModule("Roster")
+            return Roster:GetCharacterName(self.key)
+        else
+            return self.title:GetText()
+        end
     end,
     ["SetClass"] = function(self, class)
         self.class = class
@@ -105,6 +119,7 @@ local methods = {
     ["SetKey"] = function(self, key)
         self.key = key
         self:CreateMenu()
+        self:CreateInfoText()
     end,
     ["GetKey"] = function(self)
         return self.key
@@ -300,6 +315,22 @@ local methods = {
             if info.uid == uid then
                 return index
             end
+        end
+    end,
+    ["CreateInfoText"] = function(self)
+        if not self.key then
+            -- There is no information stored who this is
+            return
+        end
+
+        local Roster = NastrandirRaidTools:GetModule("Roster")
+        local name = Roster:GetCharacterName(self.key)
+        print("CreateInfoText:", name)
+
+        if UnitExists(name) then
+            self:SetName(name .. " (*)")
+        else
+            self:SetName(name)
         end
     end
 }

@@ -136,7 +136,6 @@ function Attendance:Initialize()
 end
 
 function Attendance:OnEnable()
-    print("Adding Attendance menu entry")
     NastrandirRaidTools:AddMenu({
         {
             text = "Attendance",
