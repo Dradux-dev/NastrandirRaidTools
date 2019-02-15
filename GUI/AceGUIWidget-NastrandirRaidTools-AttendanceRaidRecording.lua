@@ -234,7 +234,6 @@ local methods = {
         local participation = db.participation[self.uid]
 
         for index, entry in ipairs(participation) do
-            print("Processing", index)
             self:SetTime(entry.time)
             self:RemovePlayerByMain(entry.member)
 

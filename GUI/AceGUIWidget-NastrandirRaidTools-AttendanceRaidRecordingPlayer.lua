@@ -325,7 +325,6 @@ local methods = {
 
         local Roster = NastrandirRaidTools:GetModule("Roster")
         local name = Roster:GetCharacterName(self.key)
-        print("CreateInfoText:", name)
 
         if UnitExists(name) then
             self:SetName(name .. " (*)")

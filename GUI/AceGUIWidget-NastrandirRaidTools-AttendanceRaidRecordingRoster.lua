@@ -24,9 +24,7 @@ local methods = {
         self.scroll_frame:SetWidth(width)
     end,
     ["AddPlayer"] = function(self, player)
-        print("AddPlayer()", player)
         if not self:FindPlayer(player) then
-            print("Adding")
             table.insert(self.players, player)
             self:CreatePlayerButtons()
         end
@@ -73,12 +71,9 @@ local methods = {
         -- Ignore
     end,
     ["RemovePlayer"] = function(self, uid)
-        print("RemovePlayer()", uid)
         local pos = self:FindPlayer(uid)
 
-        print("pos=", pos)
         if pos then
-            print("Removing")
             table.remove(self.players, pos)
             self:CreatePlayerButtons()
         end

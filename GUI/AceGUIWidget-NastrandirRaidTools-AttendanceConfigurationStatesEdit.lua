@@ -39,17 +39,12 @@ local methods = {
         end)
 
         self.button_down:SetCallback("OnClick", function()
-            print("Searching for", self.order + 1)
-
             local other_uid = self:GetStateByOrder(self.order + 1)
-            print("Found", other_uid)
 
             if other_uid then
-                print("Updating other state in DB")
                 local db = NastrandirRaidTools:GetModuleDB("Attendance")
                 db.states[other_uid].Order = self.order
 
-                print("Updating myself in DB")
                 self.order = self.order + 1
                 self:Save()
 
@@ -126,7 +121,6 @@ local methods = {
         self.order = state.Order
     end,
     ["Save"] = function(self)
-        print("Saving", self.uid)
         local db = NastrandirRaidTools:GetModuleDB("Attendance")
 
         if not db.states then
@@ -159,8 +153,6 @@ local methods = {
         return count
     end,
     ["GetStateByOrder"] = function(self, order)
-        print("Searching", order)
-
         local db = NastrandirRaidTools:GetModuleDB("Attendance")
 
         if not db.states then
@@ -168,7 +160,6 @@ local methods = {
         end
 
         for uid, state in pairs(db.states) do
-            print("Checking state", uid, "with order", state.Order)
             if state.Order == order then
                 return uid
             end

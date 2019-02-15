@@ -41,7 +41,7 @@ local methods = {
         self.widget:SetHeight(h)
     end,
     ["OnHeightSet"] = function(self, height)
-        print("Height set to", height)
+
     end,
     ["OnWidthSet"] = function(self, width)
         for index, child in ipairs(self.widget.children) do

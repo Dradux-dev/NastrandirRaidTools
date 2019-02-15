@@ -163,13 +163,12 @@ local methods = {
                     if attendance_data[player_uid].states[state_uid] then
                         time = attendance_data[player_uid].states[state_uid]
                     else
-                        print("State not found", self.data:GetText(1, s+1), ":", self.data:GetData(1, s+1))
+                        --print("State not found", self.data:GetText(1, s+1), ":", self.data:GetData(1, s+1))
                     end
 
                     local str = string.format("%d%%", ((time / total) * 100) + 0.5)
                     self.data:SetText(p+1, s+1, str)
                 else
-                    print("Player not found", self.data:GetText(p+1, 1), ":", self.data:GetData(p+1, 1))
                     self.data:SetText(p+1, s+1, "0%")
                 end
 
