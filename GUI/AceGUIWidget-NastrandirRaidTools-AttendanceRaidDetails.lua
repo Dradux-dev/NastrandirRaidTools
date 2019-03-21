@@ -94,6 +94,7 @@ local methods = {
         end
 
         db.raids[self.uid] = nil
+        db.participation[self.uid] = nil
 
         local Attendance = NastrandirRaidTools:GetModule("Attendance")
         Attendance:ShowRaidList()
