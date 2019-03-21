@@ -1,121 +1,58 @@
-local Type, Version = "NastrandirRaidToolsProfiles", 1
-local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
+local StdUi = LibStub("StdUi")
 
-local width = 800
-local height = 28
+StdUi:RegisterWidget("NastrandirRaidTools_Profiles", function(self, parent)
+    local width = parent:GetWidth() or 800
+    local height = 220
 
-local WIDTH = {
-    CURRENT = 0.47,
-    COPY_FROM = 0.47,
-    DELETE = 0.95,
-    NEW = 0.67,
-    CREATE = 0.24
-}
+    local widget = StdUi:Frame(parent, width, height)
+    self:InitWidget(widget)
+    self:SetObjSize(widget, width, height)
 
-local methods = {
-    ["OnAcquire"] = function(self)
-        self:SetWidth(width)
-        self:SetHeight(height)
-    end,
-    ["Initialize"] = function(self)
+    local current = StdUi:Dropdown(widget, 350, 24)
+    widget.current = current
+    StdUi:GlueTop(current, widget, 10, -40, "LEFT")
 
-        self.current:SetList(self:GetProfileList(true))
-        self.current:SetValue(self:GetCurrentProfile())
+    local currentLabel = StdUi:Label(widget, "Current")
+    widget.currentLabel = currentLabel
+    StdUi:GlueAbove(currentLabel, current, 0, 5, "LEFT")
 
-        local profiles, order = self:GetProfileList()
-        self.copy_from:SetList(profiles, order)
-        self.delete:SetList(profiles, order)
+    local copyFrom = StdUi:Dropdown(widget, 350, 24)
+    widget.copyFrom = copyFrom
+    StdUi:GlueRight(copyFrom, current, 10, 0)
 
-        self.current:SetCallback("OnValueChanged", function(dropdown, event, name)
-            NastrandirRaidTools:GetDB():SetProfile(name)
-            NastrandirRaidTools:ShowProfiles()
-        end)
+    local copyFromLabel = StdUi:Label(widget, "Copy From")
+    widget.copyFromLabel = copyFromLabel
+    StdUi:GlueAbove(copyFromLabel, copyFrom, 0, 5, "LEFT")
 
-        self.copy_from:SetCallback("OnValueChanged", function(dropdown, event, name)
-            self.copy_from:SetValue()
-            NastrandirRaidTools:GetDB():CopyProfile(name)
-            NastrandirRaidTools:ShowProfiles()
-        end)
+    local delete = StdUi:Dropdown(widget, 710, 24)
+    widget.delete = delete
+    StdUi:GlueBelow(delete, current, 0, -30, "LEFT")
 
-        self.delete:SetCallback("OnValueChanged", function(dropdown, event, name)
-            self:AskDelete(name)
-        end)
+    local deleteLabel = StdUi:Label(widget, "Delete")
+    widget.deleteLabel = deleteLabel
+    StdUi:GlueAbove(deleteLabel, delete, 0, 5, "LEFT")
 
-        self.create:SetCallback("OnClick", function()
-            local name = self.new:GetText()
-            if name == "" then
-                return
-            end
+    local new = StdUi:SimpleEditBox(widget, 470, 24, "")
+    widget.new = new
+    StdUi:GlueBelow(new, delete, 0, -30, "LEFT")
 
-            self.new:SetText("")
-            NastrandirRaidTools:GetDB():SetProfile(name)
-            NastrandirRaidTools:ShowProfiles()
-        end)
-    end,
-    ["SetWidth"] = function(self, w)
-        self.widget:SetWidth(w)
-    end,
-    ["SetHeight"] = function(self, h)
-        self.widget:SetHeight(h)
-    end,
-    ["OnWidthSet"] = function(self, width)
-        self.current:SetWidth(WIDTH.CURRENT * self.widget.frame:GetWidth())
-        self.copy_from:SetWidth(WIDTH.COPY_FROM * self.widget.frame:GetWidth())
-        self.delete:SetWidth(WIDTH.DELETE * self.widget.frame:GetWidth())
-        self.new:SetWidth(WIDTH.NEW * self.widget.frame:GetWidth())
-        self.create:SetWidth(WIDTH.CREATE * self.widget.frame:GetWidth())
-    end,
-    ["AskDelete"] = function(self, name)
-        local question = AceGUI:Create("InlineGroup")
-        question:SetLayout("Flow")
-        question:SetWidth(self.bottom.frame:GetWidth())
-        question:SetTitle("Are you sure?")
-        self.bottom:AddChild(question)
+    local newLabel = StdUi:Label(widget, "Create New Profile")
+    widget.newLabel = newLabel
+    StdUi:GlueAbove(newLabel, new, 0, 5, "LEFT")
 
-        local spacer_left = AceGUI:Create("SimpleGroup")
-        spacer_left:SetWidth(question.frame:GetWidth() / 4 - 5)
-        spacer_left:SetLayout("Flow")
-        spacer_left:SetHeight(25)
-        spacer_left.frame:SetBackdropColor(0, 0, 0, 0)
-        question:AddChild(spacer_left)
+    local create = StdUi:Button(widget, 230, 24, "Create")
+    widget.create = create
+    StdUi:GlueRight(create, new, 10, 0)
 
-        local button_no = AceGUI:Create("Button")
-        button_no:SetText("No")
-        button_no:SetWidth(question.frame:GetWidth() / 4)
-        button_no:SetCallback("OnClick", function()
-            self.delete:SetValue()
-            self.bottom:ReleaseChildren()
-            NastrandirRaidTools:ShowProfiles()
-        end)
-        question:AddChild(button_no)
-
-        local button_yes = AceGUI:Create("Button")
-        button_yes:SetText("Yes")
-        button_yes:SetWidth(question.frame:GetWidth() / 4)
-        button_yes:SetCallback("OnClick", function()
-            self.delete:SetValue()
-            self.bottom:ReleaseChildren()
-            NastrandirRaidTools:GetDB():DeleteProfile(name)
-            NastrandirRaidTools:ShowProfiles()
-        end)
-        question:AddChild(button_yes)
-
-        local spacer_right = AceGUI:Create("SimpleGroup")
-        spacer_right:SetWidth(question.frame:GetWidth() / 4 - 5)
-        spacer_right:SetLayout("Flow")
-        spacer_right:SetHeight(25)
-        spacer_right.frame:SetBackdropColor(0, 0, 0, 0)
-        question:AddChild(spacer_right)
-    end,
-    ["GetCurrentProfile"] = function(self)
+    function widget:GetCurrentProfile()
         local db = NastrandirRaidTools:GetDB()
         return db:GetCurrentProfile()
-    end,
-    ["GetProfileList"] = function(self, includeCurrent)
+    end
+
+    function widget:GetProfileList(includeCurrent)
         local db = NastrandirRaidTools:GetDB()
 
         local profiles = db:GetProfiles()
-
 
         local FindCurrentProfile = function()
             local currentProfile = db:GetCurrentProfile()
@@ -131,81 +68,96 @@ local methods = {
             table.remove(profiles, pos)
         end
 
+        table.sort(profiles)
+
         local profile_list = {}
-        local order = {}
         for index, profileName in ipairs(profiles) do
-            profile_list[profileName] = profileName
-            table.insert(order, profileName)
+            table.insert(profile_list, {
+                text = profileName,
+                value = profileName
+            })
         end
 
-        table.sort(order)
-
-        return profile_list, order
-    end
-}
-
-
-local function Constructor()
-    local widget = AceGUI:Create("SimpleGroup")
-    widget:SetHeight(height)
-    widget:SetWidth(width)
-    widget:SetLayout("Flow")
-    widget.frame:SetBackdropColor(0, 0, 0, 0)
-
-    local current = AceGUI:Create("Dropdown")
-    widget.current = current
-    current:SetWidth(WIDTH.CURRENT * widget.frame:GetWidth())
-    current:SetLabel("Current")
-    widget:AddChild(current)
-
-    local copy_from = AceGUI:Create("Dropdown")
-    widget.copy_from = copy_from
-    copy_from:SetWidth(WIDTH.COPY_FROM * widget.frame:GetWidth())
-    copy_from:SetLabel("Copy From")
-    widget:AddChild(copy_from)
-
-    local delete = AceGUI:Create("Dropdown")
-    widget.delete = delete
-    delete:SetWidth(WIDTH.DELETE * widget.frame:GetWidth())
-    delete:SetLabel("Delete")
-    widget:AddChild(delete)
-
-    local new = AceGUI:Create("EditBox")
-    widget.new = new
-    new:SetWidth(WIDTH.NEW * widget.frame:GetWidth())
-    new:SetLabel("Create new profile")
-    widget:AddChild(new)
-
-    local create = AceGUI:Create("Button")
-    widget.create = create
-    create:SetWidth(WIDTH.CREATE * widget.frame:GetWidth())
-    create:SetText("Create")
-    widget:AddChild(create)
-
-    local bottom = AceGUI:Create("SimpleGroup")
-    widget.bottom = bottom
-    bottom:SetWidth(widget.frame:GetWidth())
-    bottom:SetLayout("Flow")
-    bottom.frame:SetBackdropColor(0, 0, 0, 0)
-    widget:AddChild(bottom)
-
-    local widget = {
-        frame = widget.frame,
-        widget = widget,
-        current = current,
-        copy_from = copy_from,
-        delete = delete,
-        new = new,
-        create = create,
-        bottom = bottom,
-        type = Type
-    }
-
-    for method, func in pairs(methods) do
-        widget[method] = func
+        return profile_list
     end
 
-    return AceGUI:RegisterAsWidget(widget)
-end
+    function widget:AskDelete(f)
+        if not widget.ask then
+            local ask = StdUi:Window(parent, "Are you sure?", 360, 140)
+            widget.ask = ask
 
-AceGUI:RegisterWidgetType(Type, Constructor, Version)
+            local yes = StdUi:Button(ask, 80, 24, "Yes")
+            ask.yes = yes
+            yes:SetPoint("RIGHT", ask, "CENTER", -5, 0)
+            yes:SetScript("OnClick", function()
+                f.yes()
+                widget.ask:Hide()
+            end)
+
+            local no = StdUi:Button(ask, 80, 24, "No")
+            ask.no = no
+            no:SetPoint("LEFT", ask, "CENTER", 5, 0)
+            no:SetScript("OnClick", function()
+                f.no()
+                widget.ask:Hide()
+            end)
+
+            widget.ask:Hide()
+        end
+
+        widget.ask:SetPoint("CENTER")
+        widget.ask:Show()
+    end
+
+    widget:SetScript("OnShow", function()
+        current:SetOptions(widget:GetProfileList(true))
+        current:SetValue(widget:GetCurrentProfile())
+
+        copyFrom:SetOptions(widget:GetProfileList())
+        copyFrom:SetPlaceholder("-- Select --")
+        copyFrom:SetText(copyFrom.placeholder)
+
+
+        delete:SetOptions(widget:GetProfileList())
+        delete:SetPlaceholder("-- Select --")
+        delete:SetText(delete.placeholder)
+
+        new:SetText("")
+    end)
+
+    create:SetScript("OnClick", function()
+        local name = widget.new:GetText()
+        if name == "" then
+            return
+        end
+
+        widget.new:SetText("")
+        NastrandirRaidTools:GetDB():SetProfile(name)
+        NastrandirRaidTools:ShowProfiles()
+    end)
+
+    current.OnValueChanged = function(self, value)
+        NastrandirRaidTools:GetDB():SetProfile(value)
+        NastrandirRaidTools:ShowProfiles()
+    end
+
+    copyFrom.OnValueChanged = function(self, value)
+        NastrandirRaidTools:GetDB():CopyProfile(value)
+        NastrandirRaidTools:ShowProfiles()
+    end
+
+    delete.OnValueChanged = function(self, value)
+        NastrandirRaidTools:GetUserPermission(parent, {
+            callbackYes = function()
+                NastrandirRaidTools:GetDB():DeleteProfile(value)
+                NastrandirRaidTools:ShowProfiles()
+            end,
+            callbackNo = function()
+                NastrandirRaidTools:ShowProfiles()
+            end
+
+        })
+    end
+
+    return widget
+end)

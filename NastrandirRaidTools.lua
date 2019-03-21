@@ -1,8 +1,6 @@
-
-
 local Dialog = LibStub("LibDialog-1.0")
 local AceGUI = LibStub("AceGUI-3.0")
-
+local StdUi = LibStub("StdUi")
 
 SLASH_NASTRANDIRRAIDTOOLS1 = "/nrt"
 
@@ -46,45 +44,22 @@ function NastrandirRaidTools:ADDON_LOADED(event, addonName)
     end
 end
 
-function NastrandirRaidTools:InitFrames()
-    NastrandirRaidTools.MainFrame:Init()
-
-    NastrandirRaidTools:AddMenu({
-        {
-            text = "Profile",
-            priority = 100,
-            onClick = function(button, mouseButton)
-                NastrandirRaidTools:ShowProfiles()
-            end
-        }
-    })
-
-    NastrandirRaidTools:HideInterface()
-end
-
 function NastrandirRaidTools:ToggleInterface()
-    if not NastrandirRaidTools.main_frame then
-        NastrandirRaidTools.InitFrames()
+    if not self.window then
+        self.window = StdUi:NastrandirRaidTools_MainFrame()
+
+        self:AddMenu({
+            {
+                text = "Profile",
+                priority = 100,
+                onClick = function(button, mouseButton)
+                    NastrandirRaidTools:ShowProfiles()
+                end
+            }
+        })
     end
 
-    if NastrandirRaidTools.main_frame:IsShown() then
-        NastrandirRaidTools:HideInterface()
-    else
-        NastrandirRaidTools:ShowInterface()
-    end
-end
-
-function NastrandirRaidTools:ShowInterface()
-    if not NastrandirRaidTools.main_frame then
-        NastrandirRaidTools.InitFrames()
-    end
-
-    self:CreateMenu()
-    NastrandirRaidTools.main_frame:Show()
-end
-
-function NastrandirRaidTools:HideInterface()
-    NastrandirRaidTools.main_frame:Hide()
+    ToggleFrame(self.window)
 end
 
 function NastrandirRaidTools:AddMenu(entries)
@@ -127,7 +102,7 @@ function NastrandirRaidTools:GetModuleDB(moduleName)
 end
 
 function NastrandirRaidTools:CreateMenu()
-    if not self.main_frame then
+    if not self.window then
         return
     end
 
@@ -136,20 +111,29 @@ function NastrandirRaidTools:CreateMenu()
     end
 
     table.sort(self.menu, function(a, b)
+        if a.priority == b.priority then
+            return a.text < b.text
+        end
+
         return a.priority < b.priority
     end)
 
-    local scroll_frame = self.main_frame.side_panel.scroll_frame
-    scroll_frame:ReleaseChildren()
-    self.main_frame.menuButtons = {}
     for index, entry in ipairs(self.menu) do
-        local button = AceGUI:Create("NastrandirRaidToolsMenuButton")
-        self.main_frame.menuButtons[index] = button
-        button:Initialize()
-        button:Enable()
-        button:SetTitle(entry.text)
-        button:SetUserFunction(entry.onClick)
-        scroll_frame:AddChild(button)
+        if not entry.button then
+            entry.button = StdUi:NastrandirRaidTools_MenuButton(self.window.menu.child, entry.text, entry.onClick)
+        end
+
+        entry.button:ClearAllPoints()
+        if index == 1 then
+            StdUi:GlueTop(entry.button, self.window.menu.child, 0, 0, "LEFT")
+        else
+            local lastButton = self.menu[index -1].button
+            StdUi:GlueBelow(entry.button, lastButton, 0, -2)
+        end
+
+        if not entry.button:IsShown() then
+            entry.button:Show()
+        end
     end
 end
 
@@ -298,10 +282,54 @@ function NastrandirRaidTools:Today()
 end
 
 function NastrandirRaidTools:ShowProfiles()
-    NastrandirRaidTools:ReleaseContent()
-    local content_panel = NastrandirRaidTools:GetContentPanel()
-    local profiles = AceGUI:Create("NastrandirRaidToolsProfiles")
-    profiles:Initialize()
-    profiles:SetWidth(content_panel.frame:GetWidth())
-    content_panel:AddChild(profiles)
+    if not self.profiles then
+        self.profiles = StdUi:NastrandirRaidTools_Profiles(self.window.content.child)
+        table.insert(self.window.content.children, self.profiles)
+        self.profiles:Hide()
+    end
+
+    for _, frame in ipairs(self.window.content.children) do
+        frame:Hide()
+    end
+
+    self.profiles:ClearAllPoints()
+    StdUi:GlueTop(self.profiles, self.window.content.child, 0, 0, "LEFT")
+    self.profiles:Show()
+end
+
+function NastrandirRaidTools:GetUserPermission(parent, options)
+    if not self.ask then
+        local ask = StdUi:Window(parent, "", 360, 140)
+        self.ask = ask
+
+        local yes = StdUi:Button(ask, 80, 24, "")
+        ask.yes = yes
+        yes:SetPoint("RIGHT", ask, "CENTER", -5, 0)
+
+        local no = StdUi:Button(ask, 80, 24, "")
+        ask.no = no
+        no:SetPoint("LEFT", ask, "CENTER", 5, 0)
+
+        ask:Hide()
+    end
+
+    self.ask:SetWindowTitle(options.title or "Are you sure?")
+    self.ask.yes:SetText(options.yes or "Yes")
+    self.ask.no:SetText(options.no or "No")
+
+    self.ask.yes:SetScript("OnClick", function()
+        if options.callbackYes then
+            options.callbackYes()
+        end
+        self.ask:Hide()
+    end)
+
+    self.ask.no:SetScript("OnClick", function()
+        if options.callbackNo then
+            options.callbackNo()
+        end
+        self.ask:Hide()
+    end)
+    self.ask:SetPoint("CENTER")
+    self.ask:Show()
 end

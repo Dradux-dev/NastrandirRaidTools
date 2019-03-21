@@ -1,72 +1,99 @@
-NastrandirRaidTools.MainFrame = {}
+local StdUi = LibStub("StdUi")
 
-local AceGUI = LibStub("AceGUI-3.0")
-
-function NastrandirRaidTools.MainFrame:Init()
+local function getWindowConfiguration()
     local db = NastrandirRaidTools.db.profile
 
-    local main_frame = AceGUI:Create("Frame")
-    NastrandirRaidTools.main_frame = main_frame
-    main_frame:SetTitle("Nastrandir Raid Tools")
-    main_frame:SetStatusText("v 0.1")
-    main_frame:SetLayout("Flow")
-    main_frame:SetWidth(db.window.width)
-    main_frame:SetHeight(db.window.height)
-    main_frame:ClearAllPoints()
-    main_frame:SetPoint(db.window.anchorTo, UIParent, db.window.anchorFrom, db.window.x, db.window.y)
-    main_frame:Hide()
+    local window = {
+        x = db.window.x or 0,
+        y = db.window.y or 0,
+        width = db.window.width or 1400,
+        height = db.window.height or 600,
+        anchor = {
+            from = "CENTER",
+            to = "CENTER"
+        },
+        inset = {
+            top = 40,
+            bottom = 40,
+            left = 10,
+            right = 10
+        }
+    }
 
-    NastrandirRaidTools.MainFrame:InitSidePanel()
-    NastrandirRaidTools.MainFrame:InitSpacer()
-    NastrandirRaidTools.MainFrame:InitContentPanel()
+    window.side_panel = {
+        x = window.inset.left,
+        y = -window.inset.top,
+        width = db.window.side_panel_width or 220,
+        height = window.height - (window.inset.top + window.inset.bottom),
+        margin = {
+            top = 0,
+            bottom = 0,
+            left = 0,
+            right = 10
+        }
+    }
+
+    window.content = {
+        x =  window.inset.left + window.side_panel.width + window.side_panel.margin.right,
+        y = -window.inset.top,
+        width = window.width - (window.inset.left + window.side_panel.width + window.side_panel.margin.right + window.inset.right),
+        height = window.height - (window.inset.top + window.inset.bottom)
+    }
+
+    window.version = {
+        x = 0,
+        y = 10,
+        inside = true
+    }
+
+    return window
 end
 
-function NastrandirRaidTools.MainFrame:InitSidePanel()
-    local main_frame = NastrandirRaidTools.main_frame
-    local db = NastrandirRaidTools.db.profile
+StdUi:RegisterWidget("NastrandirRaidTools_MainFrame", function(self)
+    local config = getWindowConfiguration()
 
-    local side_panel = AceGUI:Create("SimpleGroup")
-    main_frame.side_panel = side_panel
-    side_panel:SetWidth(db.window.side_panel_width)
-    side_panel:SetHeight(main_frame.content:GetHeight() - db.window.spacer)
-    side_panel:SetFullHeight(true)
-    side_panel:SetLayout("Fill")
-    main_frame:AddChild(side_panel)
+    local window = StdUi:Window(UIParent, "Nastrandir Raid Tools", config.width, config.height)
+    self:InitWidget(window)
+    self:SetObjSize(window, config.width, config.height)
+    window:SetPoint("CENTER")
 
-    local scroll_frame = AceGUI:Create("ScrollFrame")
-    side_panel.scroll_frame = scroll_frame
-    scroll_frame:SetLayout("Flow")
-    side_panel:AddChild(scroll_frame)
-end
+    local menuPanel, menuFrame, menuChild, menuBar = StdUi:ScrollFrame(window, config.side_panel.width, config.side_panel.height)
+    window.menu = {
+        panel = menuPanel,
+        frame = menuFrame,
+        child = menuChild,
+        bar = menuBar,
+        children = {}
+    }
+    StdUi:GlueTop(menuPanel, window, config.side_panel.x, config.side_panel.y, "LEFT")
 
-function NastrandirRaidTools.MainFrame:InitSpacer()
-    local main_frame = NastrandirRaidTools.main_frame
-    local db = NastrandirRaidTools.db.profile
+    local contentPanel, contentFrame, contentChild, contentBar = StdUi:ScrollFrame(window, config.content.width, config.content.height)
+    window.content = {
+        panel = contentPanel,
+        frame = contentFrame,
+        child = contentChild,
+        bar = contentBar,
+        children = {}
+    }
+    StdUi:GlueTop(contentPanel, window, config.content.x, config.content.y, "LEFT")
 
-    local spacer = AceGUI:Create("SimpleGroup")
-    main_frame.spacer = spacer
-    spacer:SetWidth(db.window.spacer)
-    spacer:SetHeight(main_frame.content:GetHeight() - db.window.spacer)
-    spacer:SetFullHeight(true)
-    spacer:SetLayout("Fill")
-    spacer.frame:SetBackdropColor(1, 0, 0, 0)
-    main_frame:AddChild(spacer)
-end
+    local versionLabel = window:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    window.versionLabel = versionLabel
+    versionLabel:SetJustifyH("CENTER")
+    versionLabel:SetJustifyV("CENTER")
+    versionLabel:SetTextColor(1, 1, 1, 1)
+    versionLabel:SetText("0.1.0")
+    StdUi:GlueBottom(versionLabel, window, config.version.x, config.version.y, config.version.inside)
 
-function NastrandirRaidTools.MainFrame:InitContentPanel()
-    local main_frame = NastrandirRaidTools.main_frame
-    local db = NastrandirRaidTools.db.profile
+    window:SetScript("OnShow", function()
+        NastrandirRaidTools:CreateMenu()
+    end)
 
-    local content_panel = AceGUI:Create("SimpleGroup")
-    main_frame.content_panel = content_panel
-    content_panel:SetWidth(main_frame.content:GetWidth() - db.window.side_panel_width - db.window.spacer)
-    content_panel:SetHeight(main_frame.content:GetHeight() - db.window.spacer)
-    content_panel:SetFullHeight(true)
-    content_panel:SetLayout("Fill")
-    main_frame:AddChild(content_panel)
+    window:Hide()
+    NastrandirRaidTools.window = window
 
-    local scroll_frame = AceGUI:Create("ScrollFrame")
-    content_panel.scroll_frame = scroll_frame
-    scroll_frame:SetLayout("Flow")
-    content_panel:AddChild(scroll_frame)
-end
+    local options_dropdown = CreateFrame("Frame", "PullButtonsOptionsDropDown", nil, "L_UIDropDownMenuTemplate")
+    NastrandirRaidTools.options_dropdown = options_dropdown
+
+    return window
+end)
