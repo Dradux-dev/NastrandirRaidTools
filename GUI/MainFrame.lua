@@ -56,6 +56,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_MainFrame", function(self)
     self:InitWidget(window)
     self:SetObjSize(window, config.width, config.height)
     window:SetPoint("CENTER")
+    window:SetFrameLevel(7)
 
     local menuPanel, menuFrame, menuChild, menuBar = StdUi:ScrollFrame(window, config.side_panel.width, config.side_panel.height)
     window.menu = {

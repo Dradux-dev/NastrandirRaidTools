@@ -1,4 +1,5 @@
 local Roster = NastrandirRaidTools:NewModule("Roster")
+local StdUi = LibStub("StdUi")
 
 --[[
 roster = {
@@ -53,13 +54,33 @@ function Roster:OnEnable()
 end
 
 function Roster:ShowCurrentRoster()
+    local content = NastrandirRaidTools:GetContent()
+
+    if not self.frame then
+        self.frame = StdUi:NastrandirRaidTools_Roster(content.child)
+        table.insert(content.children, self.frame)
+        self.frame:Hide()
+    end
+
     NastrandirRaidTools:ReleaseContent()
-    NastrandirRaidTools.RosterFrame:Init()
+    StdUi:GlueTop(self.frame, content.child, 0, 0, "LEFT")
+    self.frame:LoadRoster()
+    self.frame:Show()
 end
 
 function Roster:ShowDetails(uid)
+    local content = NastrandirRaidTools:GetContent()
+
+    if not self.details then
+        self.details = StdUi:NastrandirRaidTools_Roster_Details(content.child)
+        table.insert(content.children, self.details)
+        self.details:Hide()
+    end
+
     NastrandirRaidTools:ReleaseContent()
-    NastrandirRaidTools.RosterFrame_Details:Init(uid)
+    StdUi:GlueTop(self.details, content.child, 0, 0, "LEFT")
+    self.details:LoadData(uid)
+    self.details:Show()
 end
 
 function Roster:CreateUID()

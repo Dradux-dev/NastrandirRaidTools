@@ -1,217 +1,169 @@
-local AceGUI = LibStub("AceGUI-3.0")
-
-local TITLE_HEIGHT = 100
-local FILTERBAR_HEIGHT = 50
-
-NastrandirRaidTools.RosterFrame = {}
+local StdUi = LibStub("StdUi")
 
 local GetFirstClass = function(allowed_classes)
-    for k,v in pairs(allowed_classes) do
+    for k,_ in pairs(allowed_classes) do
         return k
     end
 end
 
-
-
-function NastrandirRaidTools.RosterFrame:Init()
-    NastrandirRaidTools.roster_frame = {}
-    NastrandirRaidTools.RosterFrame:InitCurrentRoster()
-end
-
-function NastrandirRaidTools.RosterFrame:InitCurrentRoster()
-    local roster_frame = NastrandirRaidTools.roster_frame
-    local content_panel = NastrandirRaidTools:GetContentPanel()
-    local width = content_panel.frame:GetWidth()
-    local height = content_panel.frame:GetHeight()
+StdUi:RegisterWidget("NastrandirRaidTools_Roster", function(self, parent)
+    local width = parent:GetWidth() or 600
+    local height = parent:GetHeight() or 400
     local column_width = (width - 22)/ 4
+    local column_height = 380
 
-    local current_roster = AceGUI:Create("SimpleGroup")
-    roster_frame.current_roster = current_roster
-    current_roster:SetWidth(width)
-    current_roster:SetLayout("Flow")
-    current_roster.frame:SetBackdropColor(0, 0, 0, 0)
-    content_panel:AddChild(current_roster)
+    local widget = StdUi:Frame(parent, width, height)
+    self:InitWidget(widget)
+    self:SetObjSize(widget, width, height)
 
-    local title = AceGUI:Create("Heading")
-    current_roster.title = title
-    title:SetWidth(current_roster.frame:GetWidth())
-    title:SetText("Current Roster")
-    current_roster:AddChild(title)
+    local title = StdUi:Label(widget, "Current Roster", 18, "GameFontNormal", widget:GetWidth() - 20, 24)
+    widget.title = title
+    StdUi:GlueTop(title, widget, 10, -20, "LEFT")
 
-    local filter_bar = AceGUI:Create("InlineGroup")
-    current_roster.filter_bar = filter_bar
-    filter_bar:SetWidth(current_roster.frame:GetWidth())
-    filter_bar:SetLayout("Flow")
-    filter_bar:SetTitle("Filter")
-    filter_bar.frame:SetBackdropColor(0, 0, 0, 0)
-    current_roster:AddChild(filter_bar)
 
-    local edit_name = AceGUI:Create("EditBox")
-    filter_bar.edit_name = edit_name
-    edit_name:SetLabel("Name")
-    edit_name:SetCallback("OnTextChanged", function(editbox, event, text)
-        NastrandirRaidTools.RosterFrame:FilterAll(current_roster)
-    end)
-    edit_name:SetCallback("OnEnterPressed", function(editbox, event, text)
-        NastrandirRaidTools.RosterFrame:FilterAll(current_roster)
-    end)
-    filter_bar:AddChild(edit_name)
+    local name = StdUi:SimpleEditBox(widget, 300, 24, "")
+    widget.name = name
+    StdUi:AddLabel(widget, name, "Name", "TOP")
+    StdUi:GlueBelow(name, title, 0, -30, "LEFT")
 
-    local checkbox_raidmember = AceGUI:Create("CheckBox")
-    filter_bar.checkbox_raidmember = checkbox_raidmember
-    checkbox_raidmember:SetLabel("Only Raidmember")
-    checkbox_raidmember:SetType("checkbox")
-    checkbox_raidmember:SetValue(true)
-    checkbox_raidmember:SetCallback("OnValueChanged", function(checkbox, event, value)
-        NastrandirRaidTools.RosterFrame:FilterAll(current_roster)
-    end)
-    filter_bar:AddChild(checkbox_raidmember)
+    local raidmember = StdUi:Checkbox(widget, "Only Raidmember", 150, 24)
+    widget.raidmember = raidmember
+    raidmember:SetChecked(true)
+    StdUi:GlueRight(raidmember, name, 10, 0)
 
-    local checkbox_alts = AceGUI:Create("CheckBox")
-    filter_bar.checkbox_alts = checkbox_alts
-    checkbox_alts:SetLabel("Show Alts")
-    checkbox_alts:SetType("checkbox")
-    checkbox_alts:SetValue(false)
-    checkbox_alts:SetCallback("OnValueChanged", function (checkbox, event, value)
-        NastrandirRaidTools.RosterFrame:FilterAll(current_roster)
-    end)
-    filter_bar:AddChild(checkbox_alts)
+    local alts = StdUi:Checkbox(widget, "Show Alts", 150, 24)
+    widget.alts = alts
+    StdUi:GlueRight(alts, raidmember, 10, 0)
 
-    local columns = AceGUI:Create("InlineGroup")
-    current_roster.columns = columns
-    columns:SetWidth(current_roster.frame:GetWidth())
-    columns:SetLayout("Flow")
-    columns:SetTitle("Roster")
-    current_roster:AddChild(columns)
+    local tankColumn = StdUi:NastrandirRaidTools_Roster_ColumnFrame(widget, column_width, column_height)
+    widget.tankColumn = tankColumn
+    tankColumn:SetName("Tanks")
+    tankColumn:SetCount(0)
+    tankColumn:ShowAddButton()
+    StdUi:GlueBelow(tankColumn, name, 0, -20, "LEFT")
 
-    local tank_column = AceGUI:Create("NastrandirRaidToolsRosterColumnFrame")
-    current_roster.tank_column = tank_column
-    tank_column:Initialize()
-    tank_column:SetWidth(column_width)
-    tank_column:SetHeight(height - TITLE_HEIGHT - FILTERBAR_HEIGHT)
-    tank_column:SetName("Tanks")
-    tank_column:SetCount(0)
-    tank_column:ShowAddButton()
-    tank_column:SetAddFunction(NastrandirRaidTools.RosterFrame:NewMember(tank_column, GetFirstClass(NastrandirRaidTools:GetTankClasses()), "TANK"))
-    columns:AddChild(tank_column)
+    local healColumn = StdUi:NastrandirRaidTools_Roster_ColumnFrame(widget, column_width, column_height)
+    widget.healColumn = healColumn
+    healColumn:SetName("Healer")
+    healColumn:SetCount(0)
+    healColumn:ShowAddButton()
+    StdUi:GlueRight(healColumn, tankColumn, 0, 0)
 
-    local healer_column = AceGUI:Create("NastrandirRaidToolsRosterColumnFrame")
-    current_roster.healer_column = healer_column
-    healer_column:Initialize()
-    healer_column:SetWidth(column_width)
-    healer_column:SetHeight(height - TITLE_HEIGHT - FILTERBAR_HEIGHT)
-    healer_column:SetName("Healer")
-    healer_column:SetCount(0)
-    healer_column:ShowAddButton()
-    healer_column:SetAddFunction(NastrandirRaidTools.RosterFrame:NewMember(healer_column, GetFirstClass(NastrandirRaidTools:GetHealClasses()), "HEAL"))
-    columns:AddChild(healer_column)
+    local rangedColumn = StdUi:NastrandirRaidTools_Roster_ColumnFrame(widget, column_width, column_height)
+    widget.rangedColumn = rangedColumn
+    rangedColumn:SetName("Ranges")
+    rangedColumn:SetCount(0)
+    rangedColumn:ShowAddButton()
+    StdUi:GlueRight(rangedColumn, healColumn, 0, 0)
 
-    local ranged_column = AceGUI:Create("NastrandirRaidToolsRosterColumnFrame")
-    current_roster.ranged_column = ranged_column
-    ranged_column:Initialize()
-    ranged_column:SetWidth(column_width)
-    ranged_column:SetHeight(height - TITLE_HEIGHT - FILTERBAR_HEIGHT)
-    ranged_column:SetName("Ranges")
-    ranged_column:SetCount(0)
-    ranged_column:ShowAddButton()
-    ranged_column:SetAddFunction(NastrandirRaidTools.RosterFrame:NewMember(ranged_column, GetFirstClass(NastrandirRaidTools:GetRangedClasses()), "RANGED"))
-    columns:AddChild(ranged_column)
+    local meleeColumn = StdUi:NastrandirRaidTools_Roster_ColumnFrame(widget, column_width, column_height)
+    widget.meleeColumn = meleeColumn
+    meleeColumn:SetName("Melees")
+    meleeColumn:SetCount(0)
+    meleeColumn:ShowAddButton()
+    StdUi:GlueRight(meleeColumn, rangedColumn, 0, 0)
 
-    local melee_column = AceGUI:Create("NastrandirRaidToolsRosterColumnFrame")
-    current_roster.melee_column = melee_column
-    melee_column:Initialize()
-    melee_column:SetWidth(column_width)
-    melee_column:SetHeight(height - TITLE_HEIGHT - FILTERBAR_HEIGHT)
-    melee_column:SetName("Melees")
-    melee_column:SetCount(0)
-    melee_column:ShowAddButton()
-    melee_column:SetAddFunction(NastrandirRaidTools.RosterFrame:NewMember(melee_column, GetFirstClass(NastrandirRaidTools:GetMeleeClasses()), "MELEE"))
-    columns:AddChild(melee_column)
+    function widget:NewMemberFunction(column, class, role)
+        return function(button, mouseButton)
+            local Roster = NastrandirRaidTools:GetModule("Roster")
+            local RosterDB = NastrandirRaidTools:GetModuleDB("Roster")
 
-    NastrandirRaidTools.RosterFrame:LoadRoster(current_roster)
-end
+            if not RosterDB.characters then
+                RosterDB.characters = {}
+            end
 
-function NastrandirRaidTools.RosterFrame:NewMember(column, class, role)
-    return function(button, mouseButton)
-        local Roster = NastrandirRaidTools:GetModule("Roster")
+            local uid = Roster:CreateUID()
 
+            RosterDB.characters[uid] = {
+                name = "New Player",
+                raidmember = true,
+                class = class,
+                role = role,
+                alts = {}
+            }
+
+            widget:AddMember(column, uid)
+            Roster:ShowDetails(uid)
+        end
+    end
+
+    function widget:AddMember(column, uid)
+        local RosterDB = NastrandirRaidTools:GetModuleDB("Roster")
+        local member = RosterDB.characters[uid]
+
+        column:AddMember({
+            uid = uid,
+            name = member.name,
+            class = member.class
+        })
+    end
+
+    function widget:LoadRoster(current_roster)
         local RosterDB = NastrandirRaidTools:GetModuleDB("Roster")
 
         if not RosterDB.characters then
             RosterDB.characters = {}
         end
 
-        local uid = Roster:CreateUID()
+        tankColumn:ReleaseMember()
+        healColumn:ReleaseMember()
+        rangedColumn:ReleaseMember()
+        meleeColumn:ReleaseMember()
 
-        RosterDB.characters[uid] = {
-            name = "New Player",
-            raidmember = true,
-            class = class,
-            role = role,
-            alts = {}
+        for uid, member in pairs(RosterDB.characters) do
+            if member.role == NastrandirRaidTools.role_types.tank then
+                widget:AddMember(tankColumn, uid)
+            elseif member.role == NastrandirRaidTools.role_types.heal then
+                widget:AddMember(healColumn, uid)
+            elseif member.role == NastrandirRaidTools.role_types.ranged then
+                widget:AddMember(rangedColumn, uid)
+            elseif member.role == NastrandirRaidTools.role_types.melee then
+                widget:AddMember(meleeColumn, uid)
+            end
+        end
+
+        widget:FilterAll()
+
+        tankColumn:Sort()
+        healColumn:Sort()
+        rangedColumn:Sort()
+        meleeColumn:Sort()
+    end
+
+    function widget:FilterAll()
+        local options = {
+            name = name:GetText(),
+            raidmember = raidmember:GetChecked(),
+            alts = alts:GetChecked()
         }
 
-        NastrandirRaidTools.RosterFrame:AddMember(column, uid)
-        Roster:ShowDetails(uid)
-    end
-end
-
-function NastrandirRaidTools.RosterFrame:AddMember(column, uid)
-    local RosterDB = NastrandirRaidTools:GetModuleDB("Roster")
-
-    local member = RosterDB.characters[uid]
-
-    local button = AceGUI:Create("NastrandirRaidToolsRosterClassButton")
-    button:Initialize()
-    button:SetName(member.name)
-    button:SetClass(member.class)
-    button:SetKey(uid)
-    column:AddMember(button)
-end
-
-function NastrandirRaidTools.RosterFrame:LoadRoster(current_roster)
-    local RosterDB = NastrandirRaidTools:GetModuleDB("Roster")
-
-    if not RosterDB.characters then
-        RosterDB.characters = {}
+        widget:Filter(options, tankColumn)
+        widget:Filter(options, healColumn)
+        widget:Filter(options, rangedColumn)
+        widget:Filter(options, meleeColumn)
     end
 
-    current_roster.tank_column:ReleaseMember()
-    current_roster.healer_column:ReleaseMember()
-    current_roster.ranged_column:ReleaseMember()
-    current_roster.melee_column:ReleaseMember()
-
-    for uid, member in pairs(RosterDB.characters) do
-        if member.role == "TANK" then
-            NastrandirRaidTools.RosterFrame:AddMember(current_roster.tank_column, uid)
-        elseif member.role == "HEAL" then
-            NastrandirRaidTools.RosterFrame:AddMember(current_roster.healer_column, uid)
-        elseif member.role == "RANGED" then
-            NastrandirRaidTools.RosterFrame:AddMember(current_roster.ranged_column, uid)
-        elseif member.role == "MELEE" then
-            NastrandirRaidTools.RosterFrame:AddMember(current_roster.melee_column, uid)
-        end
+    function widget:Filter(options, column)
+        column:Filter(options)
     end
 
-    NastrandirRaidTools.RosterFrame:FilterAll(current_roster)
+    name:SetScript("OnTextChanged", function()
+        widget:FilterAll()
+    end)
+    name:SetScript("OnEnterPressed", function()
+        widget:FilterAll()
+    end)
+    raidmember.OnValueChanged = function()
+        widget:FilterAll()
+    end
+    alts.OnValueChanged = function()
+        widget:FilterAll()
+    end
 
-    current_roster.tank_column:Sort()
-    current_roster.healer_column:Sort()
-    current_roster.ranged_column:Sort()
-    current_roster.melee_column:Sort()
-end
-
-function NastrandirRaidTools.RosterFrame:FilterAll(current_roster)
-    NastrandirRaidTools.RosterFrame:Filter(current_roster, current_roster.tank_column)
-    NastrandirRaidTools.RosterFrame:Filter(current_roster, current_roster.healer_column)
-    NastrandirRaidTools.RosterFrame:Filter(current_roster, current_roster.ranged_column)
-    NastrandirRaidTools.RosterFrame:Filter(current_roster, current_roster.melee_column)
-end
-
-function NastrandirRaidTools.RosterFrame:Filter(current_roster, column)
-    local name = current_roster.filter_bar.edit_name:GetText()
-    local only_raidmember = current_roster.filter_bar.checkbox_raidmember:GetValue()
-    local show_alts = current_roster.filter_bar.checkbox_alts:GetValue()
-
-    column:Filter(name, only_raidmember, show_alts)
-end
+    tankColumn:SetAddFunction(widget:NewMemberFunction(tankColumn, GetFirstClass(NastrandirRaidTools:GetTankClasses()), NastrandirRaidTools.role_types.tank))
+    healColumn:SetAddFunction(widget:NewMemberFunction(healColumn, GetFirstClass(NastrandirRaidTools:GetHealClasses()), NastrandirRaidTools.role_types.heal))
+    rangedColumn:SetAddFunction(widget:NewMemberFunction(rangedColumn, GetFirstClass(NastrandirRaidTools:GetRangedClasses()), NastrandirRaidTools.role_types.ranged))
+    meleeColumn:SetAddFunction(widget:NewMemberFunction(meleeColumn, GetFirstClass(NastrandirRaidTools:GetMeleeClasses()), NastrandirRaidTools.role_types.melee))
+    widget:LoadRoster()
+    return widget
+end)

@@ -8,9 +8,13 @@ StdUi:RegisterWidget("NastrandirRaidTools_Profiles", function(self, parent)
     self:InitWidget(widget)
     self:SetObjSize(widget, width, height)
 
+    local title = StdUi:Label(widget, "Profiles", 18, "GameFontNormal", widget:GetWidth() - 20, 24)
+    widget.title = title
+    StdUi:GlueTop(title, widget, 10, -20, "LEFT")
+
     local current = StdUi:Dropdown(widget, 350, 24)
     widget.current = current
-    StdUi:GlueTop(current, widget, 10, -40, "LEFT")
+    StdUi:GlueBelow(current, title, 0, -30, "LEFT")
 
     local currentLabel = StdUi:Label(widget, "Current")
     widget.currentLabel = currentLabel

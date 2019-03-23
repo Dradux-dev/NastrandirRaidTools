@@ -1,70 +1,123 @@
-local Type, Version = "NastrandirRaidToolsRosterColumnFrame", 1
-local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
+local StdUi = LibStub("StdUi")
 
-local width = 180
-local height = 300
+StdUi:RegisterWidget("NastrandirRaidTools_Roster_ColumnFrame", function(self, parent, width, height)
+    width = width or 180
+    height = height or 300
 
 
-local methods = {
-    ["OnAcquire"] = function(self)
-        self:SetWidth(width)
-        self:SetHeight(height)
-    end,
-    ["Initialize"] = function(self)
-    end,
-    ["SetName"] = function(self, title)
-        self.titletext = title
-        self.title:SetText((title or "") .. " (" .. (self.count or 0) .. ")")
-    end,
-    ["SetCount"] = function(self, count)
-        self.count = count
-        self.title:SetText((self.titletext or "") .. " (" .. (self.count or 0) .. ")")
-    end,
-    ["AddMember"] = function(self, member)
-        if not self.members then
-            self.members = {}
+    local widget = StdUi:Frame(parent, width, height)
+    self:InitWidget(widget)
+    self:SetObjSize(widget, width, height)
+
+    local title = StdUi:Label(widget, "", 14)
+    widget.title = title
+    title:SetTextColor(1, 1, 0, 1)
+    title:SetJustifyH("CENTER")
+    title:SetJustifyV("CENTER")
+    StdUi:GlueTop(title, widget, 0, 0)
+
+    local contentPanel, contentFrame, contentChild, contentBar = StdUi:ScrollFrame(widget, widget:GetWidth(), height - (16 + 24))
+    widget.content = {
+        panel = contentPanel,
+        frame = contentFrame,
+        child = contentChild,
+        bar = contentBar,
+        children = {}
+    }
+    StdUi:GlueTop(contentPanel, widget, 0, -16, "LEFT")
+
+    local button = StdUi:NastrandirRaidTools_MenuButton(widget, "Add")
+    widget.button = button
+    button:SetWidth(width)
+    StdUi:GlueBottom(button, widget, 0, 0, true)
+
+    function widget:SetName(title)
+        widget.titletext = title
+        widget.title:SetText((title or "") .. " (" .. (widget.count or 0) .. ")")
+    end
+
+    function widget:SetCount(count)
+        widget.count = count
+        widget.title:SetText((widget.titletext or "") .. " (" .. (widget.count or 0) .. ")")
+    end
+
+    function widget:GetClassButton(member)
+        if member.button then
+            return member.button
         end
 
-        table.insert(self.members, {
-            name = member:GetName(),
-            class = member:GetClass(),
-            uid = member:GetKey()
-        })
+        if not widget.unusedButtons then
+            widget.unusedButtons = {}
+        end
 
-        self.scroll_frame:AddChild(member)
-        self.count = (self.count or 0) + 1
-    end,
-    ["ReleaseMember"] = function(self)
-        self.members = {}
-        self.scroll_frame:ReleaseChildren()
-    end,
-    ["ShowAddButton"] = function(self)
-        self.button_add:Show()
-    end,
-    ["HideAddButton"] = function(self)
-        self.button_add:Hide()
-    end,
-    ["SetAddFunction"] = function(self, func)
-        self.button_add:SetUserFunction(func)
-    end,
-    ["SetWidth"] = function(self, width)
-        self.widget:SetWidth(width)
-        self.title:SetWidth(width)
-        self.widget_group:SetWidth(width)
-        self.button_add:SetWidth(width)
-    end,
-    ["SetHeight"] = function(self, height)
-        self.widget:SetHeight(height)
-        self.widget_group:SetHeight(self.widget.frame:GetHeight() - self.title.frame:GetHeight() - self.button_add.frame:GetHeight() - 20)
-    end,
-    ["Sort"] = function(self)
+        if #widget.unusedButtons >= 1 then
+            local button = widget.unusedButtons[1]
+            table.remove(widget.unusedButtons, 1)
+            button:SetUID(member.uid)
+            button:SetName(member.name)
+            button:SetClass(member.class)
+            member.button = button
+        else
+            local button = StdUi:NastrandirRaidTools_Roster_ClassButton(widget.content.child, member.uid, member.name, member.class)
+            member.button = button
+        end
+
+        return member.button
+    end
+
+    function widget:AddMember(member)
+        if not widget.members then
+            widget.members = {}
+        end
+
+        member.button = widget:GetClassButton(member)
+        member.button:Show()
+        table.insert(widget.members, member)
+
+        widget:SetCount((widget.count or 0) + 1)
+    end
+
+    function widget:ReleaseMember()
+        if not widget.members then
+            widget.members = {}
+        end
+
+        -- Move all buttons to unused
+        for _, member in ipairs(widget.members) do
+            if member.button then
+                member.button:Hide()
+                table.insert(widget.unusedButtons, member.button)
+                member.button = nil
+            end
+        end
+
+        widget.members = {}
+        widget:SetCount(0)
+    end
+
+    function widget:ShowAddButton()
+        widget.button:Show()
+    end
+
+    function widget:HideAddButton()
+        widget.button:Hide()
+    end
+
+    function widget:SetAddFunction(func)
+        widget.button:SetScript("OnClick", func)
+    end
+
+    function widget:Sort()
         local actual_shown = {}
-        for index, child in ipairs(self.scroll_frame.children) do
-            table.insert(actual_shown, {
-                name = child:GetName(),
-                class = child:GetClass(),
-                uid = child:GetKey()
-            })
+        for _, member in ipairs(widget.members) do
+            if member.button and member.button:IsShown() then
+                table.insert(actual_shown, {
+                    name = member.name,
+                    class = member.class,
+                    uid = member.uid,
+                    button = member.button
+                })
+            end
         end
 
         table.sort(actual_shown, function(a, b)
@@ -85,20 +138,30 @@ local methods = {
             return a.name < b.name
         end)
 
-        self.scroll_frame:ReleaseChildren()
         for index, entry in ipairs(actual_shown) do
-            local button = AceGUI:Create("NastrandirRaidToolsRosterClassButton")
-            button:Initialize()
-            button:SetName(entry.name)
-            button:SetClass(entry.class)
-            button:SetKey(entry.uid)
-            self.scroll_frame:AddChild(button)
+            entry.button:ClearAllPoints()
+
+            if index == 1 then
+                StdUi:GlueTop(entry.button, widget.content.child, 0, 0, "LEFT")
+            else
+                local lastButton = actual_shown[index - 1].button
+                StdUi:GlueBelow(entry.button, lastButton, 0, 0)
+            end
         end
-    end,
-    ["Filter"] = function(self, name, only_raidmember, show_alts)
-        self.scroll_frame:ReleaseChildren()
+    end
+
+    function widget:Filter(options)
         local count = 0
-        for index, entry in ipairs(self.members) do
+
+        local name = options.name
+        local only_raidmember = options.raidmember
+        local show_alts = options.alts
+
+        if not widget.members then
+            widget.members = {}
+        end
+
+        for index, entry in ipairs(widget.members) do
             local add = true
 
             local Roster = NastrandirRaidTools:GetModule("Roster")
@@ -120,72 +183,16 @@ local methods = {
             end
 
             if add then
-                local button = AceGUI:Create("NastrandirRaidToolsRosterClassButton")
-                button:Initialize()
-                button:SetName(entry.name)
-                button:SetClass(entry.class)
-                button:SetKey(entry.uid)
-                self.scroll_frame:AddChild(button)
-
+                entry.button:Show()
                 count = count + 1
+            else
+                entry.button:Hide()
             end
 
-            self:SetCount(count)
+            widget:SetCount(count)
+            widget:Sort()
         end
     end
-}
 
-
-local function Constructor()
-    local widget = AceGUI:Create("SimpleGroup")
-    widget:SetHeight(height)
-    widget:SetWidth(width)
-    widget:SetLayout("Flow")
-    widget.frame:SetBackdropColor(0, 0, 0, 0)
-
-    local title = AceGUI:Create("Label")
-    widget.title = title
-    title:SetHeight(20)
-    title:SetWidth(widget.frame:GetWidth())
-    title:SetColor(1, 1, 0, 1)
-    title:SetJustifyH("CENTER")
-    title:SetJustifyV("CENTER")
-    widget:AddChild(title)
-
-    local widget_group = AceGUI:Create("SimpleGroup")
-    widget.widget_group = widget_group
-    widget_group:SetWidth(widget.frame:GetWidth())
-    widget_group:SetHeight(widget.frame:GetHeight() - title.frame:GetHeight() - 20)
-    widget_group:SetLayout("Fill")
-    widget_group.frame:SetBackdropColor(0, 0, 0, 0)
-    widget:AddChild(widget_group)
-
-    local scroll_frame = AceGUI:Create("ScrollFrame")
-    widget.scroll_frame = scroll_frame
-    scroll_frame:SetLayout("Flow")
-    widget_group:AddChild(widget.scroll_frame)
-
-    local button_add = AceGUI:Create("NastrandirRaidToolsMenuButton")
-    button_add:Initialize()
-    button_add:SetTitle("Add")
-    button_add:SetWidth(widget.frame:GetWidth())
-    widget:AddChild(button_add)
-
-    local widget = {
-        frame = widget.frame,
-        widget = widget,
-        title = title,
-        widget_group = widget_group,
-        scroll_frame = scroll_frame,
-        button_add = button_add,
-        type = Type
-    }
-
-    for method, func in pairs(methods) do
-        widget[method] = func
-    end
-
-    return AceGUI:RegisterAsWidget(widget)
-end
-
-AceGUI:RegisterWidgetType(Type, Constructor, Version)
+    return widget
+end)

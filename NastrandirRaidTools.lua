@@ -138,16 +138,17 @@ function NastrandirRaidTools:CreateMenu()
 end
 
 function NastrandirRaidTools:ReleaseContent()
-    local content_panel = self.main_frame.content_panel.scroll_frame
-    content_panel:ReleaseChildren()
+    for _, frame in ipairs(self.window.content.children) do
+        frame:Hide()
+    end
 end
 
-function NastrandirRaidTools:GetContentPanel()
-    if not self.main_frame then
+function NastrandirRaidTools:GetContent()
+    if not self.window then
         return
     end
 
-    return self.main_frame.content_panel.scroll_frame
+    return self.window.content
 end
 
 function NastrandirRaidTools:GetTankClasses()
@@ -197,13 +198,13 @@ function NastrandirRaidTools:GetRangedClasses()
 end
 
 function NastrandirRaidTools:GetAllowedClasses(role)
-    if role == "TANK" then
+    if role == NastrandirRaidTools.role_types.tank then
         return NastrandirRaidTools:GetTankClasses()
-    elseif role == "HEAL" then
+    elseif role == NastrandirRaidTools.role_types.heal then
         return NastrandirRaidTools:GetHealClasses()
-    elseif role == "MELEE" then
+    elseif role == NastrandirRaidTools.role_types.melee then
         return NastrandirRaidTools:GetMeleeClasses()
-    elseif role == "RANGED" then
+    elseif role == NastrandirRaidTools.role_types.ranged then
         return NastrandirRaidTools:GetRangedClasses()
     end
 
@@ -282,18 +283,18 @@ function NastrandirRaidTools:Today()
 end
 
 function NastrandirRaidTools:ShowProfiles()
+    local content = NastrandirRaidTools:GetContent()
+
     if not self.profiles then
-        self.profiles = StdUi:NastrandirRaidTools_Profiles(self.window.content.child)
-        table.insert(self.window.content.children, self.profiles)
+        self.profiles = StdUi:NastrandirRaidTools_Profiles(content.child)
+        table.insert(content.children, self.profiles)
         self.profiles:Hide()
     end
 
-    for _, frame in ipairs(self.window.content.children) do
-        frame:Hide()
-    end
+    NastrandirRaidTools:ReleaseContent()
 
     self.profiles:ClearAllPoints()
-    StdUi:GlueTop(self.profiles, self.window.content.child, 0, 0, "LEFT")
+    StdUi:GlueTop(self.profiles, content.child, 0, 0, "LEFT")
     self.profiles:Show()
 end
 
@@ -301,6 +302,7 @@ function NastrandirRaidTools:GetUserPermission(parent, options)
     if not self.ask then
         local ask = StdUi:Window(parent, "", 360, 140)
         self.ask = ask
+        ask:SetFrameLevel(100)
 
         local yes = StdUi:Button(ask, 80, 24, "")
         ask.yes = yes
@@ -313,6 +315,7 @@ function NastrandirRaidTools:GetUserPermission(parent, options)
         ask:Hide()
     end
 
+    self.ask:SetParent(parent)
     self.ask:SetWindowTitle(options.title or "Are you sure?")
     self.ask.yes:SetText(options.yes or "Yes")
     self.ask.no:SetText(options.no or "No")
@@ -332,4 +335,30 @@ function NastrandirRaidTools:GetUserPermission(parent, options)
     end)
     self.ask:SetPoint("CENTER")
     self.ask:Show()
+end
+
+function NastrandirRaidTools:FindInTable(t, needle, assosiative)
+    local result = {}
+
+    if not assosiative then
+        for pos, value in pairs(t) do
+            if value == needle then
+                table.insert(result, pos)
+            end
+        end
+    else
+        for pos, value in ipairs(t) do
+            if value == needle then
+                table.insert(result, pos)
+            end
+        end
+    end
+
+    if #result == 0 then
+        return
+    elseif #result == 1 then
+        return result[1]
+    end
+
+    return result
 end
