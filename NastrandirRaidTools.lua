@@ -362,3 +362,29 @@ function NastrandirRaidTools:FindInTable(t, needle, assosiative)
 
     return result
 end
+
+function NastrandirRaidTools:FindInTableIf(t, callback, assosiative)
+    local result = {}
+
+    if not assosiative then
+        for pos, value in pairs(t) do
+            if callback(value) then
+                table.insert(result, pos)
+            end
+        end
+    else
+        for pos, value in ipairs(t) do
+            if callback(value) then
+                table.insert(result, pos)
+            end
+        end
+    end
+
+    if #result == 0 then
+        return
+    elseif #result == 1 then
+        return result[1]
+    end
+
+    return result
+end
