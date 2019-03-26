@@ -1,114 +1,89 @@
-local Type, Version = "NastrandirRaidToolsAttendance", 1
-local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
+local StdUi = LibStub("StdUi")
 
-local width = 800
-local height = 400
+StdUi:RegisterWidget("NastrandirRaidTools_Attendance", function(self, parent)
+    local width = parent:GetWidth() or 800
+    local height = 500
+    local rowHeight = 20
 
-local WIDTH = {
-    DROPDOWN = 150,
-    BUTTON = 100
-}
+    local widget = StdUi:Frame(parent, width, height)
+    self:InitWidget(widget)
+    self:SetObjSize(widget, width, height)
 
-local methods = {
-    ["OnAcquire"] = function(self)
-        self:SetWidth(width)
-        self:SetHeight(height)
-    end,
-    ["Initialize"] = function(self)
-        local raids = self:GetRaidList()
-        if table.getn(raids.order) >= 1 then
-            self.start_raid:SetList(raids.list, raids.order)
-            self.start_raid:SetValue(raids.order[math.min(12, table.getn(raids.order))])
+    local title = StdUi:Label(widget, "Attendance", 18, "GameFontNormal", widget:GetWidth() - 20, 24)
+    widget.title = title
+    StdUi:GlueTop(title, widget, 10, -20, "LEFT")
 
-            self.end_raid:SetList(raids.list, raids.order)
-            self.end_raid:SetValue(raids.order[1])
+    local start_raid = StdUi:Dropdown(widget, 300, 24, {})
+    widget.start_raid = start_raid
+    StdUi:AddLabel(widget, start_raid, "Start", "TOP")
+    StdUi:GlueBelow(start_raid, title, 0, -30, "LEFT")
+
+    local end_raid = StdUi:Dropdown(widget, 300, 24, {})
+    widget.end_raid = end_raid
+    StdUi:AddLabel(widget, end_raid, "End", "TOP")
+    StdUi:GlueRight(end_raid, start_raid, 10, 0)
+
+    local analyse = StdUi:Button(widget, 80, 24, "Analyse")
+    widget.analyse = analyse
+    StdUi:GlueRight(analyse, end_raid, 10, 0)
+
+    local export = StdUi:Button(widget, 80, 24, "Export")
+    widget.export = export
+    StdUi:GlueRight(export, analyse, 10, 0)
+
+    local configuration = StdUi:Button(widget, 80, 24, "Configuration")
+    widget.configuration = configuration
+    StdUi:GlueBelow(configuration, title, 0, -30, "RIGHT")
+
+    local raids = StdUi:Button(widget, 80, 24, "Raids")
+    widget.raids = raids
+    StdUi:GlueLeft(raids, configuration, -10, 0)
+
+    local data = StdUi:Table(widget, title:GetWidth(), 400, rowHeight, {}, {})
+    widget.data = data
+    StdUi:GlueBelow(data, start_raid, 0, -30, "LEFT")
+
+    function widget:GetRaidList()
+        local Attendance = NastrandirRaidTools:GetModule("Attendance")
+        local list = Attendance:GetRaidList()
+        local options = {}
+        for _, uid in ipairs(list.order) do
+            table.insert(options, {
+                text = list.list[uid],
+                value = uid
+            })
         end
 
+        return options
+    end
+
+    function widget:FilterRaidList(start_date)
         local Attendance = NastrandirRaidTools:GetModule("Attendance")
-        local Roster = NastrandirRaidTools:GetModule("Roster")
-        self.states = Attendance:GetStates()
-        self.roster = Roster:GetRaidmember()
-        self.data:SetRows(table.getn(self.roster) + 1)
-        self.data:SetColumns(table.getn(self.states) + 1)
-
-        table.sort(self.roster, function(a, b)
-            local name_a = Roster:GetCharacterName(a)
-            local name_b = Roster:GetCharacterName(b)
-
-            return name_a < name_b
-        end)
-
-        table.sort(self.states, function(a, b)
-            local order_a = Attendance:GetState(a).Order
-            local order_b = Attendance:GetState(b).Order
-
-            return order_a < order_b
-        end)
-
-        for i=1,table.getn(self.roster) do
-            self.data:SetText(i+1, 1, Roster:GetCharacterName(self.roster[i]))
-            self.data:SetData(i+1, 1, self.roster[i])
+        local list = Attendance:GetRaidList(start_date)
+        local options = {}
+        for _, uid in ipairs(list.order) do
+            table.insert(options, {
+                text = list.list[uid],
+                value = uid
+            })
         end
 
-        for i=1,table.getn(self.states) do
-            local state = Attendance:GetState(self.states[i])
-            self.data:SetText(1, i+1, state.Name)
-            self.data:SetData(1, i+1, self.states[i])
-        end
+        return options
+    end
 
-        self.start_raid:SetCallback("OnValueChanged", function(dropdown, event, value)
-            local Attendance = NastrandirRaidTools:GetModule("Attendance")
-            local date = Attendance:GetRaid(value).date
-            local raids = self:FilterRaidList(date)
-            self.end_raid:SetList(raids.list, raids.order)
-            self.end_raid:SetValue(raids.order[1])
-        end)
-        self.analyse:SetCallback("OnClick", function(button, mouseButton)
-            self:Analyse()
-        end)
-        self.raids:SetCallback("OnClick", function(button, mouseButton)
-            local Attendance = NastrandirRaidTools:GetModule("Attendance")
-            Attendance:ShowRaidList()
-        end)
-        self.configuration:SetCallback("OnClick", function(button, mouseButton)
-            local Attendance  = NastrandirRaidTools:GetModule("Attendance")
-            Attendance:ShowConfiguration()
-        end)
-    end,
-    ["SetWidth"] = function(self, w)
-        self.widget:SetWidth(w)
-    end,
-    ["SetHeight"] = function(self, h)
-        self.widget:SetHeight(h)
-    end,
-    ["OnHeightSet"] = function(self, height)
-        self.top_bar:SetHeight(40)
-        self.view:SetHeight(self.widget.frame:GetHeight() - self.top_bar.frame:GetHeight())
-    end,
-    ["OnWidthSet"] = function(self, width)
-        self.widget:SetWidth(width)
-        self.top_bar:SetWidth(width)
-        self.top_bar.spacer:SetWidth(width - 2 * WIDTH.DROPDOWN - 3 * WIDTH.BUTTON - 7)
-    end,
-    ["GetRaidList"] = function(self)
-        local Attendance = NastrandirRaidTools:GetModule("Attendance")
-        return Attendance:GetRaidList()
-    end,
-    ["FilterRaidList"] = function(self, start_date)
-        local Attendance = NastrandirRaidTools:GetModule("Attendance")
-        return Attendance:GetRaidList(tonumber(start_date))
-    end,
-    ["Analyse"] = function(self)
+    function widget:Analyse()
         local Attendance = NastrandirRaidTools:GetModule("Attendance")
         local Roster = NastrandirRaidTools:GetModule("Roster")
 
-        local start_raid = self.start_raid:GetValue()
-        local end_raid = self.end_raid:GetValue()
+        local start_raid = widget.start_raid:GetValue()
+        local end_raid = widget.end_raid:GetValue()
         local start_date = Attendance:GetRaid(start_raid).date
         local end_date = Attendance:GetRaid(end_raid).date
 
         local attendance_data = {}
         local raid_list = Attendance:GetRaidList(start_date, end_date).order
+
+        -- Parse participation
         for _, raid_uid in ipairs(raid_list) do
             local raid = Attendance:GetRaid(raid_uid)
 
@@ -138,6 +113,7 @@ local methods = {
                 end
             end
 
+            -- Add duration of last state til raid end
             for main_uid, player in pairs(attendance_data) do
                 if player.state then
                     local duration = NastrandirRaidTools:GetDuration(player.timestamp, raid.end_time)
@@ -149,14 +125,50 @@ local methods = {
             end
         end
 
-        local tmp_db = NastrandirRaidTools:GetModuleDB("Temporary")
-        tmp_db = attendance_data
+        -- Build table
+        widget.states = Attendance:GetStates()
+        widget.roster = Roster:GetRaidmember()
+        table.sort(widget.roster, function(a, b)
+            local name_a = Roster:GetCharacterName(a)
+            local name_b = Roster:GetCharacterName(b)
 
-        for p=1,table.getn(self.roster) do
-            for s=1,table.getn(self.states) do
-                local player_uid = self.data:GetData(p+1, 1)
-                local state_uid = self.data:GetData(1, s+1)
+            return name_a < name_b
+        end)
 
+        table.sort(widget.states, function(a, b)
+            local order_a = Attendance:GetState(a).Order
+            local order_b = Attendance:GetState(b).Order
+
+            return order_a < order_b
+        end)
+
+        local columns = {
+            {
+                header = "Raid member",
+                index = "name",
+                align = "LEFT",
+                width = widget.data:GetWidth() / (table.getn(widget.states) + 1)
+            }
+        }
+        for _, state_uid in ipairs(widget.states) do
+            local state = Attendance:GetState(state_uid)
+            table.insert(columns, {
+                header = state.Name,
+                index = state_uid,
+                align = "CENTER",
+                width = widget.data:GetWidth() / (table.getn(widget.states) + 1)
+            })
+        end
+
+        -- Fill table
+        local data = {}
+        for _, player_uid in ipairs(widget.roster) do
+            local row = {
+                name = Roster:GetCharacterName(player_uid)
+            }
+
+            for _, state_uid in ipairs(widget.states) do
+                local str = "0%"
                 if attendance_data[player_uid] then
                     local total = attendance_data[player_uid].duration
                     local time = 0
@@ -166,103 +178,83 @@ local methods = {
                         --print("State not found", self.data:GetText(1, s+1), ":", self.data:GetData(1, s+1))
                     end
 
-                    local str = string.format("%d%%", ((time / total) * 100) + 0.5)
-                    self.data:SetText(p+1, s+1, str)
-                else
-                    self.data:SetText(p+1, s+1, "0%")
+                    str = string.format("%d%%", ((time / total) * 100) + 0.5)
                 end
 
-
+                row[state_uid] = str
             end
+
+            table.insert(data, row)
+        end
+
+        widget.data:SetHeight((#data + 1) * rowHeight)
+        widget.data:SetColumns(columns)
+        widget.data:SetData(data)
+        widget.data:DrawTable()
+    end
+
+    function widget:Export()
+        local line = ""
+
+        for c=1, table.getn(widget.data.columns) do
+             line = line .. widget.data.columns[c].header .. ";"
+        end
+        print(line)
+
+        for r=1, table.getn(widget.data.rows) do
+            line = ""
+            for c=1, table.getn(widget.data.columns) do
+                local cell = widget.data.rows[r][c]
+                if c == 1 then
+                    line = line .. cell.text:GetText() .. ";"
+                else
+                    local fixed = string.sub(cell.text:GetText(), 1, string.len(cell.text:GetText()) - 1)
+                    line = string.format("%s%d;", line, tonumber(fixed))
+                end
+            end
+            print(line)
         end
     end
-}
 
+    -- Initialize
+    local raids = widget:GetRaidList()
+    if table.getn(raids) >= 1 then
+        widget.start_raid:SetOptions(raids)
+        local raid = raids[math.min(12, table.getn(raids))]
+        widget.start_raid:SetValue(raid.value, raid.text)
 
-local function Constructor()
-    local widget = AceGUI:Create("SimpleGroup")
-    widget:SetLayout("Flow")
-    widget:SetHeight(height)
-    widget:SetWidth(width)
-    widget.frame:SetBackdropColor(0, 0, 0, 0)
+        widget.end_raid:SetOptions(raids)
+        widget.end_raid:SetValue(raids[1].value, raids[1].text)
 
-    local top_bar = AceGUI:Create("SimpleGroup")
-    widget.top_bar = top_bar
-    top_bar:SetLayout("Flow")
-    top_bar:SetWidth(widget.frame:GetWidth())
-    top_bar.frame:SetBackdropColor(0, 0, 0, 0)
-    widget:AddChild(top_bar)
-
-    local start_raid = AceGUI:Create("Dropdown")
-    top_bar.start_raid = start_raid
-    start_raid:SetWidth(WIDTH.DROPDOWN)
-    start_raid:SetLabel("Start")
-    top_bar:AddChild(start_raid)
-
-    local end_raid = AceGUI:Create("Dropdown")
-    top_bar.end_raid = end_raid
-    end_raid:SetWidth(WIDTH.DROPDOWN)
-    end_raid:SetLabel("End")
-    top_bar:AddChild(end_raid)
-
-    local analyse = AceGUI:Create("Button")
-    top_bar.analyse = analyse
-    analyse:SetText("Analyse")
-    analyse:SetWidth(WIDTH.BUTTON)
-    top_bar:AddChild(analyse)
-
-    local spacer = AceGUI:Create("NastrandirRaidToolsSpacer")
-    top_bar.spacer = spacer
-    spacer:SetHeight(20)
-    spacer:SetWidth(1)
-    spacer:SetBackdropColor(0, 0, 0, 0)
-    top_bar:AddChild(spacer)
-
-    local raids = AceGUI:Create("Button")
-    top_bar.analyse = raids
-    raids:SetText("Raids")
-    raids:SetWidth(WIDTH.BUTTON)
-    top_bar:AddChild(raids)
-
-    local configuration = AceGUI:Create("Button")
-    top_bar.analyse = configuration
-    configuration:SetText("Configuration")
-    configuration:SetWidth(WIDTH.BUTTON)
-    top_bar:AddChild(configuration)
-
-    local view = AceGUI:Create("SimpleGroup")
-    widget.view = view
-    view:SetLayout("Fill")
-    view:SetWidth(widget.frame:GetWidth())
-    view:SetHeight(widget.frame:GetHeight() - 50)
-    view.frame:SetBackdropColor(0, 0, 0, 0)
-    widget:AddChild(view)
-
-    local data = AceGUI:Create("NastrandirRaidToolsTable")
-    view.data = data
-    data:SetRows(25)
-    data:SetColumns(5)
-    view:AddChild(data)
-
-    local widget = {
-        frame = widget.frame,
-        widget = widget,
-        top_bar = top_bar,
-        start_raid = start_raid,
-        end_raid = end_raid,
-        analyse = analyse,
-        raids = raids,
-        configuration = configuration,
-        view = view,
-        data = data,
-        type = Type
-    }
-
-    for method, func in pairs(methods) do
-        widget[method] = func
+        widget:Analyse()
     end
 
-    return AceGUI:RegisterAsWidget(widget)
-end
 
-AceGUI:RegisterWidgetType(Type, Constructor, Version)
+    widget.start_raid.OnValueChanged = function(self, value)
+        local Attendance = NastrandirRaidTools:GetModule("Attendance")
+        local date = Attendance:GetRaid(value).date
+        local raids = widget:FilterRaidList(date)
+        widget.end_raid:SetOptions(raids)
+        widget.end_raid:SetValue(raids[1].value, raids[1].text)
+    end
+
+    widget.analyse:SetScript("OnClick", function()
+        widget:Analyse()
+    end)
+
+    widget.export:SetScript("OnClick", function()
+        widget:Export()
+    end)
+
+    widget.raids:SetScript("OnClick", function()
+        local Attendance = NastrandirRaidTools:GetModule("Attendance")
+        Attendance:ShowRaidList()
+    end)
+
+    widget.configuration:SetScript("OnClick", function()
+        local Attendance  = NastrandirRaidTools:GetModule("Attendance")
+        Attendance:ShowConfiguration()
+    end)
+
+    return widget
+end)

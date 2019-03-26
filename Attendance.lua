@@ -1,5 +1,6 @@
 local Attendance = NastrandirRaidTools:NewModule("Attendance")
 local AceGUI = LibStub("AceGUI-3.0")
+local StdUi = LibStub("StdUi")
 
 --[[
 Attendance = {
@@ -148,12 +149,18 @@ function Attendance:OnEnable()
 end
 
 function Attendance:ShowAttendance()
+    local content =  NastrandirRaidTools:GetContent()
+
+
+    if not self.frame then
+        self.frame = StdUi:NastrandirRaidTools_Attendance(content.child)
+        table.insert(content.children, self.frame)
+        self.frame:Hide()
+    end
+
     NastrandirRaidTools:ReleaseContent()
-    local content_panel = NastrandirRaidTools:GetContentPanel()
-    local attendance_frame = AceGUI:Create("NastrandirRaidToolsAttendance")
-    attendance_frame:Initialize()
-    attendance_frame:SetWidth(content_panel.frame:GetWidth())
-    content_panel:AddChild(attendance_frame)
+    StdUi:GlueTop(self.frame, content.child, 0, 0, "LEFT")
+    self.frame:Show()
 end
 
 function Attendance:ShowRaidList()
