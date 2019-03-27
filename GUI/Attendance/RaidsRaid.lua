@@ -2,22 +2,26 @@ local StdUi = LibStub("StdUi")
 
 StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidsRaid", function(self, parent, uid)
     local width = parent:GetWidth() or 800
-    local height = 75
+    local height = 40
 
-    local widget = StdUi:PanelWithLabel(parent, width, height, nil, "Raid")
+    local widget = StdUi:Panel(parent, width, height)
     widget.uid = uid
     self:InitWidget(widget)
     self:SetObjSize(widget, width, height)
 
-    local record = StdUi:Button(widget, "Record")
+    local title = StdUi:FontString(widget, "Raid")
+    widget.title = title
+    StdUi:GlueLeft(title, widget, 10, 0, true)
+
+    local record = StdUi:Button(widget, 80, 24, "Record")
     widget.record = record
     StdUi:GlueRight(record, widget, -20, 0, true)
 
-    local show_log = StdUi:Button(widget, "Log")
+    local show_log = StdUi:Button(widget, 80, 24, "Log")
     widget.show_log = show_log
     StdUi:GlueLeft(show_log, record, -10, 0)
 
-    local edit = StdUi:Button(widget, "Edit")
+    local edit = StdUi:Button(widget, 80, 24, "Edit")
     widget.edit = edit
     StdUi:GlueLeft(edit, show_log, -10, 0)
 
@@ -30,11 +34,11 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidsRaid", function(self, 
     end
 
     function widget:SetTitle(title)
-        widget.label:SetText(title)
+        widget.title:SetText(title)
     end
 
     function widget:GetTitle()
-        return widget.label:GetText()
+        return widget.title:GetText()
     end
 
     function widget:ShowRaid()

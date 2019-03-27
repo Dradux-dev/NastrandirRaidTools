@@ -1,15 +1,14 @@
 local StdUi = LibStub("StdUi")
 
-StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidsRaid", function(self, parent, uid)
+StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Raids", function(self, parent)
     local width = parent:GetWidth() or 800
-    local height = 75
+    local height = 500
 
-    local widget = StdUi:PanelWithLabel(parent, width, height, nil, "Raid")
-    widget.uid = uid
+    local widget = StdUi:Frame(parent, width, height)
     self:InitWidget(widget)
     self:SetObjSize(widget, width, height)
 
-    local title = StdUi:Label(widget, "Profiles", 18, "GameFontNormal", widget:GetWidth() - 20, 24)
+    local title = StdUi:Label(widget, "Raids", 18, "GameFontNormal", widget:GetWidth() - 20, 24)
     widget.title = title
     StdUi:GlueTop(title, widget, 10, -20, "LEFT")
 
@@ -23,7 +22,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidsRaid", function(self, 
     }
     StdUi:GlueTop(contentPanel, widget, 10, -40, "LEFT")
 
-    local add_raid = StdUi:Button(widget, "Add raid")
+    local add_raid = StdUi:Button(widget, 80, 24, "Add raid")
     widget.add_raid = add_raid
     StdUi:GlueAbove(add_raid, contentPanel, 0, 20, "RIGHT")
 
@@ -56,8 +55,12 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidsRaid", function(self, 
 
     function widget:Sort()
         local db = NastrandirRaidTools:GetModuleDB("Attendance")
+        if not db.raids then
+            db.raids = {}
+        end
+
         table.sort(widget.content.children, function(a, b)
-            return db[a:GetUID()].date < db[b:GetUID()].date
+            return db.raids[a:GetUID()].date > db.raids[b:GetUID()].date
         end)
 
         for index, child in ipairs(widget.content.children) do
@@ -68,6 +71,8 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidsRaid", function(self, 
                 local lastChild = widget.content.children[index - 1]
                 StdUi:GlueBelow(child, lastChild, 0, -2)
             end
+
+            child:Show()
         end
     end
 
@@ -93,7 +98,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidsRaid", function(self, 
         local db = NastrandirRaidTools:GetModuleDB("Attendance")
 
         if not db.raids then
-        db.raids = {}
+            db.raids = {}
         end
 
         local raid_list = {}
@@ -112,5 +117,6 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidsRaid", function(self, 
         widget:Sort()
     end
 
+    widget:LoadRaids()
     return widget
 end)

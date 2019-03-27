@@ -164,12 +164,17 @@ function Attendance:ShowAttendance()
 end
 
 function Attendance:ShowRaidList()
+    local content = NastrandirRaidTools:GetContent()
+
+    if not self.raids then
+        self.raids = StdUi:NastrandirRaidTools_Attendance_Raids(content.child)
+        table.insert(content.children, self.raids)
+        self.raids:Hide()
+    end
+
     NastrandirRaidTools:ReleaseContent()
-    local content_panel = NastrandirRaidTools:GetContentPanel()
-    local attendance_frame = AceGUI:Create("NastrandirRaidToolsAttendanceRaids")
-    attendance_frame:Initialize()
-    attendance_frame:SetWidth(content_panel.frame:GetWidth())
-    content_panel:AddChild(attendance_frame)
+    StdUi:GlueTop(self.raids, content.child, 0, 0, "LEFT")
+    self.raids:Show()
 end
 
 function Attendance:ShowRaidLog(raid_id)
