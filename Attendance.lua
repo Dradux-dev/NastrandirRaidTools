@@ -177,6 +177,22 @@ function Attendance:ShowRaidList()
     self.raids:Show()
 end
 
+function Attendance:ShowRaid(uid)
+    local content = NastrandirRaidTools:GetContent()
+
+    if not self.details then
+        self.details = StdUi:NastrandirRaidTools_Attendance_RaidDetails(content.child)
+        table.insert(content.children, self.details)
+        self.details:Hide()
+    end
+
+    NastrandirRaidTools:ReleaseContent()
+    StdUi:GlueTop(self.details, content.child, 0, 0, "LEFT")
+    self.details:SetUID(uid)
+    self.details:Load()
+    self.details:Show()
+end
+
 function Attendance:ShowRaidLog(raid_id)
 
 end
@@ -190,16 +206,6 @@ function Attendance:ShowConfiguration()
     content_panel:AddChild(attendance_frame)
 end
 
-function Attendance:ShowRaid(uid)
-    NastrandirRaidTools:ReleaseContent()
-    local content_panel = NastrandirRaidTools:GetContentPanel()
-    local raid_frame = AceGUI:Create("NastrandirRaidToolsAttendanceRaidDetails")
-    raid_frame:Initialize()
-    raid_frame:SetUID(uid)
-    raid_frame:Load()
-    raid_frame:SetWidth(content_panel.frame:GetWidth())
-    content_panel:AddChild(raid_frame)
-end
 
 function Attendance:ShowRaidLog(uid)
     print("Showing raid log", uid)

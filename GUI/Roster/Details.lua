@@ -243,8 +243,6 @@ StdUi:RegisterWidget("NastrandirRaidTools_Roster_Details", function(self, parent
     end
 
     delete:SetScript("OnClick", function()
-        local Roster = NastrandirRaidTools:GetModule("Roster")
-
         NastrandirRaidTools:GetUserPermission(widget, {
             callbackYes = function()
                 widget:Delete()

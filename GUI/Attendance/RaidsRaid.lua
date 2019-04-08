@@ -1,13 +1,14 @@
 local StdUi = LibStub("StdUi")
 
 StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidsRaid", function(self, parent, uid)
-    local width = parent:GetWidth() or 800
+    local width = (parent:GetWidth() or 800) - 20
     local height = 40
 
     local widget = StdUi:Panel(parent, width, height)
-    widget.uid = uid
     self:InitWidget(widget)
     self:SetObjSize(widget, width, height)
+
+    widget.uid = uid
 
     local title = StdUi:FontString(widget, "Raid")
     widget.title = title

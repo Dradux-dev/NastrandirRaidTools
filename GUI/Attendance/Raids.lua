@@ -8,23 +8,15 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Raids", function(self, pare
     self:InitWidget(widget)
     self:SetObjSize(widget, width, height)
 
+    widget.children = {}
+
     local title = StdUi:Label(widget, "Raids", 18, "GameFontNormal", widget:GetWidth() - 20, 24)
     widget.title = title
     StdUi:GlueTop(title, widget, 10, -20, "LEFT")
 
-    local contentPanel, contentFrame, contentChild, contentBar = StdUi:ScrollFrame(widget, widget:GetWidth() - 20, height - 75)
-    widget.content = {
-        panel = contentPanel,
-        frame = contentFrame,
-        child = contentChild,
-        bar = contentBar,
-        children = {}
-    }
-    StdUi:GlueTop(contentPanel, widget, 10, -40, "LEFT")
-
     local add_raid = StdUi:Button(widget, 80, 24, "Add raid")
     widget.add_raid = add_raid
-    StdUi:GlueAbove(add_raid, contentPanel, 0, 20, "RIGHT")
+    StdUi:GlueBottom(add_raid, title, 0, 0, "RIGHT")
 
 
     add_raid:SetScript("OnClick", function()
@@ -59,16 +51,16 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Raids", function(self, pare
             db.raids = {}
         end
 
-        table.sort(widget.content.children, function(a, b)
+        table.sort(widget.children, function(a, b)
             return db.raids[a:GetUID()].date > db.raids[b:GetUID()].date
         end)
 
-        for index, child in ipairs(widget.content.children) do
+        for index, child in ipairs(widget.children) do
             child:ClearAllPoints()
             if index == 1 then
-                StdUi:GlueTop(child, widget.content.child, 0, 0, "LEFT")
+                StdUi:GlueBelow(child, title, 0, -20, "LEFT")
             else
-                local lastChild = widget.content.children[index - 1]
+                local lastChild = widget.children[index - 1]
                 StdUi:GlueBelow(child, lastChild, 0, -2)
             end
 
@@ -78,17 +70,38 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Raids", function(self, pare
 
     function widget:AddRaid(uid, title)
         local raid
-        local pos = NastrandirRaidTools:FindInTableIf(widget.content.children, function(child)
+        local pos = NastrandirRaidTools:FindInTableIf(widget.unused, function(child)
             return (child:GetUID() == uid)
         end)
 
         if pos then
-            raid = widget.content.children[pos]
+            -- Reuse widget, that had already this UID
+            raid = widget.unused[pos]
+            table.remove(widget.unused, pos)
+            table.insert(widget.children, raid)
             raid:Hide()
         else
-            raid = StdUi:NastrandirRaidTools_Attendance_RaidsRaid(widget.content.child, uid)
+            -- Reuse widget, that is no longer required by any other raid
+            local db = NastrandirRaidTools:GetModuleDB("Attendance")
+
+            if not db.raids then
+                db.raids = {}
+            end
+
+            pos = NastrandirRaidTools:FindInTableIf(widget.unused, function(child)
+                return not db.raids[child:GetUID()]
+            end)
+
+            if pos then
+                raid = widget.unused[pos]
+                table.remove(widget.unused, pos)
+                raid:SetUID(uid)
+            else
+                -- Create new widget
+                raid = StdUi:NastrandirRaidTools_Attendance_RaidsRaid(widget, uid)
+            end
             raid:Hide()
-            table.insert(widget.content.children, raid)
+            table.insert(widget.children, raid)
         end
 
         raid:SetTitle(title)
@@ -100,6 +113,17 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Raids", function(self, pare
         if not db.raids then
             db.raids = {}
         end
+
+        if not widget.unused then
+            widget.unused = {}
+        end
+
+        -- Move all raids widgets to unused. Reuse them if required.
+        table.foreach(widget.children, function(index, child)
+            table.insert(widget.unused, child)
+            child:Hide()
+        end)
+        widget.children = {}
 
         local raid_list = {}
         for uid, raid in pairs(db.raids) do
@@ -116,6 +140,10 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Raids", function(self, pare
 
         widget:Sort()
     end
+
+    widget:SetScript("OnShow", function()
+        widget:LoadRaids()
+    end)
 
     widget:LoadRaids()
     return widget

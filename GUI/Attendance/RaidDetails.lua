@@ -1,209 +1,110 @@
-local Type, Version = "NastrandirRaidToolsAttendanceRaidDetails", 1
-local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
+local StdUi = LibStub("StdUi")
 
-local width = 800
-local height = 28
+StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidDetails", function(self, parent)
+    local width = parent:GetWidth() or 800
+    local height = 500
 
-local WIDTH = {
-    NAME = 1,
-    DATE = 1,
-    TIME = 0.49,
-    SPACER = 0.45
-}
+    local widget = StdUi:Frame(parent, width, height)
+    self:InitWidget(widget)
+    self:SetObjSize(widget, width, height)
 
-local methods = {
-    ["OnAcquire"] = function(self)
-        self:SetWidth(width)
-        self:SetHeight(height)
-    end,
-    ["Initialize"] = function(self)
-        self.bottom:ReleaseChildren()
+    local title = StdUi:Label(widget, "Details", 18, "GameFontNormal", widget:GetWidth() - 20, 24)
+    widget.title = title
+    StdUi:GlueTop(title, widget, 10, -20, "LEFT")
 
-        self.delete:SetCallback("OnClick", function()
-            self:AskDelete()
-        end)
+    local name = StdUi:SimpleEditBox(widget, widget:GetWidth() - 20, 24, "")
+    widget.name = name
+    StdUi:AddLabel(widget, name, "Name", "TOP")
+    StdUi:GlueBelow(name, title, 0, -30, "LEFT")
 
-        self.save:SetCallback("OnClick", function()
-            self:Save()
-        end)
-    end,
-    ["SetWidth"] = function(self, w)
-        self.widget:SetWidth(w)
-    end,
-    ["SetHeight"] = function(self, h)
-        self.widget:SetHeight(h)
-    end,
-    ["OnWidthSet"] = function(self, width)
-        self.name:SetWidth(WIDTH.NAME * self.widget.frame:GetWidth())
-        self.date:SetWidth(WIDTH.DATE * self.widget.frame:GetWidth())
-        self.start_time:SetWidth(WIDTH.TIME * self.widget.frame:GetWidth())
-        self.end_time:SetWidth(WIDTH.TIME * self.widget.frame:GetWidth())
-        self.spacer:SetWidth(WIDTH.SPACER * self.widget.frame:GetWidth())
-    end,
-    ["SetUID"] = function(self, uid)
-        self.uid = uid
-    end,
-    ["GetUID"] = function(self)
-        return self.uid
-    end,
-    ["AskDelete"] = function(self)
-        local question = AceGUI:Create("InlineGroup")
-        question:SetLayout("Flow")
-        question:SetWidth(self.bottom.frame:GetWidth())
-        question:SetTitle("Are you sure?")
-        self.bottom:AddChild(question)
+    local date = StdUi:SimpleEditBox(widget, widget:GetWidth() - 20, 24, "")
+    widget.date = date
+    StdUi:AddLabel(widget, date, "Date (YYYYMMDD)", "TOP")
+    StdUi:GlueBelow(date, name, 0, -30, "LEFT")
 
-        local spacer_left = AceGUI:Create("SimpleGroup")
-        spacer_left:SetWidth(question.frame:GetWidth() / 4 - 5)
-        spacer_left:SetLayout("Flow")
-        spacer_left:SetHeight(25)
-        spacer_left.frame:SetBackdropColor(0, 0, 0, 0)
-        question:AddChild(spacer_left)
+    local startTime = StdUi:SimpleEditBox(widget, (widget:GetWidth() - 30) / 2, 24, "")
+    widget.startTime = startTime
+    StdUi:AddLabel(widget, startTime, "Start Time (HHMM)", "TOP")
+    StdUi:GlueBelow(startTime, date, 0, -30, "LEFT")
 
-        local button_no = AceGUI:Create("Button")
-        button_no:SetText("No")
-        button_no:SetWidth(question.frame:GetWidth() / 4)
-        button_no:SetCallback("OnClick", function()
-            local Attendance = NastrandirRaidTools:GetModule("Attendance")
-            Attendance:ShowRaid(self.uid)
-        end)
-        question:AddChild(button_no)
+    local endTime = StdUi:SimpleEditBox(widget, (widget:GetWidth() - 30) / 2, 24, "")
+    widget.endTime = endTime
+    StdUi:AddLabel(widget, endTime, "End Time (HHMM)", "TOP")
+    StdUi:GlueBelow(endTime, date, 0, -30, "RIGHT")
 
-        local button_yes = AceGUI:Create("Button")
-        button_yes:SetText("Yes")
-        button_yes:SetWidth(question.frame:GetWidth() / 4)
-        button_yes:SetCallback("OnClick", function()
-            self:Delete()
-            local Attendance = NastrandirRaidTools:GetModule("Attendance")
-            Attendance:ShowRaidList()
-        end)
-        question:AddChild(button_yes)
+    local save = StdUi:Button(widget, 80, 24, "Save")
+    widget.save = save
+    StdUi:GlueBelow(save, endTime, 0, -20, "RIGHT")
 
-        local spacer_right = AceGUI:Create("SimpleGroup")
-        spacer_right:SetWidth(question.frame:GetWidth() / 4 - 5)
-        spacer_right:SetLayout("Flow")
-        spacer_right:SetHeight(25)
-        spacer_right.frame:SetBackdropColor(0, 0, 0, 0)
-        question:AddChild(spacer_right)
-    end,
-    ["Delete"] = function(self)
+    local delete  = StdUi:Button(widget, 80, 24, "Delete")
+    widget.delete = delete
+    StdUi:GlueLeft(delete, save, -10, 0)
+
+    function widget:SetUID(uid)
+        widget.uid = uid
+    end
+
+    function widget:GetUID()
+        return widget.uid
+    end
+
+    function widget:Delete()
         local db = NastrandirRaidTools:GetModuleDB("Attendance")
 
         if not db.raids then
             db.raids = {}
         end
 
-        db.raids[self.uid] = nil
-        db.participation[self.uid] = nil
+        db.raids[widget.uid] = nil
+        db.participation[widget.uid] = nil
 
         local Attendance = NastrandirRaidTools:GetModule("Attendance")
         Attendance:ShowRaidList()
-    end,
-    ["Save"] = function(self)
+    end
+
+    function widget:Save()
         local db = NastrandirRaidTools:GetModuleDB("Attendance")
 
         if not db.raids then
             db.raids = {}
         end
 
-        db.raids[self.uid] = {
-            name = self.name:GetText(),
-            date = tonumber(self.date:GetText()),
-            start_time = tonumber(self.start_time:GetText()),
-            end_time = tonumber(self.end_time:GetText())
+        db.raids[widget.uid] = {
+            name = widget.name:GetText(),
+            date = tonumber(widget.date:GetText()),
+            start_time = tonumber(widget.startTime:GetText()),
+            end_time = tonumber(widget.endTime:GetText())
         }
 
         local Attendance = NastrandirRaidTools:GetModule("Attendance")
         Attendance:ShowRaidList()
-    end,
-    ["Load"] = function(self)
+    end
+
+    function widget:Load()
         local db = NastrandirRaidTools:GetModuleDB("Attendance")
 
         if not db.raids then
             db.raids = {}
         end
 
-        local raid = db.raids[self.uid]
-        self.name:SetText(raid.name)
-        self.date:SetText(raid.date)
-        self.start_time:SetText(raid.start_time)
-        self.end_time:SetText(raid.end_time)
-    end
-}
-
-
-local function Constructor()
-    local widget = AceGUI:Create("SimpleGroup")
-    widget:SetHeight(height)
-    widget:SetWidth(width)
-    widget:SetLayout("Flow")
-    widget.frame:SetBackdropColor(0, 0, 0, 0)
-
-    local name = AceGUI:Create("EditBox")
-    widget.name = name
-    name:SetLabel("Name")
-    name:SetWidth(WIDTH.NAME * widget.frame:GetWidth())
-    widget:AddChild(name)
-
-    local date = AceGUI:Create("EditBox")
-    widget.date = date
-    date:SetLabel("Date (YYYYMMDD)")
-    date:SetWidth(WIDTH.DATE * widget.frame:GetWidth())
-    widget:AddChild(date)
-
-    local start_time = AceGUI:Create("EditBox")
-    widget.start_time = start_time
-    start_time:SetLabel("Start Time (HHMM)")
-    start_time:SetWidth(WIDTH.TIME * widget.frame:GetWidth())
-    widget:AddChild(start_time)
-
-    local end_time = AceGUI:Create("EditBox")
-    widget.end_time = end_time
-    end_time:SetLabel("End Time (HHMM)")
-    end_time:SetWidth(WIDTH.TIME * widget.frame:GetWidth())
-    widget:AddChild(end_time)
-
-    local spacer = AceGUI:Create("NastrandirRaidToolsSpacer")
-    widget.spacer = spacer
-    spacer:SetWidth(WIDTH.SPACER * widget.frame:GetWidth())
-    widget:AddChild(spacer)
-
-    local delete = AceGUI:Create("Button")
-    widget.delete = delete
-    delete:SetText("Delete")
-    widget:AddChild(delete)
-
-    local save = AceGUI:Create("Button")
-    widget.save = save
-    save:SetText("Save")
-    widget:AddChild(save)
-
-    local bottom = AceGUI:Create("SimpleGroup")
-    widget.bottom = bottom
-    bottom:SetWidth(widget.frame:GetWidth())
-    bottom:SetLayout("Flow")
-    bottom.frame:SetBackdropColor(0, 0, 0, 0)
-    widget:AddChild(bottom)
-
-    local widget = {
-        frame = widget.frame,
-        widget = widget,
-        name = name,
-        date = date,
-        start_time = start_time,
-        end_time = end_time,
-        delete = delete,
-        save = save,
-        spacer = spacer,
-        bottom = bottom,
-        type = Type
-    }
-
-    for method, func in pairs(methods) do
-        widget[method] = func
+        local raid = db.raids[widget.uid]
+        widget.name:SetText(raid.name)
+        widget.date:SetText(raid.date)
+        widget.startTime:SetText(raid.start_time)
+        widget.endTime:SetText(raid.end_time)
     end
 
-    return AceGUI:RegisterAsWidget(widget)
-end
+    widget.delete:SetScript("OnClick", function()
+        NastrandirRaidTools:GetUserPermission(widget, {
+            callbackYes = function()
+                widget:Delete()
+            end
+        })
+    end)
 
-AceGUI:RegisterWidgetType(Type, Constructor, Version)
+    widget.save:SetScript("OnClick", function()
+        widget:Save()
+    end)
+
+    return widget
+end)
