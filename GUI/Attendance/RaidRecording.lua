@@ -1,3 +1,19 @@
+local StdUi = LibStub("StdUi")
+
+StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(self, parent)
+    local width = parent:GetWidth() or 800
+    local height = 300
+
+    local widget = StdUi:Frame(parent, width, height)
+    self:InitWidget(widget)
+    self:SetObjSize(widget, width, height)
+
+
+
+    return widget
+end)
+
+
 local Type, Version = "NastrandirRaidToolsAttendanceRaidRecording", 1
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 
