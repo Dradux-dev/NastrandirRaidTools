@@ -148,6 +148,8 @@ StdUi:RegisterWidget("NastrandirRaidTools_Profiles", function(self, parent)
     copyFrom.OnValueChanged = function(self, value)
         NastrandirRaidTools:GetDB():CopyProfile(value)
         NastrandirRaidTools:ShowProfiles()
+        local db = NastrandirRaidTools:GetDB()
+        print(NastrandirRaidTools:GetName().. ": Copied profile " .. value .. " into " .. db:GetCurrentProfile())
     end
 
     delete.OnValueChanged = function(self, value)
