@@ -1,103 +1,68 @@
-local Type, Version = "NastrandirRaidToolsSpinBox", 1
-local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
+local StdUi = LibStub("StdUi")
 
-local WIDTH = {
-    BUTTON = 40,
-    EDIT = 50
-}
+StdUi:RegisterWidget("NastrandirRaidTools_SpinBox", function(self, parent)
+    local width = 110
+    local height = 30
 
-local HEIGHT = 30
+    local widget = StdUi:Frame(parent, width, height)
+    self:InitWidget(widget)
+    self:SetObjSize(widget, width, height)
 
-local width = WIDTH.BUTTON + WIDTH.EDIT + WIDTH.BUTTON + 20
-local height = HEIGHT
-
-
-local methods = {
-    ["OnAcquire"] = function(self)
-        self:SetWidth(width)
-        self:SetHeight(height)
-
-        self.minus:SetCallback("OnClick", function()
-            self:SetValue(self:GetValue() - self:GetStep())
-        end)
-
-        self.plus:SetCallback("OnClick", function()
-            self:SetValue(self:GetValue() + self:GetStep())
-        end)
-
-        self.value:SetCallback("OnEnterPressed", function()
-            self:SetValue(self:GetValue())
-        end)
-    end,
-    ["SetMin"] = function(self, min)
-        self.min = min
-    end,
-    ["SetMax"] = function(self, max)
-        self.max = max
-    end,
-    ["SetValue"] = function(self, value)
-        self.value:SetText(string.format("%d", math.min(self.max or 100, math.max(self.min or 1, value))))
-    end,
-    ["SetStep"] = function(self, step)
-        self.step = step
-    end,
-    ["GetMin"] = function(self)
-        return self.min or 1
-    end,
-    ["GetMax"] = function(self)
-        return self.max or 100
-    end,
-    ["GetValue"] = function(self)
-        return tonumber(self.value:GetText())
-    end,
-    ["GetStep"] = function(self)
-        return self.step or 1
-    end
-}
-
-
-local function Constructor()
-    local widget = AceGUI:Create("SimpleGroup")
-    widget:SetHeight(height)
-    widget:SetWidth(width)
-    widget:SetLayout("Flow")
-    widget.frame:SetBackdropColor(0, 0, 0, 0)
-
-    local minus = AceGUI:Create("Button")
-    widget.minus = minus
-    minus:SetWidth(WIDTH.BUTTON)
-    minus:SetHeight(HEIGHT)
-    minus:SetText("-")
-    widget:AddChild(minus)
-
-    local value = AceGUI:Create("EditBox")
+    local value = StdUi:EditBox(widget, 50, 30, "0")
     widget.value = value
-    value:SetWidth(WIDTH.EDIT)
-    value:SetHeight(HEIGHT)
-    value:SetText("0")
-    widget:AddChild(value)
+    StdUi:GlueTop(value, widget, 0, 0)
 
-    local plus = AceGUI:Create("Button")
+    local minus = StdUi:SquareButton(widget, 30, 30, "DOWN")
+    widget.minus = minus
+    StdUi:GlueLeft(minus, widget, 0, 0)
+
+    local plus = StdUi:SquareButton(widget, 30, 30, "UP")
     widget.plus = plus
-    plus:SetWidth(WIDTH.BUTTON)
-    plus:SetHeight(HEIGHT)
-    plus:SetText("+")
-    widget:AddChild(plus)
+    StdUi:GlueRight(plus, widget, 0, 0)
 
-    local widget = {
-        frame = widget.frame,
-        widget = widget,
-        minus = minus,
-        value = value,
-        plus = plus,
-        type = Type
-    }
-
-    for method, func in pairs(methods) do
-        widget[method] = func
+    function widget:SetMin(min)
+        widget.min = min
     end
 
-    return AceGUI:RegisterAsWidget(widget)
-end
+    function widget:SetMax(max)
+        widget.max = max
+    end
 
-AceGUI:RegisterWidgetType(Type, Constructor, Version)
+    function widget:SetValue(value)
+        widget.value:SetText(string.format("%d", math.min(widget.max or 100, math.max(widget.min or 1, value))))
+    end
+
+    function widget:SetStep(step)
+        widget.step = step
+    end
+
+    function widget:GetMin()
+        return widget.min or 1
+    end
+
+    function widget:GetMax()
+        return widget.max or 100
+    end
+
+    function widget:GetValue()
+        return tonumber(widget.value:GetText())
+    end
+
+    function widget:GetStep()
+        return widget.step or 1
+    end
+
+    widget.minus:SetCallback("OnClick", function()
+        widget:SetValue(widget:GetValue() - widget:GetStep())
+    end)
+
+    widget.plus:SetCallback("OnClick", function()
+        widget:SetValue(widget:GetValue() + widget:GetStep())
+    end)
+
+    widget.value:SetCallback("OnEnterPressed", function()
+        widget:SetValue(widget:GetValue())
+    end)
+
+    return widget
+end)
