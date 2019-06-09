@@ -41,6 +41,10 @@ StdUi:RegisterWidget("NastrandirRaidTools_Roster_ColumnFrame", function(self, pa
         widget.title:SetText((widget.titletext or "") .. " (" .. (widget.count or 0) .. ")")
     end
 
+    widget.createButton = function(uid, name, class)
+        return StdUi:NastrandirRaidTools_Roster_ClassButton(widget.content.child, uid, name, class)
+    end
+
     function widget:GetClassButton(member)
         if member.button then
             return member.button
@@ -58,7 +62,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Roster_ColumnFrame", function(self, pa
             button:SetClass(member.class)
             member.button = button
         else
-            local button = StdUi:NastrandirRaidTools_Roster_ClassButton(widget.content.child, member.uid, member.name, member.class)
+            local button = widget.createButton(member.uid, member.name, member.class)
             member.button = button
         end
 
@@ -193,6 +197,14 @@ StdUi:RegisterWidget("NastrandirRaidTools_Roster_ColumnFrame", function(self, pa
             widget:Sort()
         end
     end
+
+    widget:SetScript("OnShow", function()
+        print("OnShow")
+        print(widget:GetWidth(), widget.content.frame:GetWidth())
+        widget.content.frame:SetWidth(widget:GetWidth() - widget.content.bar:GetWidth() - 5)
+        widget.content.child:SetWidth(widget:GetWidth())
+        widget.content.panel:SetWidth(widget:GetWidth())
+    end)
 
     return widget
 end)
