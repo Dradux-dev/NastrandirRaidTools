@@ -7,132 +7,36 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
     local widget = StdUi:Frame(parent, width, height)
     self:InitWidget(widget)
     self:SetObjSize(widget, width, height)
+    widget.content_group = {}
 
+    -- Top Bar
+    local hours = StdUi:NastrandirRaidTools_SpinBox(widget)
+    widget.hours = hours
+    hours:SetMin(0)
+    hours:SetMax(23)
+    StdUi:GlueTop(hours, widget, -25, 5)
 
+    local minutes = StdUi:NastrandirRaidTools_SpinBox(widget)
+    widget.minutes = minutes
+    minutes:SetMin(0)
+    minutes:SetMax(59)
+    StdUi:GlueTop(minutes, widget, -25, 5)
 
-    return widget
-end)
-
-
-local Type, Version = "NastrandirRaidToolsAttendanceRaidRecording", 1
-local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
-
-local width = 800
-local height = 400
-
-local WIDTH = {
-    TOP_SPACER = 0.28,
-    COLUMN = 0.98
-}
-
-local methods = {
-    ["OnAcquire"] = function(self)
-        self:SetWidth(width)
-        self:SetHeight(height)
-    end,
-    ["Initialize"] = function(self)
-        self.content_group:ReleaseChildren()
-    end,
-    ["SetWidth"] = function(self, w)
-        self.widget:SetWidth(w)
-    end,
-    ["SetHeight"] = function(self, h)
-        self.widget:SetHeight(h)
-    end,
-    ["OnWidthSet"] = function(self, width)
-        self.widget.top_bar:SetWidth(width)
-        self.content_group:SetWidth(width)
-        self.top_spacer_left:SetWidth(WIDTH.TOP_SPACER * self.widget.top_bar.frame:GetWidth())
-        self.top_spacer_right:SetWidth(WIDTH.TOP_SPACER * self.widget.top_bar.frame:GetWidth())
-
-        local states = self:GetStates()
-        local column_count = table.getn(states) + 1
-        local column_width = (WIDTH.COLUMN / column_count) * self.content_group.frame:GetWidth()
-        for index, child in ipairs(self.content_group.children) do
-            child:SetWidth(column_width)
+    function widget:HideChildren()
+        for index, child in ipairs(widget.content_group) do
+            child:Hide()
         end
-    end,
-    ["SetUID"] = function(self, uid)
-        self.uid = uid
-    end,
-    ["GetUID"] = function(self)
-        return self.uid
-    end,
-    ["Load"] = function(self)
-        local states = self:GetStates()
-        local column_count = table.getn(states) + 1
+    end
 
-        -- Create states
-        local column_width = (WIDTH.COLUMN / column_count) * self.content_group.frame:GetWidth()
-        for index, uid in ipairs(states) do
-            local state = AceGUI:Create("NastrandirRaidToolsAttendanceRaidRecordingStateColumn")
-            state:Initialize()
-            state:SetUID(uid)
-            state:SetTitle(self:GetStateName(uid))
-            state:SetWidth(column_width)
-            state:SetSortCallback(function(a, b)
-                return self:SortCompare(a, b)
-            end)
-            state:SetPlayerAddedCallback(function(state_uid, player_uid)
-                local db = NastrandirRaidTools:GetModuleDB("Attendance")
+    function widget:SetUID(uid)
+        widget.uid = uid
+    end
 
-                if not db.participation then
-                    db.participation = {}
-                end
+    function widget:GetUID()
+        return widget.uid
+    end
 
-                if not db.participation[self.uid] then
-                    db.participation[self.uid] = {}
-                end
-
-                table.insert(db.participation[self.uid], {
-                    member = player_uid,
-                    time = self:GetTime(),
-                    state = state_uid,
-                    order = table.getn(db.participation[self.uid]) + 1
-                })
-
-                table.sort(db.participation[self.uid], function(a, b)
-                    if a.time < b.time then
-                        return true
-                    elseif a.time > b.time then
-                        return false
-                    end
-
-                    return a.order < b.order
-                end)
-            end)
-            self.content_group:AddChild(state)
-        end
-
-        -- Create roster
-        local roster = AceGUI:Create("NastrandirRaidToolsAttendanceRaidRecordingRoster")
-        self.roster = roster
-        roster:Initialize()
-        roster:SetWidth(column_width)
-        roster:SetSortCallback(function(a, b)
-            return self:SortCompare(a, b)
-        end)
-        self.content_group:AddChild(roster)
-
-        -- Set Data to all columns
-        for index, child in ipairs(self.content_group.children) do
-            child:SetColumnContainer(self.content_group)
-            child:SetRoster(roster)
-        end
-
-        -- Fill Roster
-        local players = self:GetRoster()
-        for index, uid in ipairs(players) do
-            roster:AddPlayer(uid)
-        end
-
-        -- Set time to start time
-        self:SetTime(self:GetRaidStartTime())
-
-        -- Parse already done log
-        self:ParseLog()
-    end,
-    ["GetStates"] = function(self)
+    function widget:GetStates()
         local states = {}
         local db = NastrandirRaidTools:GetModuleDB("Attendance")
 
@@ -153,8 +57,9 @@ local methods = {
         end)
 
         return states
-    end,
-    ["GetStateName"] = function(self, uid)
+    end
+
+    function widget:GetStateName(uid)
         local db = NastrandirRaidTools:GetModuleDB("Attendance")
 
         if not db.states then
@@ -162,24 +67,9 @@ local methods = {
         end
 
         return db.states[uid].Name
-    end,
-    ["GetRoster"] = function(self)
-        local db = NastrandirRaidTools:GetModuleDB("Roster")
+    end
 
-        if not db.characters then
-            db.characters = {}
-        end
-
-        local players = {}
-        for uid, player in pairs(db.characters) do
-            if player.raidmember and not player.main then
-                table.insert(players, uid)
-            end
-        end
-
-        return players
-    end,
-    ["SortCompare"] = function(self, a, b)
+    function widget:SortCompare(a, b)
         local Roster = NastrandirRaidTools:GetModule("Roster")
 
         local role_values = {
@@ -209,136 +99,186 @@ local methods = {
         local name_a = Roster:GetCharacterName(a)
         local name_b = Roster:GetCharacterName(b)
         return name_a < name_b
-    end,
-    ["GetRaidStartTime"] = function(self)
+    end
+
+    function widget:GetColumn()
+        -- find unused column
+        for index, column in ipairs(widget.content_group) do
+            if not column:IsShown() then
+                return column
+            end
+        end
+
+        -- create new column: no unused column available
+        local column = StdUi:NastrandirRaidTools_Attendance_RaidRecordingStateColumn(widget, 200, 500)
+        table.insert(widget.content_group, column)
+        return column
+    end
+
+    function widget:GetTime()
+        local time = {
+            hours = widget.hours:GetValue(),
+            minutes = widget.minutes:GetValue()
+        }
+
+        return NastrandirRaidTools:PackTime(time)
+    end
+
+    function widget:GetRaidStartTime()
         local db = NastrandirRaidTools:GetModuleDB("Attendance")
 
         if not db.raids then
             db.raids = {}
         end
 
-        if not db.raids[self.uid] then
+        if not db.raids[widget.uid] then
             return 1900
         end
 
-        return db.raids[self.uid].start_time
-    end,
-    ["GetTime"] = function(self)
-        local time = {
-            hours = self.hours:GetValue(),
-            minutes = self.minutes:GetValue()
-        }
+        return db.raids[widget.uid].start_time
+    end
 
-        return NastrandirRaidTools:PackTime(time)
-    end,
-    ["SetTime"] = function(self, time)
-        local time = NastrandirRaidTools:SplitTime(time)
-        self.hours:SetValue(time.hours)
-        self.minutes:SetValue(time.minutes)
-    end,
-    ["ParseLog"] = function(self)
-        local db = NastrandirRaidTools:GetModuleDB("Attendance")
+    function widget:GetRoster()
+        local db = NastrandirRaidTools:GetModuleDB("Roster")
 
-        if not db.participation then
-            db.participation = {}
+        if not db.characters then
+            db.characters = {}
         end
 
-        if not db.participation[self.uid] then
-            db.participation[self.uid] = {}
-        end
-
-        local participation = db.participation[self.uid]
-
-        for index, entry in ipairs(participation) do
-            self:SetTime(entry.time)
-            self:RemovePlayerByMain(entry.member)
-
-            local column = self:GetStateColumn(entry.state)
-            if column then
-                column:AddPlayerSilently(entry.member)
-            else
-                if self.roster then
-                    local Roster = NastrandirRaidTools:GetModule("Roster")
-                    self.roster:AddPlayer(Roster:GetMainUID(entry.member))
-                end
+        local players = {}
+        for uid, player in pairs(db.characters) do
+            if player.raidmember and not player.main then
+                table.insert(players, uid)
             end
         end
-    end,
-    ["RemovePlayerByMain"] = function(self, player_uid)
-        for index, child in ipairs(self.content_group.children) do
-            child:RemovePlayerByMain(player_uid)
-        end
-    end,
-    ["GetStateColumn"] = function(self, state_uid)
-        for index, child in ipairs(self.content_group.children) do
+
+        return players
+    end
+
+    function widget:SetTime(time)
+        local time = NastrandirRaidTools:SplitTime(time)
+        widget.hours:SetValue(time.hours)
+        widget.minutes:SetValue(time.minutes)
+    end
+
+    function widget:GetStateColumn(state_uid)
+        for index, child in ipairs(widget.content_group.children) do
             local column_uid = child:GetUID()
             if column_uid == state_uid then
                 return child
             end
         end
     end
-}
 
-local function Constructor()
-    local widget = AceGUI:Create("SimpleGroup")
-    widget:SetHeight(height)
-    widget:SetWidth(width)
-    widget:SetLayout("Flow")
-    widget.frame:SetBackdropColor(0, 0, 0, 0)
+    function widget:ParseLog()
+        local db = NastrandirRaidTools:GetModuleDB("Attendance")
 
-    local top_bar = AceGUI:Create("SimpleGroup")
-    widget.top_bar = top_bar
-    top_bar:SetWidth(width)
-    top_bar:SetLayout("Flow")
-    widget:AddChild(top_bar)
+        if not db.participation then
+            db.participation = {}
+        end
 
-    local spacer_left = AceGUI:Create("NastrandirRaidToolsSpacer")
-    top_bar.spacer_left = spacer_left
-    spacer_left:SetWidth(WIDTH.TOP_SPACER * top_bar.frame:GetWidth())
-    spacer_left:SetBackdropColor(0, 0, 0, 0)
-    top_bar:AddChild(spacer_left)
+        if not db.participation[widget.uid] then
+            db.participation[widget.uid] = {}
+        end
 
-    local hours = AceGUI:Create("NastrandirRaidToolsSpinBox")
-    top_bar.hours = hours
-    hours:SetMin(0)
-    hours:SetMax(23)
-    top_bar:AddChild(hours)
+        local participation = db.participation[widget.uid]
 
-    local minutes = AceGUI:Create("NastrandirRaidToolsSpinBox")
-    top_bar.minutes = minutes
-    minutes:SetMin(0)
-    minutes:SetMax(59)
-    top_bar:AddChild(minutes)
+        for index, entry in ipairs(participation) do
+            widget:SetTime(entry.time)
+            widget:RemovePlayerByMain(entry.member)
 
-    local spacer_right = AceGUI:Create("NastrandirRaidToolsSpacer")
-    top_bar.spacer_right = spacer_right
-    spacer_right:SetWidth(WIDTH.TOP_SPACER * top_bar.frame:GetWidth())
-    spacer_right:SetBackdropColor(0, 0, 0, 0)
-    top_bar:AddChild(spacer_right)
-
-    local content_group = AceGUI:Create("SimpleGroup")
-    widget.content_group = content_group
-    content_group:SetWidth(width)
-    content_group:SetLayout("Flow")
-    content_group.frame:SetBackdropColor(0, 0, 0, 0)
-    widget:AddChild(content_group)
-
-    local widget = {
-        frame = widget.frame,
-        widget = widget,
-        top_spacer_left = spacer_left,
-        hours = hours,
-        minutes = minutes,
-        top_spacer_right = spacer_right,
-        content_group = content_group,
-        type = Type
-    }
-
-    for method, func in pairs(methods) do
-        widget[method] = func
+            local column = widget:GetStateColumn(entry.state)
+            if column then
+                column:AddPlayerSilently(entry.member)
+            else
+                if widget.roster then
+                    local Roster = NastrandirRaidTools:GetModule("Roster")
+                    widget.roster:AddPlayer(Roster:GetMainUID(entry.member))
+                end
+            end
+        end
     end
 
-    return AceGUI:RegisterAsWidget(widget)
-end
+    function widget:Load()
+        local states = widget:GetStates()
+        local column_count = table.getn(states) + 1
 
-AceGUI:RegisterWidgetType(Type, Constructor, Version)
+        -- Create states
+        local column_width = (WIDTH.COLUMN / column_count) * widget:GetWidth()
+        for index, uid in ipairs(states) do
+            local state = AceGUI:Create("NastrandirRaidToolsAttendanceRaidRecordingStateColumn")
+            state:SetUID(uid)
+            state:SetName(widget:GetStateName(uid))
+            state:SetWidth(column_width)
+            state:SetSortCallback(function(a, b)
+                return widget:SortCompare(a, b)
+            end)
+            state:SetPlayerAddedCallback(function(state_uid, player_uid)
+                local db = NastrandirRaidTools:GetModuleDB("Attendance")
+
+                if not db.participation then
+                    db.participation = {}
+                end
+
+                if not db.participation[widget.uid] then
+                    db.participation[widget.uid] = {}
+                end
+
+                table.insert(db.participation[widget.uid], {
+                member = player_uid,
+                time = widget:GetTime(),
+                state = state_uid,
+                order = table.getn(db.participation[widget.uid]) + 1
+                })
+
+                table.sort(db.participation[widget.uid], function(a, b)
+                    if a.time < b.time then
+                        return true
+                    elseif a.time > b.time then
+                        return false
+                    end
+
+                    return a.order < b.order
+                end)
+            end)
+            widget.content_group:AddChild(state)
+        end
+
+        -- Create roster
+        local roster = AceGUI:Create("NastrandirRaidToolsAttendanceRaidRecordingRoster")
+        widget.roster = roster
+        roster:Initialize()
+        roster:SetWidth(column_width)
+        roster:SetSortCallback(function(a, b)
+            return widget:SortCompare(a, b)
+        end)
+        widget.content_group:AddChild(roster)
+
+        -- Set Data to all columns
+        for index, child in ipairs(widget.content_group.children) do
+            child:SetColumnContainer(widget.content_group)
+            child:SetRoster(roster)
+        end
+
+        -- Fill Roster
+        local players = widget:GetRoster()
+        for index, uid in ipairs(players) do
+            roster:AddPlayer(uid)
+        end
+
+        -- Set time to start time
+        widget:SetTime(widget:GetRaidStartTime())
+
+        -- Parse already done log
+        widget:ParseLog()
+    end
+
+
+    function widget:RemovePlayerByMain(player_uid)
+        for index, child in ipairs(widget.content_group.children) do
+            child:RemovePlayerByMain(player_uid)
+        end
+    end
+
+    return widget
+end)

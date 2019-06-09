@@ -6,10 +6,10 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingStateColumn", 
     self:SetObjSize(widget, width, height)
     widget:HideAddButton()
 
-
     function widget:SetUID(uid)
         widget.uid = uid
     end
+
     function widget:GetUID()
         return widget.uid
     end
@@ -74,7 +74,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingStateColumn", 
             widget.scroll_frame:AddChild(button)
         end
 
-        widget.title:SetText(string.format("%s (%d)", widget.basetitle, table.getn(widget.members)))
+        widget.title:SetText(string.format("%s (%d)", widget.titletext, table.getn(widget.members)))
     end
 
     function widget:SetSortCallback(func)

@@ -212,14 +212,19 @@ function Attendance:ShowRaidLog(uid)
 end
 
 function Attendance:ShowRaidRecording(uid)
+    local content = NastrandirRaidTools:GetContent()
+
+    if not self.record then
+        self.record = StdUi:NastrandirRaidTools_Attendance_RaidRecording(content.child)
+        table.insert(content.children, self.record)
+        self.record:Hide()
+    end
+
     NastrandirRaidTools:ReleaseContent()
-    local content_panel = NastrandirRaidTools:GetContentPanel()
-    local raid_frame = AceGUI:Create("NastrandirRaidToolsAttendanceRaidRecording")
-    raid_frame:Initialize()
-    raid_frame:SetUID(uid)
-    raid_frame:Load()
-    raid_frame:SetWidth(content_panel.frame:GetWidth())
-    content_panel:AddChild(raid_frame)
+    StdUi:GlueTop(self.record, content.child, 0, 0, "LEFT")
+    self.record:Initialize()
+    self.record:SetUID(uid)
+    self.record:Load()
 end
 
 function Attendance:GetRaidList(start_date, end_date)
