@@ -14,11 +14,11 @@ StdUi:RegisterWidget("NastrandirRaidTools_SpinBox", function(self, parent)
 
     local minus = StdUi:SquareButton(widget, 30, 30, "DOWN")
     widget.minus = minus
-    StdUi:GlueLeft(minus, widget, 0, 0)
+    StdUi:GlueLeft(minus, value, 0, 0)
 
     local plus = StdUi:SquareButton(widget, 30, 30, "UP")
     widget.plus = plus
-    StdUi:GlueRight(plus, widget, 0, 0)
+    StdUi:GlueRight(plus, value, 0, 0)
 
     function widget:SetMin(min)
         widget.min = min
@@ -52,15 +52,15 @@ StdUi:RegisterWidget("NastrandirRaidTools_SpinBox", function(self, parent)
         return widget.step or 1
     end
 
-    widget.minus:SetCallback("OnClick", function()
+    widget.minus:SetScript("OnClick", function()
         widget:SetValue(widget:GetValue() - widget:GetStep())
     end)
 
-    widget.plus:SetCallback("OnClick", function()
+    widget.plus:SetScript("OnClick", function()
         widget:SetValue(widget:GetValue() + widget:GetStep())
     end)
 
-    widget.value:SetCallback("OnEnterPressed", function()
+    widget.value:SetScript("OnEnterPressed", function()
         widget:SetValue(widget:GetValue())
     end)
 

@@ -16,7 +16,12 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingStateColumn", 
 
     function widget:AddPlayer(player)
         if not widget:FindPlayer(player) then
-            table.insert(widget.members, player)
+            local Roster = NastrandirRaidTools:GetModule("Roster")
+            table.insert(widget.members, {
+                uid = player,
+                name = Roster:GetCharacterName(player),
+                class = Roster:GetCharacterClass(player)
+            })
             widget:OnPlayerAdded(player)
             widget:CreatePlayerButtons()
         end
@@ -24,7 +29,12 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingStateColumn", 
 
     function widget:AddPlayerSilently(player)
         if not widget:FindPlayer(player) then
-            table.insert(widget.members, player)
+            local Roster = NastrandirRaidTools:GetModule("Roster")
+            table.insert(widget.members, {
+                uid = player,
+                name = Roster:GetCharacterName(player),
+                class = Roster:GetCharacterClass(player)
+            })
             widget:CreatePlayerButtons()
         end
     end
@@ -50,31 +60,55 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingStateColumn", 
         end
     end
 
+    widget.createButton = function (uid, name, class)
+        return StdUi:NastrandirRaidTools_Attendance_RaidRecordingPlayer(widget.content.child, uid, name, class)
+    end
+
+    function widget:ReleaseButtons()
+        for index, member in ipairs(widget.members) do
+            if member.button then
+                table.insert(widget.unusedButtons, member.button)
+                member.button:Hide()
+                member.button:ClearAllPoints()
+                member.button = nil
+            end
+        end
+    end
+
     function widget:CreatePlayerButtons()
+        print("State Column")
         if widget.buttons_locked then
             return
         end
-
-        widget.scroll_frame:ReleaseChildren()
 
         if widget.sortCallback then
             table.sort(widget.members, widget.sortCallback)
         end
 
+        widget:ReleaseButtons()
         local Roster = NastrandirRaidTools:GetModule("Roster")
-        for index, uid in ipairs(widget.members) do
-            local button = AceGUI:Create("NastrandirRaidToolsAttendanceRaidRecordingPlayer")
-            button:Initialize()
-            button:SetName(Roster:GetCharacterName(uid))
-            button:SetClass(Roster:GetCharacterClass(uid))
-            button:SetKey(uid)
+        local lastButton
+        for index, member in ipairs(widget.members) do
+            print("UID", member.uid)
+            print("Name", member.name)
+            print("Class", member.class)
+            local button = widget:GetClassButton(member)
             button:SetColumnContainer(widget.column_container)
             button:SetRoster(widget.roster)
             button:SetColumn(widget)
-            widget.scroll_frame:AddChild(button)
+            member.button = button
+            button:Show()
+
+            if lastButton then
+                StdUi:GlueBelow(button, lastButton, 0, 0)
+            else
+                StdUi:GlueTop(button, button:GetParent(), 0, 0, "LEFT")
+            end
+
+            lastButton = button
         end
 
-        widget.title:SetText(string.format("%s (%d)", widget.titletext, table.getn(widget.members)))
+        widget:SetCount(#widget.members)
     end
 
     function widget:SetSortCallback(func)
@@ -93,7 +127,15 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingStateColumn", 
         local pos = widget:FindPlayer(uid)
 
         if pos then
+            local member = widget.members[pos]
+            if member.button then
+                table.insert(widget.unusedButtons, member.button)
+                member.button:ClearAllPoints()
+                member.button:Hide()
+                member.button = nil
+            end
             table.remove(widget.members, pos)
+
             widget:CreatePlayerButtons()
         end
     end
@@ -110,15 +152,23 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingStateColumn", 
         widget.column_container = container
     end
 
-    function widget:SetRoster(widget, roster)
+    function widget:SetRoster(roster)
         widget.roster = roster
     end
 
-    function widget:RemovePlayerByMain(widget, player_uid)
+    function widget:RemovePlayerByMain(player_uid)
         local pos = widget:FindPlayerByMain(widget:GetMainUID(player_uid))
 
         if pos then
+            local member = widget.members[pos]
+            if member.button then
+                table.insert(widget.unusedButtons, member.button)
+                member.button:ClearAllPoints()
+                member.button:Hide()
+                member.button = nil
+            end
             table.remove(widget.members, pos)
+
             widget:CreatePlayerButtons()
         end
     end
@@ -129,8 +179,12 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingStateColumn", 
     end
 
     function widget:FindPlayerByMain(main_uid)
-        for index, uid in ipairs(widget.members) do
-            local compare = widget:GetMainUID(uid)
+        if not widget.members then
+            widget.members = {}
+        end
+
+        for index, member in ipairs(widget.members) do
+            local compare = widget:GetMainUID(member.uid)
             if main_uid == compare then
                 return index
             end

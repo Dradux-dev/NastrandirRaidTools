@@ -1,6 +1,6 @@
 local StdUi = LibStub("StdUi")
 
-    StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingRoster", function(self, parent, width, height)
+StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingRoster", function(self, parent, width, height)
     local widget = StdUi:NastrandirRaidTools_Roster_ColumnFrame(parent, width, height)
     self:InitWidget(widget)
     self:SetObjSize(widget, width, height)
@@ -8,7 +8,12 @@ local StdUi = LibStub("StdUi")
 
     function widget:AddPlayer(player)
         if not widget:FindPlayer(player) then
-            table.insert(widget.members, player)
+            local Roster = NastrandirRaidTools:GetModule("Roster")
+            table.insert(widget.members, {
+                uid = player,
+                name = Roster:GetCharacterName(player),
+                class = Roster:GetCharacterClass(player)
+            })
             widget:CreatePlayerButtons()
         end
     end
@@ -24,31 +29,51 @@ local StdUi = LibStub("StdUi")
         end
     end
 
+    widget.createButton = function (uid, name, class)
+        return StdUi:NastrandirRaidTools_Attendance_RaidRecordingPlayer(widget.content.child, uid, name, class)
+    end
+
+    function widget:ReleaseButtons()
+        for index, member in ipairs(widget.members) do
+            if member.button then
+                table.insert(widget.unusedButtons, member.button)
+                member.button:Hide()
+                member.button:ClearAllPoints()
+                member.button = nil
+            end
+        end
+    end
+
     function widget:CreatePlayerButtons()
         if widget.buttons_locked then
             return
         end
 
-        widget.scroll_frame:ReleaseChildren()
-
         if widget.sortCallback then
             table.sort(widget.members, widget.sortCallback)
         end
 
+        widget:ReleaseButtons()
         local Roster = NastrandirRaidTools:GetModule("Roster")
-        for index, uid in ipairs(widget.members) do
-            local button = AceGUI:Create("NastrandirRaidToolsAttendanceRaidRecordingPlayer")
-            button:Initialize()
-            button:SetName(Roster:GetCharacterName(uid))
-            button:SetClass(Roster:GetCharacterClass(uid))
-            button:SetKey(uid)
+        local lastButton
+        for index, member in ipairs(widget.members) do
+            local button = widget:GetClassButton(member)
             button:SetColumnContainer(widget.column_container)
             button:SetRoster(widget.roster)
             button:SetColumn(widget)
-            widget.scroll_frame:AddChild(button)
+            member.button = button
+            button:Show()
+
+            if lastButton then
+                StdUi:GlueBelow(button, lastButton, 0, 0)
+            else
+                StdUi:GlueTop(button, button:GetParent(), 0, 0, "LEFT")
+            end
+
+            lastButton = button
         end
 
-        widget.title:SetText(string.format("%s (%d)", "Roster", table.getn(widget.members)))
+        widget:SetCount(#widget.members)
     end
 
     function widget:SetSortCallback(func)
@@ -59,18 +84,30 @@ local StdUi = LibStub("StdUi")
         -- Ignore
     end
 
-    function widget(uid)
+    function widget:RemovePlayer(uid)
         local pos = widget:FindPlayer(uid)
 
         if pos then
+            local member = widget.members[pos]
+            if member.button then
+                table.insert(widget.unusedButtons, member.button)
+                member.button:ClearAllPoints()
+                member.button:Hide()
+                member.button = nil
+            end
             table.remove(widget.members, pos)
+
             widget:CreatePlayerButtons()
         end
     end
 
     function widget:FindPlayer(uid)
-        for index, comp_uid in ipairs(widget.members) do
-            if uid == comp_uid then
+        if not widget.members then
+            widget.members = {}
+        end
+
+        for index, member in ipairs(widget.members) do
+            if uid == member.uid then
                 return index
             end
         end

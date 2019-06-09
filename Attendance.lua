@@ -222,9 +222,9 @@ function Attendance:ShowRaidRecording(uid)
 
     NastrandirRaidTools:ReleaseContent()
     StdUi:GlueTop(self.record, content.child, 0, 0, "LEFT")
-    self.record:Initialize()
     self.record:SetUID(uid)
     self.record:Load()
+    self.record:Show()
 end
 
 function Attendance:GetRaidList(start_date, end_date)

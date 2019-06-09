@@ -14,13 +14,13 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
     widget.hours = hours
     hours:SetMin(0)
     hours:SetMax(23)
-    StdUi:GlueTop(hours, widget, -25, 5)
+    StdUi:GlueTop(hours, widget, -57, -15)
 
     local minutes = StdUi:NastrandirRaidTools_SpinBox(widget)
     widget.minutes = minutes
     minutes:SetMin(0)
     minutes:SetMax(59)
-    StdUi:GlueTop(minutes, widget, -25, 5)
+    StdUi:GlueTop(minutes, widget, 57, -15)
 
     function widget:HideChildren()
         for index, child in ipairs(widget.content_group) do
@@ -110,7 +110,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
         end
 
         -- create new column: no unused column available
-        local column = StdUi:NastrandirRaidTools_Attendance_RaidRecordingStateColumn(widget, 200, 500)
+        local column = StdUi:NastrandirRaidTools_Attendance_RaidRecordingStateColumn(widget, 200, 450)
         table.insert(widget.content_group, column)
         return column
     end
@@ -162,7 +162,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
     end
 
     function widget:GetStateColumn(state_uid)
-        for index, child in ipairs(widget.content_group.children) do
+        for index, child in ipairs(widget.content_group) do
             local column_uid = child:GetUID()
             if column_uid == state_uid then
                 return child
@@ -204,9 +204,10 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
         local column_count = table.getn(states) + 1
 
         -- Create states
-        local column_width = (WIDTH.COLUMN / column_count) * widget:GetWidth()
+        local lastColumn
+        local column_width = math.floor((widget:GetWidth() - 10) / column_count)
         for index, uid in ipairs(states) do
-            local state = widget:GetStateColumn(uid)
+            local state = widget:GetColumn()
             state:SetUID(uid)
             state:SetName(widget:GetStateName(uid))
             state:SetWidth(column_width)
@@ -241,21 +242,35 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
                     return a.order < b.order
                 end)
             end)
-            widget.content_group:AddChild(state)
+
+            if lastColumn then
+                StdUi:GlueRight(state, lastColumn, 0, 0)
+            else
+                StdUi:GlueTop(state, state:GetParent(), 5, -70, "LEFT")
+            end
+
+            lastColumn = state
         end
 
         -- Create roster
-        local roster = StdUi:NastrandirRaidTools_Attendance_RaidRecordingRoster(widget, column_width, 500)
-        widget.roster = roster
-        roster:Initialize()
+        local roster
+        if not widget.roster then
+            roster = StdUi:NastrandirRaidTools_Attendance_RaidRecordingRoster(widget, column_width, 450)
+            widget.roster = roster
+        end
         roster:SetWidth(column_width)
         roster:SetSortCallback(function(a, b)
             return widget:SortCompare(a, b)
         end)
-        widget.content_group:AddChild(roster)
+
+        if lastColumn then
+            StdUi:GlueRight(roster, lastColumn, 0, 0)
+        else
+            StdUi:GlueTop(roster, roster:GetParent(), 5, -70, "LEFT")
+        end
 
         -- Set Data to all columns
-        for index, child in ipairs(widget.content_group.children) do
+        for index, child in ipairs(widget.content_group) do
             child:SetColumnContainer(widget.content_group)
             child:SetRoster(roster)
         end
@@ -275,9 +290,11 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
 
 
     function widget:RemovePlayerByMain(player_uid)
-        for index, child in ipairs(widget.content_group.children) do
+        for index, child in ipairs(widget.content_group) do
             child:RemovePlayerByMain(player_uid)
         end
+
+        widget.roster:RemovePlayerByMain(player_uid)
     end
 
     return widget
