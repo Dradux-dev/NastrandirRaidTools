@@ -1,6 +1,6 @@
 local StdUi = LibStub("StdUi")
 
-StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingRoster", function(self, parent, width, height)
+    StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingRoster", function(self, parent, width, height)
     local widget = StdUi:NastrandirRaidTools_Roster_ColumnFrame(parent, width, height)
     self:InitWidget(widget)
     self:SetObjSize(widget, width, height)

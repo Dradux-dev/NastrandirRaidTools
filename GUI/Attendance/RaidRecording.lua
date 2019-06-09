@@ -206,7 +206,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
         -- Create states
         local column_width = (WIDTH.COLUMN / column_count) * widget:GetWidth()
         for index, uid in ipairs(states) do
-            local state = AceGUI:Create("NastrandirRaidToolsAttendanceRaidRecordingStateColumn")
+            local state = widget:GetStateColumn(uid)
             state:SetUID(uid)
             state:SetName(widget:GetStateName(uid))
             state:SetWidth(column_width)
@@ -245,7 +245,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
         end
 
         -- Create roster
-        local roster = AceGUI:Create("NastrandirRaidToolsAttendanceRaidRecordingRoster")
+        local roster = StdUi:NastrandirRaidTools_Attendance_RaidRecordingRoster(widget, column_width, 500)
         widget.roster = roster
         roster:Initialize()
         roster:SetWidth(column_width)
