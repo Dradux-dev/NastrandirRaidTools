@@ -131,6 +131,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingRoster", funct
     end
 
     function widget:GetMainUID(player_uid)
+        local Roster = NastrandirRaidTools:GetModule("Roster")
         return Roster:GetMainUID(player_uid)
     end
 
@@ -143,5 +144,6 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingRoster", funct
         end
     end
 
+    widget:SetName("Roster")
     return widget
 end)
