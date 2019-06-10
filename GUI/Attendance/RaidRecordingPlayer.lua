@@ -218,6 +218,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
 
     button:SetScript("OnClick", function(button, mouseButton)
         if mouseButton == "RightButton" then
+            button:CreateMenu()
             L_EasyMenu(button.menu, NastrandirRaidTools:GetOptionsDropDown(), "cursor", 0, -15, "MENU")
         end
     end)
