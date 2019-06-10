@@ -36,7 +36,6 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingRoster", funct
     function widget:ReleaseButtons()
         for index, member in ipairs(widget.members) do
             if member.button then
-                ViragDevTool_AddData(member, "Releasing button of " .. member.name)
                 table.insert(widget.unusedButtons, member.button)
                 member.button:Hide()
                 member.button:ClearAllPoints()
@@ -58,7 +57,6 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingRoster", funct
         local Roster = NastrandirRaidTools:GetModule("Roster")
         local lastButton
         for index, member in ipairs(widget.members) do
-            ViragDevTool_AddData(member, "Creating button for " .. member.name)
             local button = widget:GetClassButton(member)
             button:SetColumnContainer(widget.column_container)
             button:SetRoster(widget.roster)
@@ -88,19 +86,16 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingRoster", funct
 
     function widget:RemovePlayer(uid)
         local pos = widget:FindPlayer(uid)
-        ViragDevTool_AddData(pos, "Roster:FindPlayer(" .. uid .. ")")
 
         if pos then
             local member = widget.members[pos]
             if member.button then
-                ViragDevTool_AddData(member, "Unusing button of " .. member.name)
                 table.insert(widget.unusedButtons, member.button)
                 member.button:ClearAllPoints()
                 member.button:Hide()
                 member.button = nil
             end
 
-            ViragDevTool_AddData("Member removed")
             table.remove(widget.members, pos)
             widget:CreatePlayerButtons()
         end
@@ -130,19 +125,18 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingRoster", funct
         local pos = widget:FindPlayerByMain(widget:GetMainUID(player_uid))
 
         if pos then
-            table.remove(widget.members, pos)
-            widget:CreatePlayerButtons()
+            local member = widget.members[pos]
+            widget:RemovePlayer(member.uid)
         end
     end
 
     function widget:GetMainUID(player_uid)
-        local Roster = NastrandirRaidTools:GetModule("Roster")
         return Roster:GetMainUID(player_uid)
     end
 
     function widget:FindPlayerByMain(main_uid)
-        for index, uid in ipairs(widget.members) do
-            local compare = widget:GetMainUID(uid)
+        for index, member in ipairs(widget.members) do
+            local compare = widget:GetMainUID(member.uid)
             if main_uid == compare then
                 return index
             end
