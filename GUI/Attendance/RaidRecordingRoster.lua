@@ -36,6 +36,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingRoster", funct
     function widget:ReleaseButtons()
         for index, member in ipairs(widget.members) do
             if member.button then
+                ViragDevTool_AddData(member, "Releasing button of " .. member.name)
                 table.insert(widget.unusedButtons, member.button)
                 member.button:Hide()
                 member.button:ClearAllPoints()
@@ -57,6 +58,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingRoster", funct
         local Roster = NastrandirRaidTools:GetModule("Roster")
         local lastButton
         for index, member in ipairs(widget.members) do
+            ViragDevTool_AddData(member, "Creating button for " .. member.name)
             local button = widget:GetClassButton(member)
             button:SetColumnContainer(widget.column_container)
             button:SetRoster(widget.roster)
@@ -67,7 +69,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingRoster", funct
             if lastButton then
                 StdUi:GlueBelow(button, lastButton, 0, 0)
             else
-                StdUi:GlueTop(button, button:GetParent(), 0, 0, "LEFT")
+                StdUi:GlueTop(button, widget.content.child, 0, 0, "LEFT")
             end
 
             lastButton = button
@@ -86,17 +88,20 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingRoster", funct
 
     function widget:RemovePlayer(uid)
         local pos = widget:FindPlayer(uid)
+        ViragDevTool_AddData(pos, "Roster:FindPlayer(" .. uid .. ")")
 
         if pos then
             local member = widget.members[pos]
             if member.button then
+                ViragDevTool_AddData(member, "Unusing button of " .. member.name)
                 table.insert(widget.unusedButtons, member.button)
                 member.button:ClearAllPoints()
                 member.button:Hide()
                 member.button = nil
             end
-            table.remove(widget.members, pos)
 
+            ViragDevTool_AddData("Member removed")
+            table.remove(widget.members, pos)
             widget:CreatePlayerButtons()
         end
     end

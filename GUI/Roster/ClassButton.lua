@@ -46,7 +46,6 @@ StdUi:RegisterWidget("NastrandirRaidTools_Roster_ClassButton", function(self, pa
 
     function button:SetClass(class)
         button.class = class
-        print("Class", class)
         local classColor = NastrandirRaidTools.class_colors[class]
         button.title:SetTextColor(unpack(classColor.foreground))
         button.background:SetVertexColor(unpack(classColor.background))

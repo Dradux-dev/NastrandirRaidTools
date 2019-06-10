@@ -274,6 +274,8 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
             child:SetColumnContainer(widget.content_group)
             child:SetRoster(roster)
         end
+        roster:SetColumnContainer(widget.content_group)
+        roster:SetRoster(roster)
 
         -- Fill Roster
         local players = widget:GetRoster()

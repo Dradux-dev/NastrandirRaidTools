@@ -30,34 +30,36 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
     end
 
     function button:Drag()
-        local uiscale, scale = UIParent:GetScale(), button.frame:GetEffectiveScale()
-        local x, w = button.frame:GetLeft(), button.frame:GetWidth()
+        local uiscale, scale = UIParent:GetScale(), button:GetEffectiveScale()
+        local x, w = button:GetLeft(), button:GetWidth()
         local _, y = GetCursorPosition()
 
         if button.column then
-            for index, child in ipairs(button.column.scroll_frame.children) do
-                child.frame:ClearAllPoints()
+            for index, child in ipairs(button.column.members) do
+                if child.button then
+                    child.button:ClearAllPoints()
+                end
             end
         end
 
-        button.frame:SetMovable(true);
-        button.frame:StartMoving()
-        button.frame:ClearAllPoints()
-        button.frame.temp = {
-            parent = button.frame:GetParent(),
-            strata = button.frame:GetFrameStrata(),
-            level = button.frame:GetFrameLevel()
+        button:SetMovable(true);
+        button:StartMoving()
+        button:ClearAllPoints()
+        button.temp = {
+            parent = button:GetParent(),
+            strata = button:GetFrameStrata(),
+            level = button:GetFrameLevel()
         }
-        button.frame:SetParent(UIParent)
-        button.frame:SetFrameStrata("TOOLTIP")
-        button.frame:SetFrameLevel(120)
-        button.frame:SetPoint("Center", UIParent, "BOTTOMLEFT", (x + w / 2) * scale / uiscale, y / uiscale)
+        button:SetParent(UIParent)
+        button:SetFrameStrata("TOOLTIP")
+        button:SetFrameLevel(120)
+        button:SetPoint("Center", UIParent, "BOTTOMLEFT", (x + w / 2) * scale / uiscale, y / uiscale)
 
-        button.frame:SetScript("OnUpdate", function()
+        button:SetScript("OnUpdate", function()
             local child = button:GetDropTarget()
 
             if child and child ~= button.roster then
-                for index, wrong_child in ipairs(button.column_container.children) do
+                for index, wrong_child in ipairs(button.column_container) do
                     if child ~= wrong_child then
                         wrong_child:SetDropTarget(false)
                     end
@@ -69,10 +71,10 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
     end
 
     function button:Drop()
-        button.frame:StopMovingOrSizing()
-        button.frame:SetScript("OnUpdate", nil)
+        button:StopMovingOrSizing()
+        button:SetScript("OnUpdate", nil)
 
-        for index, column in ipairs(button.column_container.children) do
+        for index, column in ipairs(button.column_container) do
             column:SetDropTarget(false)
         end
 
@@ -83,12 +85,16 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
         else
             button.column:CreatePlayerButtons()
         end
+
+        button:SetParent(button.temp.parent)
+        button:SetFrameStrata(button.temp.strata)
+        button:SetFrameLevel(button.temp.level)
     end
 
     function button:GetDropTarget()
         if button.column_container and button.roster then
-            for index, child in ipairs(button.column_container.children) do
-                if child ~= button.roster and child.frame:IsMouseOver() then
+            for index, child in ipairs(button.column_container) do
+                if child ~= button.roster and child:IsMouseOver() then
                     return child
                 end
             end

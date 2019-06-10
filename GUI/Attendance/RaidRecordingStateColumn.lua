@@ -76,7 +76,6 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingStateColumn", 
     end
 
     function widget:CreatePlayerButtons()
-        print("State Column")
         if widget.buttons_locked then
             return
         end
@@ -89,9 +88,6 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingStateColumn", 
         local Roster = NastrandirRaidTools:GetModule("Roster")
         local lastButton
         for index, member in ipairs(widget.members) do
-            print("UID", member.uid)
-            print("Name", member.name)
-            print("Class", member.class)
             local button = widget:GetClassButton(member)
             button:SetColumnContainer(widget.column_container)
             button:SetRoster(widget.roster)
@@ -102,7 +98,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingStateColumn", 
             if lastButton then
                 StdUi:GlueBelow(button, lastButton, 0, 0)
             else
-                StdUi:GlueTop(button, button:GetParent(), 0, 0, "LEFT")
+                StdUi:GlueTop(button, widget.content.child, 0, 0, "LEFT")
             end
 
             lastButton = button
@@ -117,9 +113,9 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingStateColumn", 
 
     function widget:SetDropTarget(state)
         if state then
-            widget.widget.frame:SetBackdropColor(0.415, 0.745, 0.905, 0.4)
+            widget:SetBackdropColor(0.415, 0.745, 0.905, 0.4)
         else
-            widget.widget.frame:SetBackdropColor(0, 0, 0, 0)
+            widget:SetBackdropColor(0, 0, 0, 0)
         end
     end
 
@@ -141,8 +137,12 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingStateColumn", 
     end
 
     function widget:FindPlayer(uid)
-        for index, comp_uid in ipairs(widget.members) do
-            if uid == comp_uid then
+        if not widget.members then
+            widget.members = {}
+        end
+
+        for index, member in ipairs(widget.members) do
+            if uid == member.uid then
                 return index
             end
         end

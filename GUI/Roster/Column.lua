@@ -47,6 +47,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Roster_ColumnFrame", function(self, pa
 
     function widget:GetClassButton(member)
         if member.button then
+            ViragDevTool_AddData(member, member.name .. " already has a button")
             return member.button
         end
 
@@ -57,11 +58,13 @@ StdUi:RegisterWidget("NastrandirRaidTools_Roster_ColumnFrame", function(self, pa
         if #widget.unusedButtons >= 1 then
             local button = widget.unusedButtons[1]
             table.remove(widget.unusedButtons, 1)
+            ViragDevTool_AddData(button, "Reusing button of " .. button:GetName() .. " for " .. member.name)
             button:SetUID(member.uid)
             button:SetName(member.name)
             button:SetClass(member.class)
             member.button = button
         else
+            ViragDevTool_AddData(member, "Creating new button for " .. member.name)
             local button = widget.createButton(member.uid, member.name, member.class)
             member.button = button
         end
@@ -199,8 +202,6 @@ StdUi:RegisterWidget("NastrandirRaidTools_Roster_ColumnFrame", function(self, pa
     end
 
     widget:SetScript("OnShow", function()
-        print("OnShow")
-        print(widget:GetWidth(), widget.content.frame:GetWidth())
         widget.content.frame:SetWidth(widget:GetWidth() - widget.content.bar:GetWidth() - 5)
         widget.content.child:SetWidth(widget:GetWidth())
         widget.content.panel:SetWidth(widget:GetWidth())
