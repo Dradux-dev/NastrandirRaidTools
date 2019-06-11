@@ -388,11 +388,3 @@ function NastrandirRaidTools:FindInTableIf(t, callback, assosiative)
 
     return result
 end
-
-function NastrandirRaidTools:GetOptionsDropDown()
-    if not self.options_dropdown then
-        self.options_dropdown = CreateFrame("Frame", "PullButtonsOptionsDropDown", nil, "L_UIDropDownMenuTemplate")
-    end
-
-    return self.options_dropdown
-end
