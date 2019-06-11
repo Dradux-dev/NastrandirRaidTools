@@ -194,6 +194,11 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
     end
 
     function widget:Load()
+        -- Hide all columns, to avoid creating new ones
+        for _, column in ipairs(widget.content_group) do
+            column:Hide()
+        end
+
         local states = widget:GetStates()
         local column_count = table.getn(states) + 1
 
@@ -238,6 +243,8 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
                 end)
             end)
 
+            state:ClearAllPoints()
+            state:Show()
             if lastColumn then
                 StdUi:GlueRight(state, lastColumn, 0, 0)
             else
