@@ -1,7 +1,6 @@
 local StdUi = LibStub("StdUi")
 
 StdUi:RegisterWidget("NastrandirRaidTools_Roster_Details", function(self, parent)
-    local Roster = NastrandirRaidTools:GetModule("Roster")
     local width = parent:GetWidth() or 600
     local height = parent:GetHeight() or 400
 
@@ -64,18 +63,6 @@ StdUi:RegisterWidget("NastrandirRaidTools_Roster_Details", function(self, parent
 
     local mains = StdUi:Dropdown(actions, 0.48 * actions:GetWidth(), 24, {})
     actions.mains = mains
-    local characters = Roster:GetMainCharacters()
-    local options = {}
-    for mainUID, mainName in pairs(characters) do
-        table.insert(options, {
-            text = mainName,
-            value = mainUID
-        })
-    end
-    table.sort(options, function(a, b)
-        return a.text < b.text
-    end)
-    mains:SetOptions(options)
     StdUi:AddLabel(actions, mains, "Make alt of", "TOP")
     StdUi:GlueTop(mains, actions, 10, -60, "LEFT")
 
@@ -97,6 +84,25 @@ StdUi:RegisterWidget("NastrandirRaidTools_Roster_Details", function(self, parent
     alts:SetName("Alts")
     alts:HideAddButton()
     StdUi:GlueBelow(alts, buttonMain, 0, -20, "RIGHT")
+
+    function widget:GetMains()
+        local Roster = NastrandirRaidTools:GetModule("Roster")
+        local characters = Roster:GetMainCharacters()
+        local options = {}
+        for mainUID, mainName in pairs(characters) do
+            if mainUID ~= widget.uid then
+                table.insert(options, {
+                    text = mainName,
+                    value = mainUID
+                })
+            end
+        end
+        table.sort(options, function(a, b)
+            return a.text < b.text
+        end)
+
+        return options
+    end
 
     function widget:GetOptionsForRole(role)
         local classes = NastrandirRaidTools:GetAllowedClasses(role)
@@ -147,11 +153,12 @@ StdUi:RegisterWidget("NastrandirRaidTools_Roster_Details", function(self, parent
         end
 
         widget.alts:Sort()
+        widget.actions.mains:HideOptions()
+        widget.actions.mains:SetOptions(widget:GetMains())
     end
 
     function widget:Save()
         local Roster = NastrandirRaidTools:GetModule("Roster")
-
         local character = Roster:GetCharacter(widget.uid)
 
         character.name = widget.base.name:GetText()
