@@ -46,23 +46,16 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingRoster", funct
     end
 
     function widget:CreatePlayerButtons()
-        ViragDevTool_AddData("CreatePlayerButtons")
         if widget.buttons_locked then
-            ViragDevTool_AddData("Locked")
             return
         end
 
-        ViragDevTool_AddData(widget.sortCallback, "Try sorting")
         if widget.sortCallback then
-            ViragDevTool_AddData(widget.members, "Sorting")
             table.sort(widget.members, widget.sortCallback)
-            ViragDevTool_AddData(widget.members, "Sorted")
         end
 
-        ViragDevTool_AddData("Releasing Buttons")
         widget:ReleaseButtons()
 
-        ViragDevTool_AddData("Adding Buttons")
         local Roster = NastrandirRaidTools:GetModule("Roster")
         local lastButton
         for index, member in ipairs(widget.members) do
@@ -82,7 +75,6 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingRoster", funct
             lastButton = button
         end
 
-        ViragDevTool_AddData(#widget.members, "Setting count")
         widget:SetCount(#widget.members)
     end
 
