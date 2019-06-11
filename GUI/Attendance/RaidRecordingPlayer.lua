@@ -102,14 +102,35 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
     end
 
     function button:CreateMenu()
-        button.menu = {}
+        local options = {}
 
-        table.insert(button.menu, {
-            text = "Edit",
-            notCheckable = 1,
-            func = function()
-                button:EditCharacter()
+        local function newOnEnter(itemFrame)
+            button.context:CloseSubMenus();
+
+            if itemFrame.childContext then
+                itemFrame.childContext:ClearAllPoints();
+                itemFrame.childContext:SetPoint('TOPLEFT', itemFrame, 'TOPRIGHT', 0, 0);
+                itemFrame.childContext:Show();
             end
+
+            itemFrame.text:SetTextColor(1, 0.431, 0.101, 1)
+        end
+
+        local function newOnLeave(itemFrame)
+            itemFrame.text:SetTextColor(1, 1, 1, 1)
+        end
+
+        -- Edit
+        table.insert(options, {
+            title = "Edit",
+            callback = function()
+                button.context:CloseMenu()
+                button:EditCharacter()
+            end,
+            events = {
+                OnEnter = newOnEnter,
+                OnLeave = newOnLeave
+            }
         })
 
         local characters = button:GetCharacterList()
@@ -119,41 +140,44 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
                 return a.name < b.name
             end)
 
-            table.insert(button.menu, {
-                text = " ",
-                notCheckable = 1,
-                notClickable = 1,
-                func = nil
+            table.insert(options, {
+                isSeparator = true
             })
 
             for index, info in ipairs(characters) do
-                table.insert(button.menu, {
-                    text = info.name,
-                    notCheckable = 1,
-                    func = function()
+                table.insert(options, {
+                    title = info.name,
+                    callback = function()
+                        button.context:CloseMenu()
                         button.column:lockButtons()
                         button.column:AddPlayer(info.uid)
                         button.column:RemovePlayer(button.uid)
                         button.column:unlockButtons()
-                    end
+                    end,
+                    events = {
+                        OnEnter = newOnEnter,
+                        OnLeave = newOnLeave
+                    }
                 })
             end
-
-            table.insert(button.menu, {
-                text = " ",
-                notCheckable = 1,
-                notClickable = 1,
-                func = nil
-            })
         end
 
-        table.insert(button.menu, {
-            text = "Close",
-            notCheckable = 1,
-            func = function()
-                button.column:GetDropDown():Hide()
-            end
+        table.insert(options, {
+            isSeparator = true
         })
+
+        table.insert(options, {
+            title = "Close",
+            callback = function()
+                button.context:CloseMenu()
+            end,
+            events = {
+                OnEnter = newOnEnter,
+                OnLeave = newOnLeave
+            }
+        })
+
+        return options
     end
 
     function button:EditCharacter()
@@ -215,11 +239,17 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
         end
     end
 
-
-    button:SetScript("OnClick", function(button, mouseButton)
+    button:SetScript("OnClick", function(frame, mouseButton)
         if mouseButton == "RightButton" then
-            button:CreateMenu()
-            L_EasyMenu(button.menu, NastrandirRaidTools:GetOptionsDropDown(), "cursor", 0, -15, "MENU")
+            if not button.context then
+                button.context = StdUi:ContextMenu(button, button:CreateMenu())
+            else
+                button.context:DrawOptions(button:CreateMenu())
+            end
+
+            StdUi:GlueBelow(button.context, button, 10, button:GetHeight() / 2, "LEFT")
+            button.context:SetFrameStrata("TOOLTIP")
+            button.context:Show()
         end
     end)
 

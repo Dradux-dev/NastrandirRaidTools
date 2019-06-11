@@ -257,6 +257,8 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
         if not widget.roster then
             roster = StdUi:NastrandirRaidTools_Attendance_RaidRecordingRoster(widget, column_width, 450)
             widget.roster = roster
+        else
+            roster = widget.roster
         end
         roster:SetWidth(column_width)
         roster:SetSortCallback(function(a, b)
