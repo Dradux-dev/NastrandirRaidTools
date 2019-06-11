@@ -1,122 +1,87 @@
 local StdUi = LibStub("StdUi")
 
 StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationStatesEdit", function(self, parent)
-    local width = parent:GetWidth() or 800
-    local height = 500
+    local width = parent:GetWidth()-20 or 800
+    local height = 305
 
-    local widget = StdUi:Frame(parent, width, height)
+    local widget = StdUi:Panel(parent, width, height)
     self:InitWidget(widget)
     self:SetObjSize(widget, width, height)
-    widget.states = {}
 
-    return widget
-end)
+    local button_down = StdUi:SquareButton(widget, 24, 24, "DOWN")
+    widget.button_down = button_down
+    StdUi:GlueTop(button_down, widget, -10, -10, "RIGHT")
 
-local Type, Version = "NastrandirRaidToolsAttendanceConfigurationStatesEdit", 1
-local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
+    local button_up = StdUi:SquareButton(widget, 24, 24, "UP")
+    widget.button_up = button_up
+    StdUi:GlueLeft(button_up, button_down, -5, 0)
 
-local width = 800
-local height = 400
+    local name = StdUi:EditBox(widget, 0.77 * widget:GetWidth(), 24, "")
+    widget.name = name
+    StdUi:AddLabel(widget, name, "Name", "TOP")
+    StdUi:GlueTop(name, widget, 10, -30, "LEFT")
 
-local WIDTH = {
-    NAME = 0.77,
-    COUNT_IN = 0.17,
-    MESSAGES_EDIT = 0.95,
+    local track_alts = StdUi:Checkbox(widget, "Track Alts", 0.17 * widget:GetWidth(), 24)
+    widget.track_alts = track_alts
+    StdUi:GlueRight(track_alts, name, 10, 0)
 
-}
+    local messages = StdUi:Panel(widget, widget:GetWidth() - 20, 200)
+    widget.messages = messages
+    StdUi:GlueBelow(messages, name, 0, -10, "LEFT")
 
-local methods = {
-    ["OnAcquire"] = function(self)
-        self:SetWidth(width)
-        self:SetHeight(height)
-    end,
-    ["Initialize"] = function(self)
-        self.name:SetCallback("OnEnterPressed", function()
-            self.widget:SetTitle(self.name:GetText())
-            self:Save()
-        end)
+    local title = StdUi:Label(messages, "Messages")
+    messages.title = title
+    StdUi:GlueTop(title, messages, 10, -10, "LEFT")
 
-        self.track_alts:SetCallback("OnValueChanged", function()
-            self:Save()
-        end)
+    local enter = StdUi:EditBox(messages, messages:GetWidth() - 20, 24, "")
+    messages.enter = enter
+    StdUi:AddLabel(messages, enter, "Enter", "TOP")
+    StdUi:GlueTop(enter, messages, 10, -50, "LEFT")
 
-        self.enter:SetCallback("OnEnterPressed", function()
-            self:Save()
-        end)
+    local swap = StdUi:EditBox(messages, messages:GetWidth() - 20, 24, "")
+    messages.swap = swap
+    StdUi:AddLabel(messages, swap, "Character Swap", "TOP")
+    StdUi:GlueBelow(swap, enter, 0, -30, "LEFT")
 
-        self.swap:SetCallback("OnEnterPressed", function()
-            self:Save()
-        end)
+    local leave = StdUi:EditBox(messages, messages:GetWidth() - 20, 24, "")
+    messages.leave = leave
+    StdUi:AddLabel(messages, leave, "Leave", "TOP")
+    StdUi:GlueBelow(leave, swap, 0, -30, "LEFT")
 
-        self.leave:SetCallback("OnEnterPressed", function()
-            self:Save()
-        end)
+    local save = StdUi:Button(widget, 80, 24, "Save")
+    widget.save = save
+    StdUi:GlueBottom(save, widget, -10, 10, "RIGHT")
 
-        self.button_down:SetCallback("OnClick", function()
-            local other_uid = self:GetStateByOrder(self.order + 1)
+    function widget:ShowSave()
+        if not widget.save:IsShown() then
+            widget.save:Show()
+            widget:SetHeight(widget:GetHeight() + 30)
+        end
+    end
 
-            if other_uid then
-                local db = NastrandirRaidTools:GetModuleDB("Attendance")
-                db.states[other_uid].Order = self.order
+    function widget:HideSave()
+        if widget.save:IsShown() then
+            widget.save:Hide()
+            widget:SetHeight(widget:GetHeight() - 30)
+        end
+    end
 
-                self.order = self.order + 1
-                self:Save()
+    function widget:SetUID(uid)
+        widget.uid = uid
+    end
 
-                self.states_widget:Initialize()
-            end
-        end)
-
-        self.button_up:SetCallback("OnClick", function()
-            local other_uid = self:GetStateByOrder(self.order - 1)
-
-            if other_uid then
-                local db = NastrandirRaidTools:GetModuleDB("Attendance")
-                db.states[other_uid].Order = self.order
-
-                self.order = self.order - 1
-                self:Save()
-
-                self.states_widget:Initialize()
-            end
-        end)
-    end,
-    ["SetWidth"] = function(self, w)
-        self.widget:SetWidth(w)
-    end,
-    ["SetHeight"] = function(self, h)
-        self.widget:SetHeight(h)
-    end,
-    ["OnHeightSet"] = function(self, height)
-
-    end,
-    ["OnWidthSet"] = function(self, width)
-        self.name:SetWidth(width * WIDTH.NAME)
-        self.track_alts:SetWidth(width * WIDTH.COUNT_IN)
-        self.messages:SetWidth(width)
-
-        local w = self.messages.frame:GetWidth()
-        self.enter:SetWidth(WIDTH.MESSAGES_EDIT * w)
-        self.swap:SetWidth(WIDTH.MESSAGES_EDIT * w)
-        self.leave:SetWidth(WIDTH.MESSAGES_EDIT * w)
-    end,
-    ["SetUID"] = function(self, uid)
-        self.uid = uid
-    end,
-    ["SetStatesWidget"] = function(self, widget)
-        self.states_widget = widget
-    end,
-    ["Load"] = function(self)
+    function widget:Load()
         local db = NastrandirRaidTools:GetModuleDB("Attendance")
 
         if not db.states then
             db.states = {}
         end
 
-        if not db.states[self.uid] then
-            db.states[self.uid] = {
+        if not db.states[widget.uid] then
+            db.states[widget.uid] = {
                 Name = "New State",
                 TrackAlts = true,
-                Order = self:GetStatesCount() + 1,
+                Order = widget:GetStatesCount() + 1,
                 LogMessages = {
                     Enter = "",
                     Swap = "",
@@ -125,34 +90,39 @@ local methods = {
             }
         end
 
-        local state = db.states[self.uid]
-        self.widget:SetTitle(state.Name)
-        self.name:SetText(state.Name)
-        self.track_alts:SetValue(state.TrackAlts or false)
-        self.enter:SetText(state.LogMessages.Enter)
-        self.swap:SetText(state.LogMessages.Swap)
-        self.leave:SetText(state.LogMessages.Leave)
-        self.order = state.Order
-    end,
-    ["Save"] = function(self)
+        local state = db.states[widget.uid]
+        widget.name:SetText(state.Name)
+        widget.track_alts:SetChecked(state.TrackAlts or false)
+        widget.messages.enter:SetText(state.LogMessages.Enter)
+        widget.messages.swap:SetText(state.LogMessages.Swap)
+        widget.messages.leave:SetText(state.LogMessages.Leave)
+        widget.order = state.Order
+
+        widget:HideSave()
+    end
+
+    function widget:Save()
         local db = NastrandirRaidTools:GetModuleDB("Attendance")
 
         if not db.states then
             db.states = {}
         end
 
-        db.states[self.uid] = {
-            Name = self.name:GetText(),
-            TrackAlts = self.track_alts:GetValue(),
-            Order = self.order,
+        db.states[widget.uid] = {
+            Name = widget.name:GetText(),
+            TrackAlts = widget.track_alts:GetChecked(),
+            Order = widget.order,
             LogMessages = {
-                Enter = self.enter:GetText(),
-                Swap = self.swap:GetText(),
-                Leave = self.leave:GetText()
+                Enter = widget.messages.enter:GetText(),
+                Swap = widget.messages.swap:GetText(),
+                Leave = widget.messages.leave:GetText()
             }
         }
-    end,
-    ["GetStatesCount"] = function(self)
+
+        widget:HideSave()
+    end
+
+    function widget:GetStatesCount()
         local db = NastrandirRaidTools:GetModuleDB("Attendance")
 
         if not db.states then
@@ -165,8 +135,9 @@ local methods = {
         end
 
         return count
-    end,
-    ["GetStateByOrder"] = function(self, order)
+    end
+
+    function widget:GetStateByOrder(order)
         local db = NastrandirRaidTools:GetModuleDB("Attendance")
 
         if not db.states then
@@ -179,99 +150,83 @@ local methods = {
             end
         end
     end
-}
 
-
-local function Constructor()
-    local widget = AceGUI:Create("InlineGroup")
-    widget:SetHeight(height)
-    widget:SetWidth(width)
-    widget:SetLayout("Flow")
-    widget:SetTitle("StateName")
-
-    local top_bar = AceGUI:Create("SimpleGroup")
-    widget.top_bar = top_bar
-    top_bar:SetWidth(widget.frame:GetWidth())
-    top_bar:SetHeight(30)
-    top_bar:SetLayout("Flow")
-    widget:AddChild(top_bar)
-
-    local spacer = AceGUI:Create("NastrandirRaidToolsSpacer")
-    widget.spacer = spacer
-    spacer:SetWidth(0.62 * top_bar.frame:GetWidth())
-    spacer:SetHeight(30)
-    spacer:SetBackdropColor(0, 0, 0, 0)
-    top_bar:AddChild(spacer)
-
-    local button_down = AceGUI:Create("Button")
-    top_bar.button_down = button_down
-    button_down:SetText("Down")
-    button_down:SetWidth(0.1 * top_bar.frame:GetWidth())
-    top_bar:AddChild(button_down)
-
-    local button_up = AceGUI:Create("Button")
-    top_bar.button_up = button_up
-    button_up:SetText("Up")
-    button_up:SetWidth(0.1 * top_bar.frame:GetWidth())
-    top_bar:AddChild(button_up)
-
-
-    local name = AceGUI:Create("EditBox")
-    widget.name = name
-    name:SetLabel("Name")
-    name:SetText("StateName")
-    name:SetWidth(widget.frame:GetWidth() * 0.77)
-    widget:AddChild(name)
-
-    local track_alts = AceGUI:Create("CheckBox")
-    widget.track_alts = track_alts
-    track_alts:SetLabel("Track Alts")
-    track_alts:SetWidth(widget.frame:GetWidth() * 0.17)
-    widget:AddChild(track_alts)
-
-    local messages = AceGUI:Create("InlineGroup")
-    widget.messages = messages
-    messages:SetWidth(widget.frame:GetWidth())
-    messages:SetTitle("Messages")
-    widget:AddChild(messages)
-
-    local enter = AceGUI:Create("EditBox")
-    messages.enter = enter
-    enter:SetWidth(messages.frame:GetWidth())
-    enter:SetLabel("Enter")
-    messages:AddChild(enter)
-
-    local swap = AceGUI:Create("EditBox")
-    messages.swap = swap
-    swap:SetWidth(messages.frame:GetWidth())
-    swap:SetLabel("Character Swap")
-    messages:AddChild(swap)
-
-    local leave = AceGUI:Create("EditBox")
-    messages.leave = leave
-    leave:SetWidth(messages.frame:GetWidth())
-    leave:SetLabel("Leave")
-    messages:AddChild(leave)
-
-    local widget = {
-        frame = widget.frame,
-        widget = widget,
-        button_down = button_down,
-        button_up = button_up,
-        name = name,
-        track_alts = track_alts,
-        messages = messages,
-        enter = enter,
-        swap = swap,
-        leave = leave,
-        type = Type
-    }
-
-    for method, func in pairs(methods) do
-        widget[method] = func
+    function widget:UpdateOrderButtons()
+        local stateCount = widget:GetStatesCount()
+        if widget.order == 1 and stateCount == 1 then
+            widget.button_down:Hide()
+            widget.button_up:Hide()
+        elseif widget.order == 1 then
+            StdUi:GlueTop(widget.button_down, widget, -10, -10, "RIGHT")
+            widget.button_up:Hide()
+            widget.button_down:Show()
+        elseif widget.order == stateCount then
+            StdUi:GlueTop(widget.button_up, widget, -10, -10, "RIGHT")
+            widget.button_up:Show()
+            widget.button_down:Hide()
+        else
+            StdUi:GlueTop(widget.button_down, widget, -10, -10, "RIGHT")
+            StdUi:GlueLeft(widget.button_up, widget.button_down, -5, 0)
+            widget.button_up:Show()
+            widget.button_down:Show()
+        end
     end
 
-    return AceGUI:RegisterAsWidget(widget)
-end
+    widget.name:SetScript("OnEnterPressed", function()
+        widget:ShowSave()
+    end)
 
-AceGUI:RegisterWidgetType(Type, Constructor, Version)
+    widget.track_alts.OnValueChanged = function()
+        widget:ShowSave()
+    end
+
+    widget.messages.enter:SetScript("OnEnterPressed", function()
+        widget:ShowSave()
+    end)
+
+    widget.messages.swap:SetScript("OnEnterPressed", function()
+        widget:ShowSave()
+    end)
+
+    widget.messages.leave:SetScript("OnEnterPressed", function()
+        widget:ShowSave()
+    end)
+
+    widget.button_down:SetScript("OnClick", function()
+        local other_uid = widget:GetStateByOrder(widget.order + 1)
+
+        if other_uid then
+            local db = NastrandirRaidTools:GetModuleDB("Attendance")
+            db.states[other_uid].Order = widget.order
+
+            widget.order = widget.order + 1
+            widget:Save()
+
+            widget:GetParent():DrawStates()
+        end
+    end)
+
+    widget.button_up:SetScript("OnClick", function()
+        local other_uid = widget:GetStateByOrder(widget.order - 1)
+
+        if other_uid then
+            local db = NastrandirRaidTools:GetModuleDB("Attendance")
+            db.states[other_uid].Order = widget.order
+
+            widget.order = widget.order - 1
+            widget:Save()
+
+            widget:GetParent():DrawStates()
+        end
+    end)
+
+    widget.save:SetScript("OnClick", function()
+        widget:Save()
+    end)
+
+    widget:SetScript("OnShow", function()
+        widget:UpdateOrderButtons()
+    end)
+
+    return widget
+end)

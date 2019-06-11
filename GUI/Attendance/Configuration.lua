@@ -25,7 +25,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Configuration", function(se
             value = KEY.STATES
         },
         {
-            text = "ANALYTICS",
+            text = "Analytics",
             value = KEY.ANALYTICS
         }
     })
@@ -42,12 +42,13 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Configuration", function(se
         widget:HideTabs()
 
         if tab then
+            StdUi:GlueTop(tab, widget, 0, -40, "LEFT")
             tab:Show()
         end
     end
 
     function widget:ShowGeneral()
-        print("ShowGeneral")
+        print("ShowGeneral()")
         widget:ShowTab(widget.general)
     end
 
@@ -71,20 +72,21 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Configuration", function(se
 
     widget.dropdown.OnValueChanged = function(dropdown, key)
         if key == KEY.GENERAL then
-            self:ShowGeneral()
+            widget:ShowGeneral()
             return
         end
 
         if key == KEY.STATES then
-            self:ShowStates()
+            widget:ShowStates()
             return
         end
 
         if key == KEY.ANALYTICS then
-            self:ShowAnalytics()
+            widget:ShowAnalytics()
             return
         end
     end
 
+    widget.dropdown:SetValue(KEY.GENERAL)
     return widget
 end)

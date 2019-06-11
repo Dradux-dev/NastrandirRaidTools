@@ -7,65 +7,12 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationStates", funct
     local widget = StdUi:Frame(parent, width, height)
     self:InitWidget(widget)
     self:SetObjSize(widget, width, height)
-    widget.states = {}
 
-    return widget
-end)
+    local add_state = StdUi:Button(widget, 80, 24, "Add State")
+    widget.add_state = add_state
+    StdUi:GlueTop(add_state, widget, 10, -10, "LEFT")
 
-local Type, Version = "NastrandirRaidToolsAttendanceConfigurationStates", 1
-local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
-
-local width = 800
-local height = 400
-
-local WIDTH = {
-    SCROLL_FRAME = 0.97,
-    ADD_BUTTON = 0.97
-}
-
-local methods = {
-    ["OnAcquire"] = function(self)
-        self:SetWidth(width)
-        self:SetHeight(height)
-    end,
-    ["Initialize"] = function(self)
-        self.scroll_frame:ReleaseChildren()
-
-        self.add_state:SetCallback("OnClick", function()
-            self:NewState()
-        end)
-
-        self:LoadStates()
-    end,
-    ["SetWidth"] = function(self, w)
-        self.widget:SetWidth(w)
-    end,
-    ["SetHeight"] = function(self, h)
-        self.widget:SetHeight(h)
-    end,
-    ["OnHeightSet"] = function(self, height)
-
-    end,
-    ["OnWidthSet"] = function(self, width)
-        self.scroll_frame:SetWidth(WIDTH.SCROLL_FRAME * width)
-        self.add_state:SetWidth(WIDTH.ADD_BUTTON * width)
-    end,
-    ["NewState"] = function(self)
-        -- Get UID
-        local uid = NastrandirRaidTools:CreateUID("Attendance-State")
-
-        -- Add to the GUI
-        self:AddState(uid)
-    end,
-    ["AddState"] = function(self, uid)
-        local state_frame = AceGUI:Create("NastrandirRaidToolsAttendanceConfigurationStatesEdit")
-        state_frame:Initialize()
-        state_frame:SetUID(uid)
-        state_frame:SetStatesWidget(self)
-        state_frame:Load()
-        self.scroll_frame:AddChild(state_frame)
-    end,
-    ["LoadStates"] = function(self)
+    function widget:GetStates()
         local db = NastrandirRaidTools:GetModuleDB("Attendance")
 
         if not db.states then
@@ -73,57 +20,96 @@ local methods = {
         end
 
         local state_list = {}
-        for uid, state in pairs(db.states) do
-            table.insert(state_list, {
-                uid = uid,
-                state = state
-            })
+        for uid, _ in pairs(db.states) do
+            table.insert(state_list, uid)
         end
 
         table.sort(state_list, function(a, b)
-            return a.state.Order < b.state.Order
+            local stateA = db.states[a]
+            local stateB = db.states[b]
+            return stateA.Order < stateB.Order
         end)
 
-        for index, entry in ipairs(state_list) do
-            self:AddState(entry.uid)
+        return state_list
+    end
+
+    function widget:DrawStates()
+        if not widget.stateFrames then
+            widget.stateFrames = {}
         end
-    end
-}
 
+        local _, totalHeight = StdUi:ObjectList(
+                widget,
+                widget.stateFrames,
+                function(parent, data, i)
+                    local stateFrame = StdUi:NastrandirRaidTools_Attendance_ConfigurationStatesEdit(parent)
+                    stateFrame:SetUID(data)
+                    stateFrame:Load()
+                    return stateFrame
+                end,
+                function(parent, stateFrame, data, i)
+                    stateFrame:SetUID(data)
+                    stateFrame:Load()
+                    stateFrame:UpdateOrderButtons()
+                end,
+                widget:GetStates(),
+                5,
+                10,
+                -50
+        )
 
-local function Constructor()
-    local widget = AceGUI:Create("SimpleGroup")
-    widget:SetHeight(height)
-    widget:SetWidth(width)
-    widget:SetLayout("Flow")
-    widget.frame:SetBackdropColor(0, 0, 0, 0)
-
-    local scroll_frame = AceGUI:Create("ScrollFrame")
-    widget.scroll_frame = scroll_frame
-    scroll_frame:SetWidth(widget.frame:GetWidth())
-    scroll_frame:SetHeight(400)
-    scroll_frame:SetLayout("Flow")
-    widget:AddChild(scroll_frame)
-
-    local add_state = AceGUI:Create("Button")
-    widget.add_state = add_state
-    add_state:SetWidth(widget.frame:GetWidth())
-    add_state:SetText("Add State")
-    widget:AddChild(add_state)
-
-    local widget = {
-        frame = widget.frame,
-        widget = widget,
-        scroll_frame = scroll_frame,
-        add_state = add_state,
-        type = Type
-    }
-
-    for method, func in pairs(methods) do
-        widget[method] = func
+        widget:SetHeight(totalHeight + 30)
     end
 
-    return AceGUI:RegisterAsWidget(widget)
-end
+    function widget:GetStatesCount()
+        local db = NastrandirRaidTools:GetModuleDB("Attendance")
 
-AceGUI:RegisterWidgetType(Type, Constructor, Version)
+        if not db.states then
+            db.states = {}
+        end
+
+        local count = 0
+        for uid, state in pairs(db.states) do
+            count = count + 1
+        end
+
+        return count
+    end
+
+    function widget:NewState()
+        -- Get UID
+        local uid = NastrandirRaidTools:CreateUID("Attendance-State")
+
+        local db = NastrandirRaidTools:GetModuleDB("Attendance")
+
+        if not db.states then
+            db.states = {}
+        end
+
+        if not db.states[uid] then
+            db.states[uid] = {
+                Name = "New State",
+                TrackAlts = true,
+                Order = widget:GetStatesCount() + 1,
+                LogMessages = {
+                    Enter = "",
+                    Swap = "",
+                    Leave = ""
+                }
+            }
+        end
+
+        -- Add to the GUI
+        widget:DrawStates()
+    end
+
+    widget.add_state:SetScript("OnClick", function()
+        widget:NewState()
+    end)
+
+    widget:SetScript("OnShow", function()
+        widget:DrawStates()
+    end)
+
+    return widget
+end)
