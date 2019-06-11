@@ -20,7 +20,8 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingStateColumn", 
             table.insert(widget.members, {
                 uid = player,
                 name = Roster:GetCharacterName(player),
-                class = Roster:GetCharacterClass(player)
+                class = Roster:GetCharacterClass(player),
+                role = Roster:GetCharacterRole(player)
             })
             widget:OnPlayerAdded(player)
             widget:CreatePlayerButtons()
@@ -33,7 +34,8 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingStateColumn", 
             table.insert(widget.members, {
                 uid = player,
                 name = Roster:GetCharacterName(player),
-                class = Roster:GetCharacterClass(player)
+                class = Roster:GetCharacterClass(player),
+                role = Roster:GetCharacterRole(player)
             })
             widget:CreatePlayerButtons()
         end
@@ -65,7 +67,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingStateColumn", 
     end
 
     function widget:ReleaseButtons()
-        for index, member in ipairs(widget.members) do
+        for index, member in ipairs(widget.members or {}) do
             if member.button then
                 table.insert(widget.unusedButtons, member.button)
                 member.button:Hide()

@@ -1,5 +1,12 @@
 local StdUi = LibStub("StdUi")
 
+local role_values = {
+    ["TANK"] = 1,
+    ["HEAL"] = 2,
+    ["MELEE"] = 3,
+    ["RANGED"] = 4
+}
+
 StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(self, parent)
     local width = parent:GetWidth() or 800
     local height = 300
@@ -70,35 +77,22 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
     end
 
     function widget:SortCompare(a, b)
-        local Roster = NastrandirRaidTools:GetModule("Roster")
-
-        local role_values = {
-            ["TANK"] = 1,
-            ["HEAL"] = 2,
-            ["MELEE"] = 3,
-            ["RANGED"] = 4
-        }
-
         -- First off sort by role
-        local role_a = role_values[Roster:GetCharacterRole(a)]
-        local role_b = role_values[Roster:GetCharacterRole(b)]
-        if role_a < role_b then
+        if role_values[a.role] < role_values[b.role] then
             return true
-        elseif role_a > role_b then
+        elseif role_values[a.role] > role_values[b.role] then
             return false
         end
 
-        local class_a = Roster:GetCharacterClass(a)
-        local class_b = Roster:GetCharacterClass(b)
-        if class_a < class_b then
+        -- Sort by class
+        if a.class < b.class then
             return true
-        elseif class_a > class_b then
+        elseif a.class > b.class then
             return false
         end
 
-        local name_a = Roster:GetCharacterName(a)
-        local name_b = Roster:GetCharacterName(b)
-        return name_a < name_b
+        -- Sort by name
+        return a.name < b.name
     end
 
     function widget:GetColumn()
@@ -208,6 +202,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
         local column_width = math.floor((widget:GetWidth() - 10) / column_count)
         for index, uid in ipairs(states) do
             local state = widget:GetColumn()
+            state:ReleaseButtons()
             state:SetUID(uid)
             state:SetName(widget:GetStateName(uid))
             state:SetWidth(column_width)
