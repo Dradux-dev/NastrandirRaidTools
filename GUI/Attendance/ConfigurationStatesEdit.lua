@@ -1,3 +1,17 @@
+local StdUi = LibStub("StdUi")
+
+StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationStatesEdit", function(self, parent)
+    local width = parent:GetWidth() or 800
+    local height = 500
+
+    local widget = StdUi:Frame(parent, width, height)
+    self:InitWidget(widget)
+    self:SetObjSize(widget, width, height)
+    widget.states = {}
+
+    return widget
+end)
+
 local Type, Version = "NastrandirRaidToolsAttendanceConfigurationStatesEdit", 1
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 
