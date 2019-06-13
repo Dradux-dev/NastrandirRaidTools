@@ -1,5 +1,4 @@
 local Dialog = LibStub("LibDialog-1.0")
-local AceGUI = LibStub("AceGUI-3.0")
 local StdUi = LibStub("StdUi")
 
 SLASH_NASTRANDIRRAIDTOOLS1 = "/nrt"

@@ -1,5 +1,4 @@
 local Attendance = NastrandirRaidTools:NewModule("Attendance")
-local AceGUI = LibStub("AceGUI-3.0")
 local StdUi = LibStub("StdUi")
 
 --[[

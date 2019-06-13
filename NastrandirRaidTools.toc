@@ -37,8 +37,6 @@ GUI\Attendance\RaidsRaid.lua
 GUI\MainFrame.lua
 GUI\MenuButton.lua
 GUI\SpinBox.lua
-GUI\Table.lua
-GUI\TableCell.lua
 NastrandirRaidTools.lua
 Roster.lua
 Attendance.lua
