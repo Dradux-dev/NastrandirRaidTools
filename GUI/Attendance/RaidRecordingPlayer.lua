@@ -263,8 +263,9 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
     end)
 
     button:RegisterEvent("GROUP_ROSTER_UPDATE")
-    button:SetScript("OnEvent", function(event)
+    button:SetScript("OnEvent", function(buttonFrame, event)
         if event == "GROUP_ROSTER_UPDATE" then
+            print("Group Roster Update")
             button:CreateInfoText()
         end
     end)
@@ -272,6 +273,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
     button:SetUID(uid)
     button:SetName(name)
     button:SetClass(class)
+    button:CreateInfoText()
 
     return button
 end)
