@@ -310,3 +310,29 @@ function Attendance:GetRaidParticipation(raid_uid)
 
     return db.participation[raid_uid] or {}
 end
+
+function Attendance:NewRaid()
+    -- Get UID
+    local uid = NastrandirRaidTools:CreateUID("Attendance-Raid")
+
+    -- Do the DB stuff
+    local db = NastrandirRaidTools:GetModuleDB("Attendance")
+
+    if not db.raids then
+        db.raids = {}
+    end
+
+    if not db.defaults then
+        db.defaults = {}
+    end
+
+    db.raids[uid] = {
+        name = db.defaults.name or "New Raid",
+        date = NastrandirRaidTools:Today(),
+        start_time = db.defaults.startTime or 1900,
+        end_time = db.defaults.endTime or 2300
+    }
+
+    local Attendance = NastrandirRaidTools:GetModule("Attendance")
+    Attendance:ShowRaid(uid)
+end
