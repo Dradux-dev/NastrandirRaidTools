@@ -49,6 +49,13 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Configuration", function(se
 
     function widget:ShowGeneral()
         print("ShowGeneral()")
+        if not widget.general then
+            local general = StdUi:NastrandirRaidTools_Attendance_ConfigurationGeneral(widget)
+            widget.general = general
+            general:Hide()
+            table.insert(widget.tabs, general)
+        end
+
         widget:ShowTab(widget.general)
     end
 
