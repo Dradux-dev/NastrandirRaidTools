@@ -119,7 +119,21 @@ function NastrandirRaidTools:CreateMenu()
 
     for index, entry in ipairs(self.menu) do
         if not entry.button then
-            entry.button = StdUi:NastrandirRaidTools_MenuButton(self.window.menu.child, entry.text, entry.onClick)
+            entry.button = StdUi:NastrandirRaidTools_MenuButton(self.window.menu.child, entry.text, function(frame, mouseButton)
+                if mouseButton == "RightButton" then
+                    if not entry.context then
+                        entry.context = StdUi:HighlightContextMenu(entry.button, entry.contextMenu)
+                        entry.context:SetHighlightTextColor(1, 0.431, 0.101, 1)
+                    end
+
+                    entry.context:DrawOptions(entry.contextMenu)
+                    StdUi:GlueBelow(entry.context, entry.button, 10, entry.button:GetHeight() / 2, "LEFT")
+                    entry.context:SetFrameStrata("TOOLTIP")
+                    entry.context:Show()
+                elseif entry.onClick then
+                    entry.onClick(frame, mouseButton)
+                end
+            end)
         end
 
         entry.button:ClearAllPoints()

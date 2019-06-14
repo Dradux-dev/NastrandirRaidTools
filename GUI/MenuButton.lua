@@ -38,6 +38,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_MenuButton", function(self, parent, te
     end
 
     button:SetScript("OnClick", onClick)
+
     button:SetText(text)
 
     return button

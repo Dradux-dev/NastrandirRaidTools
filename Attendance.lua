@@ -147,7 +147,70 @@ function Attendance:OnEnable()
             priority = 1,
             onClick = function(button, mouseButton)
                 Attendance:ShowAttendance()
-            end
+            end,
+            contextMenu = {
+                {
+                    title = "Add Raid",
+                    close = true,
+                    callback = function()
+                        Attendance:NewRaid()
+                    end
+                },
+                {
+                    title = "Edit Raid",
+                    close = true,
+                    callback = function()
+                        local uid = Attendance:GetLastRaid()
+                        if uid then
+                            Attendance:ShowRaid(uid)
+                        end
+                    end
+                },
+                {
+                    title = "Record",
+                    close = true,
+                    callback = function()
+                        local uid = Attendance:GetLastRaid()
+                        if uid then
+                            Attendance:ShowRaidRecording(uid)
+                        end
+                    end
+                },
+                {
+                    isSeparator = true
+                },
+                {
+                    title = "Config",
+                    close = true,
+                    callback = function()
+                        Attendance:ShowConfiguration()
+                        self.configuration:SelectGeneral()
+                    end
+                },
+                {
+                    title = "Config: States",
+                    close = true,
+                    callback = function()
+                        Attendance:ShowConfiguration()
+                        self.configuration:SelectStates()
+                    end
+                },
+                {
+                    title = "Config: Analytics",
+                    close = true,
+                    callback = function()
+                        Attendance:ShowConfiguration()
+                        self.configuration:SelectAnalytics()
+                    end
+                },
+                {
+                    isSeparator = true
+                },
+                {
+                    title = "Close",
+                    close = true
+                }
+            }
         }
     })
 end
@@ -354,4 +417,34 @@ function Attendance:GetAnalyticByOrder(order)
             return analytic
         end
     end
+end
+
+function Attendance:GetLastRaid()
+    local db = NastrandirRaidTools:GetModuleDB("Attendance")
+
+    if not db.raids then
+        db.raids = {}
+    end
+
+    local last
+    for uid, raid in pairs(db.raids) do
+        if not last then
+            last = {
+                uid = uid,
+                raid = raid
+            }
+        elseif last.raid.date < raid.date then
+            last = {
+                uid = uid,
+                raid = raid
+            }
+        elseif last.raid.date == raid.date and last.raid.start_time < raid.start_time then
+            last = {
+                uid = uid,
+                raid = raid
+            }
+        end
+    end
+
+    return (last or {}).uid
 end
