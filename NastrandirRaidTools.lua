@@ -401,3 +401,9 @@ function NastrandirRaidTools:FindInTableIf(t, callback, assosiative)
 
     return result
 end
+
+function NastrandirRaidTools:GetFirstKey(t)
+    for k, _ in pairs(t) do
+        return k
+    end
+end
