@@ -23,6 +23,7 @@ GUI\Attendance\ConfigurationGeneral.lua
 GUI\Attendance\ConfigurationAnalytics.lua
 GUI\Attendance\ConfigurationAnalyticsColor.lua
 GUI\Attendance\ConfigurationAnalyticsEdit.lua
+GUI\Attendance\ConfigurationAnalyticsEditState.lua
 GUI\Attendance\ConfigurationStates.lua
 GUI\Attendance\ConfigurationStatesEdit.lua
 GUI\Attendance\PlayerDetails.lua

@@ -3,6 +3,11 @@ local StdUi = LibStub("StdUi")
 
 --[[
 Attendance = {
+    defaults = {
+        name = "New Raid",
+        startTime = 1915,
+        endTime = 2245
+    },
     raids = {
         [20181219] = {
             name = "Uldir",
@@ -78,9 +83,9 @@ Attendance = {
             name = "Teilgenommen",
             order = 1,
             states = {
-                "Shielddux-20181207-124507", -- Im Raid,
-                "Shielddux-20181207-124603", -- Ersatzbank
-                "Shielddux-20181207-124900", -- Frei
+                ["Shielddux-20181207-124507"] = true, -- Im Raid,
+                ["Shielddux-20181207-124603"] = true, -- Ersatzbank
+                ["Shielddux-20181207-124900"] = true, -- Frei
             },
             colors = {
                 {
@@ -101,7 +106,7 @@ Attendance = {
             name = "Im Raid",
             order = 2,
             states = {
-                "Shielddux-20181207-124507", -- Im Raid
+                ["Shielddux-20181207-124507"] = true, -- Im Raid
             }
         },
         ["Abgemeldet"] = {

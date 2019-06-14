@@ -74,6 +74,13 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Configuration", function(se
 
     function widget:ShowAnalytics()
         print("ShowAnalytics()")
+        if not widget.analytics then
+            local analytics = StdUi:NastrandirRaidTools_Attendance_ConfigurationAnalytics(widget)
+            widget.analytics = analytics
+            analytics:Hide()
+            table.insert(widget.tabs, analytics)
+        end
+
         widget:ShowTab(widget.analytics)
     end
 
