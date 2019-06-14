@@ -24,25 +24,8 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Raids", function(self, pare
     end)
 
     function widget:NewRaid()
-        -- Get UID
-        local uid = NastrandirRaidTools:CreateUID("Attendance-Raid")
-
-        -- Do the DB stuff
-        local db = NastrandirRaidTools:GetModuleDB("Attendance")
-
-        if not db.raids then
-            db.raids = {}
-        end
-
-        db.raids[uid] = {
-            name = "New Raid",
-            date = NastrandirRaidTools:Today(),
-            start_time = 2000,
-            end_time = 2300
-        }
-
         local Attendance = NastrandirRaidTools:GetModule("Attendance")
-        Attendance:ShowRaid(uid)
+        Attendance:NewRaid()
     end
 
     function widget:Sort()

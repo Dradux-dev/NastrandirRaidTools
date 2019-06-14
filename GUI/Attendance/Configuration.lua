@@ -47,8 +47,28 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Configuration", function(se
         end
     end
 
+    function widget:SelectGeneral()
+        widget.dropdown:SetValue(KEY.GENERAL, widget.dropdown:FindValueText(KEY.GENERAL))
+    end
+
+    function widget:SelectStates()
+        widget.dropdown:SetValue(KEY.STATES, widget.dropdown:FindValueText(KEY.STATES))
+    end
+
+    function widget:SelectAnalytics()
+        widget.dropdown:SetValue(KEY.ANALYTICS, widget.dropdown:FindValueText(KEY.ANALYTICS))
+    end
+
     function widget:ShowGeneral()
         print("ShowGeneral()")
+        if not widget.general then
+            local general = StdUi:NastrandirRaidTools_Attendance_ConfigurationGeneral(widget)
+            widget.general = general
+            general:Hide()
+            table.insert(widget.tabs, general)
+        end
+
+
         widget:ShowTab(widget.general)
     end
 
@@ -67,6 +87,13 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Configuration", function(se
 
     function widget:ShowAnalytics()
         print("ShowAnalytics()")
+        if not widget.analytics then
+            local analytics = StdUi:NastrandirRaidTools_Attendance_ConfigurationAnalytics(widget)
+            widget.analytics = analytics
+            analytics:Hide()
+            table.insert(widget.tabs, analytics)
+        end
+
         widget:ShowTab(widget.analytics)
     end
 

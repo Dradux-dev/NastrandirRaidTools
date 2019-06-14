@@ -48,7 +48,56 @@ function Roster:OnEnable()
             priority = 1,
             onClick = function(button, mouseButton)
                 Roster:ShowCurrentRoster()
-            end
+            end,
+            contextMenu = {
+                {
+                    title = "Add Tank",
+                    close = true,
+                    callback = function()
+                        Roster:AddMember(
+                                NastrandirRaidTools:GetFirstKey(NastrandirRaidTools:GetTankClasses(), true),
+                                NastrandirRaidTools.role_types.tank
+                        )
+                    end
+                },
+                {
+                    title = "Add Melee",
+                    close = true,
+                    callback = function()
+                        Roster:AddMember(
+                                NastrandirRaidTools:GetFirstKey(NastrandirRaidTools:GetMeleeClasses(), true),
+                                NastrandirRaidTools.role_types.melee
+                        )
+                    end
+                },
+                {
+                    title = "Add Ranged",
+                    close = true,
+                    callback = function()
+                        Roster:AddMember(
+                                NastrandirRaidTools:GetFirstKey(NastrandirRaidTools:GetRangedClasses(), true),
+                                NastrandirRaidTools.role_types.ranged
+                        )
+                    end
+                },
+                {
+                    title = "Add Healer",
+                    close = true,
+                    callback = function()
+                        Roster:AddMember(
+                                NastrandirRaidTools:GetFirstKey(NastrandirRaidTools:GetHealClasses(), true),
+                                NastrandirRaidTools.role_types.heal
+                        )
+                    end
+                },
+                {
+                  isSeparator = true
+                },
+                {
+                    title = "Close",
+                    close = true
+                },
+            }
         }
     })
 end
@@ -228,4 +277,27 @@ function Roster:GetMainUID(uid)
     end
 
     return uid
+end
+
+function Roster:AddMember(class, role)
+    local db = NastrandirRaidTools:GetModuleDB("Roster")
+
+    if not db.characters then
+        db.characters = {}
+    end
+
+    local uid = Roster:CreateUID()
+    ViragDevTool_AddData(uid, "New UID")
+    ViragDevTool_AddData(class, "Class is")
+    ViragDevTool_AddData(role, "Role is")
+
+    db.characters[uid] = {
+        name = "New Player",
+        raidmember = true,
+        class = class,
+        role = role,
+        alts = {}
+    }
+
+    Roster:ShowDetails(uid)
 end

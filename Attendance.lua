@@ -3,6 +3,11 @@ local StdUi = LibStub("StdUi")
 
 --[[
 Attendance = {
+    defaults = {
+        name = "New Raid",
+        startTime = 1915,
+        endTime = 2245
+    },
     raids = {
         [20181219] = {
             name = "Uldir",
@@ -78,9 +83,9 @@ Attendance = {
             name = "Teilgenommen",
             order = 1,
             states = {
-                "Shielddux-20181207-124507", -- Im Raid,
-                "Shielddux-20181207-124603", -- Ersatzbank
-                "Shielddux-20181207-124900", -- Frei
+                ["Shielddux-20181207-124507"] = true, -- Im Raid,
+                ["Shielddux-20181207-124603"] = true, -- Ersatzbank
+                ["Shielddux-20181207-124900"] = true, -- Frei
             },
             colors = {
                 {
@@ -101,7 +106,7 @@ Attendance = {
             name = "Im Raid",
             order = 2,
             states = {
-                "Shielddux-20181207-124507", -- Im Raid
+                ["Shielddux-20181207-124507"] = true, -- Im Raid
             }
         },
         ["Abgemeldet"] = {
@@ -142,7 +147,70 @@ function Attendance:OnEnable()
             priority = 1,
             onClick = function(button, mouseButton)
                 Attendance:ShowAttendance()
-            end
+            end,
+            contextMenu = {
+                {
+                    title = "Add Raid",
+                    close = true,
+                    callback = function()
+                        Attendance:NewRaid()
+                    end
+                },
+                {
+                    title = "Edit Raid",
+                    close = true,
+                    callback = function()
+                        local uid = Attendance:GetLastRaid()
+                        if uid then
+                            Attendance:ShowRaid(uid)
+                        end
+                    end
+                },
+                {
+                    title = "Record",
+                    close = true,
+                    callback = function()
+                        local uid = Attendance:GetLastRaid()
+                        if uid then
+                            Attendance:ShowRaidRecording(uid)
+                        end
+                    end
+                },
+                {
+                    isSeparator = true
+                },
+                {
+                    title = "Config",
+                    close = true,
+                    callback = function()
+                        Attendance:ShowConfiguration()
+                        self.configuration:SelectGeneral()
+                    end
+                },
+                {
+                    title = "Config: States",
+                    close = true,
+                    callback = function()
+                        Attendance:ShowConfiguration()
+                        self.configuration:SelectStates()
+                    end
+                },
+                {
+                    title = "Config: Analytics",
+                    close = true,
+                    callback = function()
+                        Attendance:ShowConfiguration()
+                        self.configuration:SelectAnalytics()
+                    end
+                },
+                {
+                    isSeparator = true
+                },
+                {
+                    title = "Close",
+                    close = true
+                }
+            }
         }
     })
 end
@@ -309,4 +377,74 @@ function Attendance:GetRaidParticipation(raid_uid)
     end
 
     return db.participation[raid_uid] or {}
+end
+
+function Attendance:NewRaid()
+    -- Get UID
+    local uid = NastrandirRaidTools:CreateUID("Attendance-Raid")
+
+    -- Do the DB stuff
+    local db = NastrandirRaidTools:GetModuleDB("Attendance")
+
+    if not db.raids then
+        db.raids = {}
+    end
+
+    if not db.defaults then
+        db.defaults = {}
+    end
+
+    db.raids[uid] = {
+        name = db.defaults.name or "New Raid",
+        date = NastrandirRaidTools:Today(),
+        start_time = db.defaults.startTime or 1900,
+        end_time = db.defaults.endTime or 2300
+    }
+
+    local Attendance = NastrandirRaidTools:GetModule("Attendance")
+    Attendance:ShowRaid(uid)
+end
+
+function Attendance:GetAnalyticByOrder(order)
+    local db = NastrandirRaidTools:GetModuleDB("Attendance")
+
+    if not db.analytics then
+        db.analytics = {}
+    end
+
+    for uid, analytic in pairs(db.analytics) do
+        if analytic.order == order then
+            return analytic
+        end
+    end
+end
+
+function Attendance:GetLastRaid()
+    local db = NastrandirRaidTools:GetModuleDB("Attendance")
+
+    if not db.raids then
+        db.raids = {}
+    end
+
+    local last
+    for uid, raid in pairs(db.raids) do
+        if not last then
+            last = {
+                uid = uid,
+                raid = raid
+            }
+        elseif last.raid.date < raid.date then
+            last = {
+                uid = uid,
+                raid = raid
+            }
+        elseif last.raid.date == raid.date and last.raid.start_time < raid.start_time then
+            last = {
+                uid = uid,
+                raid = raid
+            }
+        end
+    end
+
+    return (last or {}).uid
 end
