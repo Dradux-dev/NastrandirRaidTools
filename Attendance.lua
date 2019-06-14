@@ -341,3 +341,17 @@ function Attendance:NewRaid()
     local Attendance = NastrandirRaidTools:GetModule("Attendance")
     Attendance:ShowRaid(uid)
 end
+
+function Attendance:GetAnalyticByOrder(order)
+    local db = NastrandirRaidTools:GetModuleDB("Attendance")
+
+    if not db.analytics then
+        db.analytics = {}
+    end
+
+    for uid, analytic in pairs(db.analytics) do
+        if analytic.order == order then
+            return analytic
+        end
+    end
+end

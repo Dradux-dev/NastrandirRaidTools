@@ -24,11 +24,13 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationAnalytics", fu
                     local itemFrame = StdUi:NastrandirRaidTools_Attendance_ConfigurationAnalyticsEdit(parent)
                     itemFrame:SetUID(data)
                     itemFrame:Load()
+                    itemFrame:UpdateOrderButtons()
                     return itemFrame
                 end,
                 function(parent, itemFrame, data, i)
                     itemFrame:SetUID(data)
                     itemFrame:Load()
+                    itemFrame:UpdateOrderButtons()
                 end,
                 widget.analytics,
                 5,

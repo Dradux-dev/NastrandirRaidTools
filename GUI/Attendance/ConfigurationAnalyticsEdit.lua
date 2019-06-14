@@ -87,9 +87,14 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationAnalyticsEdit"
                 -70
         )
 
+        local realHeight = height
+        if widget.save:IsShown() then
+            realHeight = height + 34
+        end
+
         states:SetHeight(statesHeight + totalHeight)
-        widget:SetHeight(height + totalHeight)
-        ViragDevTool_AddData(height + totalHeight, "Height after ObjectList")
+        widget:SetHeight(realHeight + totalHeight)
+        ViragDevTool_AddData(realHeight + totalHeight, "Height after ObjectList")
         ViragDevTool_AddData(widget:GetHeight(), "Real height after ObjectList")
     end
 
@@ -219,6 +224,46 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationAnalyticsEdit"
         widget.states.search:SetText(widget.states.search.placeholder)
     end
 
+    function widget:UpdateOrderButtons()
+        local count = widget:GetAnalyticsCount()
+
+        local function positionButton(t)
+            local frames = {
+                widget.down,
+                widget.up,
+                widget.delete
+            }
+
+            local last
+            for index, state in ipairs(t) do
+                local frame = frames[index]
+                if state then
+                    frame:Show()
+                    frame:ClearAllPoints()
+                    if not last then
+                        StdUi:GlueTop(frame, widget, -10, -10, "RIGHT")
+                    else
+                        StdUi:GlueLeft(frame, last, -5, 0)
+                    end
+
+                    last = frame
+                else
+                    frame:Hide()
+                end
+            end
+        end
+
+        if widget.order == 1 and count == 1 then
+            positionButton({false, false, true})
+        elseif widget.order == 1 then
+            positionButton({true, false, true})
+        elseif widget.order == count then
+            positionButton({false, true, true})
+        else
+            positionButton({true, true, true})
+        end
+    end
+
     widget:SetScript("OnShow", function()
         widget:UpdateStateDropdown()
     end)
@@ -249,6 +294,45 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationAnalyticsEdit"
         widget:DrawStates()
         widget:ShowSave()
     end
+
+    widget.delete:SetScript("OnClick", function()
+        NastrandirRaidTools:GetUserPermission(widget, {
+            callbackYes = function()
+                local db = NastrandirRaidTools:GetModuleDB("Attendance")
+
+                if not db.analytics then
+                    db.analytics = {}
+                end
+
+                db.analytics[widget.uid] = nil
+                widget:GetParent():Load()
+            end
+        })
+    end)
+
+    widget.down:SetScript("OnClick", function()
+        local Attendance = NastrandirRaidTools:GetModule("Attendance")
+        local below = Attendance:GetAnalyticByOrder(widget.order + 1)
+        if below then
+            below.order = widget.order
+        end
+
+        widget.order = widget.order + 1
+        widget:Save()
+        widget:GetParent():Load()
+    end)
+
+    widget.up:SetScript("OnClick", function()
+        local Attendance = NastrandirRaidTools:GetModule("Attendance")
+        local above = Attendance:GetAnalyticByOrder(widget.order - 1)
+        if above then
+            above.order = widget.order
+        end
+
+        widget.order = widget.order - 1
+        widget:Save()
+        widget:GetParent():Load()
+    end)
 
     widget:DrawStates()
     widget:UpdateStateDropdown()
