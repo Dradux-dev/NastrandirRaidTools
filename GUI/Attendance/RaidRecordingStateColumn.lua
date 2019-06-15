@@ -14,8 +14,14 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingStateColumn", 
         return widget.uid
     end
 
-    function widget:AddPlayer(player)
-        if not widget:FindPlayer(player) then
+    function widget:AddPlayer(player, silently)
+        local Attendance = NastrandirRaidTools:GetModule("Attendance")
+        local Roster = NastrandirRaidTools:GetModule("Roster")
+        local main_uid = Roster:GetMainUID(player)
+
+        if not Attendance:IsStateTrackingAlts(widget.uid) and player ~= main_uid then
+            widget:AddPlayer(main_uid, silently)
+        elseif not widget:FindPlayer(player) then
             local Roster = NastrandirRaidTools:GetModule("Roster")
             table.insert(widget.members, {
                 uid = player,
@@ -23,22 +29,16 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingStateColumn", 
                 class = Roster:GetCharacterClass(player),
                 role = Roster:GetCharacterRole(player)
             })
-            widget:OnPlayerAdded(player)
+
+            if not silently then
+                widget:OnPlayerAdded(player)
+            end
             widget:CreatePlayerButtons()
         end
     end
 
     function widget:AddPlayerSilently(player)
-        if not widget:FindPlayer(player) then
-            local Roster = NastrandirRaidTools:GetModule("Roster")
-            table.insert(widget.members, {
-                uid = player,
-                name = Roster:GetCharacterName(player),
-                class = Roster:GetCharacterClass(player),
-                role = Roster:GetCharacterRole(player)
-            })
-            widget:CreatePlayerButtons()
-        end
+        widget:AddPlayer(player, true)
     end
 
     function widget:OnPlayerAdded(player)

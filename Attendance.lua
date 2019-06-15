@@ -448,3 +448,12 @@ function Attendance:GetLastRaid()
 
     return (last or {}).uid
 end
+
+function Attendance:IsStateTrackingAlts(uid)
+    local state = Attendance:GetState(uid)
+    if state then
+        return state.TrackAlts
+    end
+
+    return false
+end
