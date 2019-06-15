@@ -102,6 +102,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
     end
 
     function button:CreateMenu()
+        ViragDevTool_AddData("Create Menu")
         local options = {}
 
         local function newOnEnter(itemFrame)
@@ -132,10 +133,13 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
                 OnLeave = newOnLeave
             }
         })
+        ViragDevTool_AddData(options, "Added Edit")
 
         local characters = button:GetCharacterList()
         button:RemoveCharacter(characters, button.uid)
-        if table.getn(characters) >= 1 then
+        ViragDevTool_AddData(characters, "Character list")
+        ViragDevTool_AddData(button.column:AreAltsAllowed(), "Alts allowed")
+        if table.getn(characters) >= 1 and button.column:AreAltsAllowed() then
             table.sort(characters, function(a, b)
                 return a.name < b.name
             end)
@@ -147,10 +151,15 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
             for index, info in ipairs(characters) do
                 table.insert(options, {
                     title = info.name,
-                    callback = function()
+                    callback = function(entry)
+                        local Roster = NastrandirRaidTools:GetModule("Roster")
+                        local uid = Roster:GetCharacterByName(entry.text:GetText())
+
                         button.context:CloseMenu()
                         button.column:lockButtons()
-                        button.column:AddPlayer(info.uid)
+                        ViragDevTool_AddData(uid, "Adding")
+                        button.column:AddPlayer(uid)
+                        ViragDevTool_AddData(button.uid, "Removing")
                         button.column:RemovePlayer(button.uid)
                         button.column:unlockButtons()
                     end,
@@ -159,6 +168,8 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
                         OnLeave = newOnLeave
                     }
                 })
+                ViragDevTool_AddData(options, "Added " .. info.name)
+                ViragDevTool_AddData(info.uid, "Alt uid")
             end
         end
 
@@ -176,6 +187,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
                 OnLeave = newOnLeave
             }
         })
+        ViragDevTool_AddData(options, "Added Close")
 
         return options
     end
@@ -232,18 +244,40 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
         local Roster = NastrandirRaidTools:GetModule("Roster")
         local name = Roster:GetCharacterName(button.uid)
 
-        if UnitExists(name) then
-            button:SetName(name .. " (*)")
+
+        local CurrentGroupRoster = NastrandirRaidTools:GetModule("CurrentGroupRoster")
+        ViragDevTool_AddData(name, "Checking roster information")
+        ViragDevTool_AddData(button.uid, "UID")
+        local entry = CurrentGroupRoster:GetByUID(button.uid)
+        ViragDevTool_AddData(entry, "Entry")
+        if entry then
+            ViragDevTool_AddData("Setting subgroup info")
+            button:SetName(string.format("%s [%d]", name, entry.subgroup))
         else
-            button:SetName(name)
+            ViragDevTool_AddData(button.uid, "UID")
+            entry = CurrentGroupRoster:GetAlt(button.uid)
+            ViragDevTool_AddData(entry, "Alt")
+            if entry then
+                ViragDevTool_AddData("Setting alt info")
+                button:SetName(string.format("%s [A,%d]", name, entry.subgroup))
+            else
+                ViragDevTool_AddData("No info available")
+                button:SetName(name)
+            end
         end
     end
+
+    button:SetScript("OnShow", function()
+        button:CreateInfoText()
+    end)
 
     button:SetScript("OnClick", function(frame, mouseButton)
         if mouseButton == "RightButton" then
             if not button.context then
+                ViragDevTool_AddData("Create new context menu")
                 button.context = StdUi:ContextMenu(button, button:CreateMenu())
             else
+                ViragDevTool_AddData("Setting new entries for context menu")
                 button.context:DrawOptions(button:CreateMenu())
             end
 
@@ -262,12 +296,9 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
         button:Drop()
     end)
 
-    button:RegisterEvent("GROUP_ROSTER_UPDATE")
-    button:SetScript("OnEvent", function(buttonFrame, event)
-        if event == "GROUP_ROSTER_UPDATE" then
-            print("Group Roster Update")
-            button:CreateInfoText()
-        end
+    local CurrentGroupRoster = NastrandirRaidTools:GetModule("CurrentGroupRoster")
+    CurrentGroupRoster:RegisterListener(button, function()
+        button:CreateInfoText()
     end)
 
     button:SetUID(uid)

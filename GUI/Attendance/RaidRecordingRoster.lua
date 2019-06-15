@@ -146,6 +146,10 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingRoster", funct
         end
     end
 
+    function widget:AreAltsAllowed()
+        return false
+    end
+
     widget:SetName("Roster")
     return widget
 end)

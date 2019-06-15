@@ -37,6 +37,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Roster_ClassButton", function(self, pa
     title:SetPoint("BOTTOM", button, "BOTTOM")
 
     function button:SetName(name)
+        ViragDevTool_AddData(name, "SetName")
         button.title:SetText(name)
     end
 

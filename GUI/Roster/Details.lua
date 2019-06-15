@@ -166,6 +166,10 @@ StdUi:RegisterWidget("NastrandirRaidTools_Roster_Details", function(self, parent
         character.class = widget.base.class:GetValue()
         character.raidmember = widget.base.raidmember:GetChecked()
 
+        -- Update the current roster (perhaps the new character could be in the group
+        local CurrentGroupRoster = NastrandirRaidTools:GetModule("CurrentGroupRoster")
+        CurrentGroupRoster:Scan()
+
         Roster:ShowDetails(widget.uid)
     end
 
@@ -195,6 +199,10 @@ StdUi:RegisterWidget("NastrandirRaidTools_Roster_Details", function(self, parent
         table.insert(main.alts, widget.uid)
         main.main = nil
 
+        -- Update the current roster (perhaps the new character could be in the group
+        local CurrentGroupRoster = NastrandirRaidTools:GetModule("CurrentGroupRoster")
+        CurrentGroupRoster:Scan()
+
         Roster:ShowDetails(widget.uid)
     end
 
@@ -213,6 +221,10 @@ StdUi:RegisterWidget("NastrandirRaidTools_Roster_Details", function(self, parent
             character.alts = {}
         end
 
+        -- Update the current roster (perhaps the new character could be in the group
+        local CurrentGroupRoster = NastrandirRaidTools:GetModule("CurrentGroupRoster")
+        CurrentGroupRoster:Scan()
+
         Roster:ShowDetails(widget.uid)
     end
 
@@ -227,6 +239,10 @@ StdUi:RegisterWidget("NastrandirRaidTools_Roster_Details", function(self, parent
         end
 
         Roster:DeleteCharacter(widget.uid)
+
+        -- Update the current roster
+        local CurrentGroupRoster = NastrandirRaidTools:GetModule("CurrentGroupRoster")
+        CurrentGroupRoster:Scan()
 
         if character.main then
             Roster:ShowDetails(character.main)

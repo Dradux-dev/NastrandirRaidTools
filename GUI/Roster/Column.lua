@@ -60,6 +60,9 @@ StdUi:RegisterWidget("NastrandirRaidTools_Roster_ColumnFrame", function(self, pa
             button:SetUID(member.uid)
             button:SetName(member.name)
             button:SetClass(member.class)
+            if button["CreateInfoText"] then
+                button:CreateInfoText()
+            end
             member.button = button
         else
             local button = widget.createButton(member.uid, member.name, member.class)
