@@ -42,5 +42,6 @@ GUI\HighlightContextMenu.lua
 NastrandirRaidTools.lua
 Roster.lua
 Attendance.lua
+CurrentGroupRoster.lua
 
 

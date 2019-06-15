@@ -87,7 +87,7 @@ function NastrandirRaidTools:GetDB()
     return NastrandirRaidTools.db
 end
 
-function NastrandirRaidTools:GetModuleDB(moduleName)
+function NastrandirRaidTools:GetModuleDB(moduleName, categoryName)
     if not NastrandirRaidTools.db then
         NastrandirRaidTools.db = LibStub("AceDB-3.0"):New("NastrandirRaidToolsDB", defaultSavedVars)
     end
@@ -97,7 +97,15 @@ function NastrandirRaidTools:GetModuleDB(moduleName)
         modules[moduleName] = {}
     end
 
-    return modules[moduleName]
+    if not categoryName then
+        return modules[moduleName]
+    end
+
+    if not modules[moduleName][categoryName] then
+        modules[moduleName][categoryName] = {}
+    end
+
+    return modules[moduleName][categoryName]
 end
 
 function NastrandirRaidTools:CreateMenu()
@@ -360,13 +368,13 @@ function NastrandirRaidTools:FindInTable(t, needle, assosiative)
     local result = {}
 
     if not assosiative then
-        for pos, value in pairs(t) do
+        for pos, value in ipairs(t) do
             if value == needle then
                 table.insert(result, pos)
             end
         end
     else
-        for pos, value in ipairs(t) do
+        for pos, value in pairs(t) do
             if value == needle then
                 table.insert(result, pos)
             end
@@ -386,13 +394,13 @@ function NastrandirRaidTools:FindInTableIf(t, callback, assosiative)
     local result = {}
 
     if not assosiative then
-        for pos, value in pairs(t) do
+        for pos, value in ipairs(t) do
             if callback(value) then
                 table.insert(result, pos)
             end
         end
     else
-        for pos, value in ipairs(t) do
+        for pos, value in pairs(t) do
             if callback(value) then
                 table.insert(result, pos)
             end
@@ -411,5 +419,32 @@ end
 function NastrandirRaidTools:GetFirstKey(t)
     for k, _ in pairs(t) do
         return k
+    end
+end
+
+function NastrandirRaidTools:IterateGroupMembers(forceParty)
+    local raid = IsInRaid()
+    local party = IsInGroup()
+    local raidMember = GetNumGroupMembers()
+    local partyMember = GetNumSubgroupMembers()
+    local i = 1
+    return function()
+        local ret
+        if not raid and not party and i == 1 then
+            ret = 'player'
+        elseif not forceParty and raid then
+            if i <= raidMember then
+                ret = "raid" .. i
+            end
+        elseif forceParty or party then
+            if i == 1 then
+                ret = "player"
+            elseif i <= partyMember then
+                ret = "party" .. (i - 1)
+            end
+        end
+
+        i = i + 1
+        return ret
     end
 end

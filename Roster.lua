@@ -301,3 +301,13 @@ function Roster:AddMember(class, role)
 
     Roster:ShowDetails(uid)
 end
+
+function Roster:GetCharacterByName(name)
+    return NastrandirRaidTools:FindInTableIf(
+            NastrandirRaidTools:GetModuleDB("Roster", "characters"),
+            function(character)
+                return character.name == name
+            end,
+            true
+    )
+end
