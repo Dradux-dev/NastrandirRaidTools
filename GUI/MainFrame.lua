@@ -83,7 +83,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_MainFrame", function(self)
     versionLabel:SetJustifyH("CENTER")
     versionLabel:SetJustifyV("CENTER")
     versionLabel:SetTextColor(1, 1, 1, 1)
-    versionLabel:SetText("0.3.0")
+    versionLabel:SetText("0.3.1")
     StdUi:GlueBottom(versionLabel, window, config.version.x, config.version.y, config.version.inside)
 
     window:SetScript("OnShow", function()
@@ -92,9 +92,6 @@ StdUi:RegisterWidget("NastrandirRaidTools_MainFrame", function(self)
 
     window:Hide()
     NastrandirRaidTools.window = window
-
-    local options_dropdown = CreateFrame("Frame", "PullButtonsOptionsDropDown", nil, "L_UIDropDownMenuTemplate")
-    NastrandirRaidTools.options_dropdown = options_dropdown
 
     return window
 end)
