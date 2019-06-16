@@ -8,6 +8,24 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
     self:InitWidget(button)
     self:SetObjSize(button, width, height)
 
+    local function newOnEnter(itemFrame)
+        button.context:CloseSubMenus();
+
+        ViragDevTool_AddData(itemFrame.childContext, "Child Context")
+        if itemFrame.childContext then
+            ViragDevTool_AddData("Showing sub menu")
+            itemFrame.childContext:ClearAllPoints();
+            itemFrame.childContext:SetPoint('TOPLEFT', itemFrame, 'TOPRIGHT', 0, 0);
+            itemFrame.childContext:Show();
+        end
+
+        itemFrame.text:SetTextColor(1, 0.431, 0.101, 1)
+    end
+
+    local function newOnLeave(itemFrame)
+        itemFrame.text:SetTextColor(1, 1, 1, 1)
+    end
+
     function button:GetName()
         if button.uid then
             local Roster = NastrandirRaidTools:GetModule("Roster")
@@ -101,25 +119,29 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
         end
     end
 
+    function button:CreateAddableAltsMenu()
+        local options = {}
+
+        local CurrentGroupRoster = NastrandirRaidTools:GetModule("CurrentGroupRoster")
+        for name in CurrentGroupRoster:IterateUnknown() do
+            table.insert(options, {
+                title = name,
+                callback = function(entry)
+                    print("Adding:", entry.text:GetText())
+                end,
+                events = {
+                    OnEnter = newOnEnter,
+                    OnLeave = newOnLeave
+                }
+            })
+        end
+
+        return options
+    end
+
     function button:CreateMenu()
         ViragDevTool_AddData("Create Menu")
         local options = {}
-
-        local function newOnEnter(itemFrame)
-            button.context:CloseSubMenus();
-
-            if itemFrame.childContext then
-                itemFrame.childContext:ClearAllPoints();
-                itemFrame.childContext:SetPoint('TOPLEFT', itemFrame, 'TOPRIGHT', 0, 0);
-                itemFrame.childContext:Show();
-            end
-
-            itemFrame.text:SetTextColor(1, 0.431, 0.101, 1)
-        end
-
-        local function newOnLeave(itemFrame)
-            itemFrame.text:SetTextColor(1, 1, 1, 1)
-        end
 
         -- Edit
         table.insert(options, {
@@ -139,14 +161,18 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
         button:RemoveCharacter(characters, button.uid)
         ViragDevTool_AddData(characters, "Character list")
         ViragDevTool_AddData(button.column:AreAltsAllowed(), "Alts allowed")
+        local alts_options = button:CreateAddableAltsMenu()
+
+        if (table.getn(characters) >= 1 and button.column:AreAltsAllowed()) or #alts_options >= 1 then
+            table.insert(options, {
+                isSeparator = true
+            })
+        end
+
         if table.getn(characters) >= 1 and button.column:AreAltsAllowed() then
             table.sort(characters, function(a, b)
                 return a.name < b.name
             end)
-
-            table.insert(options, {
-                isSeparator = true
-            })
 
             for index, info in ipairs(characters) do
                 table.insert(options, {
@@ -171,6 +197,36 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
                 ViragDevTool_AddData(options, "Added " .. info.name)
                 ViragDevTool_AddData(info.uid, "Alt uid")
             end
+        end
+
+        if #alts_options >= 1 then
+            table.insert(options, {
+                title = "Add Alt",
+                children = {
+                    {
+                        title = "Alt 1",
+                        callback = function()
+                            print("Alt 1")
+                        end
+                    },
+                    {
+                        title = "Alt 2",
+                        callback = function()
+                            print("Alt 2")
+                        end
+                    },
+                    {
+                        title = "Alt 3",
+                        callback = function()
+                            print("Alt 3")
+                        end
+                    }
+                },
+                events = {
+                    OnEnter = newOnEnter,
+                    OnLeave = newOnLeave
+                }
+            })
         end
 
         table.insert(options, {
