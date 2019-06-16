@@ -267,6 +267,20 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
         end
     end
 
+    function button:CloseContextMenu()
+        if button.context then
+            button.context:CloseMenu()
+        end
+    end
+
+    function button:CloseAllContextMenus()
+        for _, column in ipairs(button.column_container) do
+            column:CloseContextMenus()
+        end
+
+        self.roster:CloseContextMenus()
+    end
+
     button:SetScript("OnShow", function()
         button:CreateInfoText()
     end)
@@ -280,6 +294,8 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
                 ViragDevTool_AddData("Setting new entries for context menu")
                 button.context:DrawOptions(button:CreateMenu())
             end
+
+            button:CloseAllContextMenus()
 
             StdUi:GlueBelow(button.context, button, 10, button:GetHeight() / 2, "LEFT")
             button.context:SetFrameStrata("TOOLTIP")

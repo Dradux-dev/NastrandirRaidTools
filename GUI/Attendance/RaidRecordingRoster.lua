@@ -150,6 +150,14 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingRoster", funct
         return false
     end
 
+    function widget:CloseContextMenus()
+        for index, member in ipairs(widget.members) do
+            if member.button then
+                member.button:CloseContextMenu()
+            end
+        end
+    end
+
     widget:SetName("Roster")
     return widget
 end)
