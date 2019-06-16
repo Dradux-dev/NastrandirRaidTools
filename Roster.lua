@@ -287,9 +287,6 @@ function Roster:AddMember(class, role)
     end
 
     local uid = Roster:CreateUID()
-    ViragDevTool_AddData(uid, "New UID")
-    ViragDevTool_AddData(class, "Class is")
-    ViragDevTool_AddData(role, "Role is")
 
     db.characters[uid] = {
         name = "New Player",

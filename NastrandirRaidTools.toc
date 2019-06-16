@@ -38,7 +38,7 @@ GUI\Attendance\RaidsRaid.lua
 GUI\MainFrame.lua
 GUI\MenuButton.lua
 GUI\SpinBox.lua
-GUI\HighlightContextMenu.lua
+GUI\DynamicContextMenu.lua
 NastrandirRaidTools.lua
 Roster.lua
 Attendance.lua

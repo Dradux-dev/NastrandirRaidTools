@@ -15,8 +15,6 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingStateColumn", 
     end
 
     function widget:AddPlayer(player, silently)
-        ViragDevTool_AddData(player, "Adding player")
-        ViragDevTool_AddData(silently, "Silently")
         local Attendance = NastrandirRaidTools:GetModule("Attendance")
         local Roster = NastrandirRaidTools:GetModule("Roster")
         local main_uid = Roster:GetMainUID(player)

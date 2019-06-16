@@ -11,9 +11,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
     local function newOnEnter(itemFrame)
         button.context:CloseSubMenus();
 
-        ViragDevTool_AddData(itemFrame.childContext, "Child Context")
         if itemFrame.childContext then
-            ViragDevTool_AddData("Showing sub menu")
             itemFrame.childContext:ClearAllPoints();
             itemFrame.childContext:SetPoint('TOPLEFT', itemFrame, 'TOPRIGHT', 0, 0);
             itemFrame.childContext:Show();
@@ -140,7 +138,6 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
     end
 
     function button:CreateMenu()
-        ViragDevTool_AddData("Create Menu")
         local options = {}
 
         -- Edit
@@ -155,12 +152,9 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
                 OnLeave = newOnLeave
             }
         })
-        ViragDevTool_AddData(options, "Added Edit")
 
         local characters = button:GetCharacterList()
         button:RemoveCharacter(characters, button.uid)
-        ViragDevTool_AddData(characters, "Character list")
-        ViragDevTool_AddData(button.column:AreAltsAllowed(), "Alts allowed")
         local alts_options = button:CreateAddableAltsMenu()
 
         if (table.getn(characters) >= 1 and button.column:AreAltsAllowed()) or #alts_options >= 1 then
@@ -183,19 +177,13 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
 
                         button.context:CloseMenu()
                         button.column:lockButtons()
-                        ViragDevTool_AddData(uid, "Adding")
                         button.column:AddPlayer(uid)
-                        ViragDevTool_AddData(button.uid, "Removing")
                         button.column:RemovePlayer(button.uid)
                         button.column:unlockButtons()
-                    end,
-                    events = {
-                        OnEnter = newOnEnter,
-                        OnLeave = newOnLeave
-                    }
+
+                        print(info.name, info.uid)
+                    end
                 })
-                ViragDevTool_AddData(options, "Added " .. info.name)
-                ViragDevTool_AddData(info.uid, "Alt uid")
             end
         end
 
@@ -243,7 +231,6 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
                 OnLeave = newOnLeave
             }
         })
-        ViragDevTool_AddData(options, "Added Close")
 
         return options
     end
@@ -302,22 +289,14 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
 
 
         local CurrentGroupRoster = NastrandirRaidTools:GetModule("CurrentGroupRoster")
-        ViragDevTool_AddData(name, "Checking roster information")
-        ViragDevTool_AddData(button.uid, "UID")
         local entry = CurrentGroupRoster:GetByUID(button.uid)
-        ViragDevTool_AddData(entry, "Entry")
         if entry then
-            ViragDevTool_AddData("Setting subgroup info")
             button:SetName(string.format("%s [%d]", name, entry.subgroup))
         else
-            ViragDevTool_AddData(button.uid, "UID")
             entry = CurrentGroupRoster:GetAlt(button.uid)
-            ViragDevTool_AddData(entry, "Alt")
             if entry then
-                ViragDevTool_AddData("Setting alt info")
                 button:SetName(string.format("%s [A,%d]", name, entry.subgroup))
             else
-                ViragDevTool_AddData("No info available")
                 button:SetName(name)
             end
         end
@@ -344,10 +323,9 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
     button:SetScript("OnClick", function(frame, mouseButton)
         if mouseButton == "RightButton" then
             if not button.context then
-                ViragDevTool_AddData("Create new context menu")
-                button.context = StdUi:ContextMenu(button, button:CreateMenu())
+                button.context = StdUi:DynamicContextMenu(button, button:CreateMenu())
+                button.context:SetHighlightTextColor(1, 0.431, 0.101, 1)
             else
-                ViragDevTool_AddData("Setting new entries for context menu")
                 button.context:DrawOptions(button:CreateMenu())
             end
 

@@ -49,9 +49,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationAnalyticsEdit"
 
     function widget:ShowSave()
         if not widget.save:IsShown() then
-            ViragDevTool_AddData(widget:GetHeight(), "Height before button")
             widget:SetHeight(widget:GetHeight() + 34)
-            ViragDevTool_AddData(widget:GetHeight(), "Height after button")
             widget.save:Show()
         end
     end
@@ -94,8 +92,6 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationAnalyticsEdit"
 
         states:SetHeight(statesHeight + totalHeight)
         widget:SetHeight(realHeight + totalHeight)
-        ViragDevTool_AddData(realHeight + totalHeight, "Height after ObjectList")
-        ViragDevTool_AddData(widget:GetHeight(), "Real height after ObjectList")
     end
 
     function widget:GetAnalyticsCount()
@@ -204,7 +200,6 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationAnalyticsEdit"
 
         local options = {}
         for uid, state in pairs(db.states) do
-            ViragDevTool_AddData(state, "Adding state")
             table.insert(options, {
                 text = state.Name,
                 value = uid,
@@ -212,13 +207,10 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationAnalyticsEdit"
             })
         end
 
-        ViragDevTool_AddData(options, "Sorting")
         table.sort(options, function(a, b)
             return a.order < b.order
         end)
-        ViragDevTool_AddData(options, "Sorted")
 
-        ViragDevTool_AddData(options, "Setting options")
         widget.states.search:SetOptions(options)
         widget.states.search:SetPlaceholder("-- Select --")
         widget.states.search:SetText(widget.states.search.placeholder)

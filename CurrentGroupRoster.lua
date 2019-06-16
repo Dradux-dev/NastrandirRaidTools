@@ -60,8 +60,6 @@ end
 function CurrentGroupRoster:GetByUID(uid)
     CurrentGroupRoster:Init()
 
-    ViragDevTool_AddData(uid, "GetByUID")
-    ViragDevTool_AddData(self.groupRoster, "Current Group Roster")
     return self.groupRoster.uid[uid]
 end
 
@@ -77,15 +75,10 @@ function CurrentGroupRoster:GetAlt(uid)
     local Roster = NastrandirRaidTools:GetModule("Roster")
     CurrentGroupRoster:Init()
 
-    ViragDevTool_AddData(uid, "GetAlt")
-
     local main_uid = Roster:GetMainUID(uid)
-    ViragDevTool_AddData(main_uid, "Main")
 
     local uid = self.groupRoster.main_uid[main_uid]
-    ViragDevTool_AddData(uid, "New uid")
     if uid then
-        ViragDevTool_AddData("Calling GetByUID")
         return CurrentGroupRoster:GetByUID(uid)
     end
 end
@@ -143,24 +136,18 @@ function CurrentGroupRoster:IterateListener()
     local i = 1
     local count = #self.listener
 
-    ViragDevTool_AddData(i, "Iteration start")
-    ViragDevTool_AddData(count, "Iteration end")
     return function()
         local ret
         repeat
             ret = nil
 
-            ViragDevTool_AddData(i, "Checking")
             if i <= count and type(self.listener[i].callback) == "function" then
                 ret = self.listener[i]
-                ViragDevTool_AddData(ret, "Current potential return")
             end
 
             i = i + 1
-            ViragDevTool_AddData(i, "New position")
         until ret or i > count
 
-        ViragDevTool_AddData(ret, "Returning")
         return ret
     end
 end

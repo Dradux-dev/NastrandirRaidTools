@@ -93,8 +93,5 @@ StdUi:RegisterWidget("NastrandirRaidTools_MainFrame", function(self)
     window:Hide()
     NastrandirRaidTools.window = window
 
-    local options_dropdown = CreateFrame("Frame", "PullButtonsOptionsDropDown", nil, "L_UIDropDownMenuTemplate")
-    NastrandirRaidTools.options_dropdown = options_dropdown
-
     return window
 end)
