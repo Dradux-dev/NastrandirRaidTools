@@ -16,6 +16,10 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationStatesEdit", f
     widget.button_up = button_up
     StdUi:GlueLeft(button_up, button_down, -5, 0)
 
+    local delete = StdUi:SquareButton(widget, 24, 24, "DELETE")
+    widget.delete = delete
+    StdUi:GlueLeft(delete, button_up, -5, 0)
+
     local name = StdUi:EditBox(widget, 0.77 * widget:GetWidth(), 24, "")
     widget.name = name
     StdUi:AddLabel(widget, name, "Name", "TOP")
@@ -153,22 +157,41 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationStatesEdit", f
 
     function widget:UpdateOrderButtons()
         local stateCount = widget:GetStatesCount()
+
+        local function positionButton(t)
+            local frames = {
+                widget.button_down,
+                widget.button_up,
+                widget.delete
+            }
+
+            local last
+            for index, state in ipairs(t) do
+                local frame = frames[index]
+                if state then
+                    frame:Show()
+                    frame:ClearAllPoints()
+                    if not last then
+                        StdUi:GlueTop(frame, widget, -10, -10, "RIGHT")
+                    else
+                        StdUi:GlueLeft(frame, last, -5, 0)
+                    end
+
+                    last = frame
+                else
+                    frame:Hide()
+                end
+            end
+        end
+
         if widget.order == 1 and stateCount == 1 then
-            widget.button_down:Hide()
-            widget.button_up:Hide()
+            positionButton({false, false, true})
         elseif widget.order == 1 then
-            StdUi:GlueTop(widget.button_down, widget, -10, -10, "RIGHT")
-            widget.button_up:Hide()
-            widget.button_down:Show()
+            positionButton({true, false, true})
         elseif widget.order == stateCount then
-            StdUi:GlueTop(widget.button_up, widget, -10, -10, "RIGHT")
-            widget.button_up:Show()
-            widget.button_down:Hide()
+            positionButton({false, true, true})
         else
-            StdUi:GlueTop(widget.button_down, widget, -10, -10, "RIGHT")
-            StdUi:GlueLeft(widget.button_up, widget.button_down, -5, 0)
-            widget.button_up:Show()
-            widget.button_down:Show()
+            positionButton({true, true, true})
         end
     end
 
@@ -218,6 +241,16 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationStatesEdit", f
 
             widget:GetParent():DrawStates()
         end
+    end)
+
+    widget.delete:SetScript("OnClick", function()
+        NastrandirRaidTools:GetUserPermission(widget, {
+            callbackYes = function()
+                local db = NastrandirRaidTools:GetModuleDB("Attendance", "states")
+                db[widget.uid] = nil
+                widget:GetParent():DrawStates()
+            end
+        })
     end)
 
     widget.save:SetScript("OnClick", function()

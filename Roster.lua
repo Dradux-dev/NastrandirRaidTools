@@ -56,7 +56,7 @@ function Roster:OnEnable()
                     callback = function(itemFrame)
                         local context = itemFrame.mainContext or itemFrame:GetParent()
                         context:CloseMenu()
-                        
+
                         Roster:AddMember(
                                 NastrandirRaidTools:GetFirstKey(NastrandirRaidTools:GetTankClasses(), true),
                                 NastrandirRaidTools.role_types.tank
