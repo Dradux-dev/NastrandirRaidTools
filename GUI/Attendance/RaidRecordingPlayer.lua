@@ -211,7 +211,6 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
             end
         end
 
-        ViragDevTool_AddData(alts_options, "Alts")
         if #alts_options >= 1 then
             table.insert(options, {
                 title = "Add Alt",

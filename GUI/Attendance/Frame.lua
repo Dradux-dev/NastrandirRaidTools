@@ -77,53 +77,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance", function(self, parent)
 
         local start_raid = widget.start_raid:GetValue()
         local end_raid = widget.end_raid:GetValue()
-        local start_date = Attendance:GetRaid(start_raid).date
-        local end_date = Attendance:GetRaid(end_raid).date
-
-        local attendance_data = {}
-        local raid_list = Attendance:GetRaidList(start_date, end_date).order
-
-        -- Parse participation
-        for _, raid_uid in ipairs(raid_list) do
-            local raid = Attendance:GetRaid(raid_uid)
-
-            for index, entry in ipairs(Attendance:GetRaidParticipation(raid_uid)) do
-                local main_uid = Roster:GetMainUID(entry.member)
-
-                if not attendance_data[main_uid] then
-                    attendance_data[main_uid] = {
-                        state = nil,
-                        timestamp = nil,
-                        duration = 0,
-                        states = {}
-                    }
-                end
-
-                local player = attendance_data[main_uid]
-                if not player.state then
-                    -- First occurence in the actual raid
-                    player.state = entry.state
-                    player.timestamp = entry.time
-                else
-                    local duration = NastrandirRaidTools:GetDuration(player.timestamp, entry.time)
-                    player.duration = player.duration + duration
-                    player.states[player.state] = (player.states[player.state] or 0) + duration
-                    player.state = entry.state
-                    player.timestamp = entry.time
-                end
-            end
-
-            -- Add duration of last state til raid end
-            for main_uid, player in pairs(attendance_data) do
-                if player.state then
-                    local duration = NastrandirRaidTools:GetDuration(player.timestamp, raid.end_time)
-                    player.duration = player.duration + duration
-                    player.states[player.state] = (player.states[player.state] or 0) + duration
-                    player.state = nil
-                    player.timestamp = nil
-                end
-            end
-        end
+        local attendance_data = Attendance:Analyse(start_raid, end_raid)
 
         -- Build table
         widget.states = Attendance:GetStates()
@@ -173,7 +127,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance", function(self, parent)
                     local total = attendance_data[player_uid].duration
                     local time = 0
                     if attendance_data[player_uid].states[state_uid] then
-                        time = attendance_data[player_uid].states[state_uid]
+                        time = attendance_data[player_uid].states[state_uid].total
                     else
                         --print("State not found", self.data:GetText(1, s+1), ":", self.data:GetData(1, s+1))
                     end

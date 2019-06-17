@@ -107,7 +107,6 @@ StdUi:RegisterWidget("DynamicContextMenu", function(self, parent, options, stopH
         local itemFrame;
 
         if data.title then
-            ViragDevTool_AddData(data.title, "Created title")
             itemFrame = parent.stdUi:Frame(parent, nil, 20);
             itemFrame.text = parent.stdUi:Label(itemFrame);
             itemFrame.text:SetTextColor(unpack(context.normalTextColor))
@@ -133,12 +132,9 @@ StdUi:RegisterWidget("DynamicContextMenu", function(self, parent, options, stopH
         end
 
         if not data.isSeparator and data.children then
-            ViragDevTool_AddData(data, "Creating sub menu")
-            ViragDevTool_AddData(i, "Position")
             itemFrame.icon = parent.stdUi:Texture(itemFrame, 10, 10, [[Interface\Buttons\SquareButtonTextures]]);
             itemFrame.icon:SetTexCoord(0.42187500, 0.23437500, 0.01562500, 0.20312500);
             parent.stdUi:GlueRight(itemFrame.icon, itemFrame, -4, 0, true);
-            ViragDevTool_AddData(itemFrame.icon, "Icon created")
 
             itemFrame.childContext = parent.stdUi:DynamicContextMenu(parent, data.children, true, parent.level + 1);
             itemFrame.childContext:SetNormalTextColor(unpack(context.normalTextColor))
@@ -146,16 +142,10 @@ StdUi:RegisterWidget("DynamicContextMenu", function(self, parent, options, stopH
             itemFrame.parentContext = parent;
             -- this will keep propagating mainContext thru all children
             itemFrame.mainContext = parent.mainContext;
-
-            ViragDevTool_AddData(itemFrame.childContext, "Child context")
-            ViragDevTool_AddData(itemFrame.parentContext, "Parent context")
-            ViragDevTool_AddData(itemFrame.mainContext, "Main context")
         end
 
         if not data.isSeparator then
-            ViragDevTool_AddData(data.title or i, "Hook(1)")
             itemFrame:SetScript('OnEnter', function(itemFrame, button)
-                ViragDevTool_AddData(itemFrame, "OnEnter(1)")
                 parent:CloseSubMenus();
 
                 if itemFrame.childContext and itemFrame.data.children then
@@ -305,9 +295,7 @@ StdUi:RegisterWidget("DynamicContextMenu", function(self, parent, options, stopH
     context:SetScript("OnShow", function()
         if context.level == 1 then
             for idx, otherContext in ipairs(contextMenus) do
-                ViragDevTool_AddData(idx, "Closing other menu")
                 if otherContext ~= context then
-                    ViragDevTool_AddData(otherContext, "It's not me, close it!")
                     otherContext:CloseMenu()
                 end
             end

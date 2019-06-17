@@ -482,3 +482,65 @@ function Attendance:IsStateTrackingAlts(uid)
 
     return false
 end
+
+function Attendance:Analyse(start_raid, end_raid)
+    local Roster = NastrandirRaidTools:GetModule("Roster")
+
+    local start_date = Attendance:GetRaid(start_raid).date
+    local end_date = Attendance:GetRaid(end_raid).date
+
+    local attendance_data = {}
+    local raid_list = Attendance:GetRaidList(start_date, end_date).order
+
+    -- Parse participation
+    for _, raid_uid in ipairs(raid_list) do
+        local raid = Attendance:GetRaid(raid_uid)
+
+        for index, entry in ipairs(Attendance:GetRaidParticipation(raid_uid)) do
+            local main_uid = Roster:GetMainUID(entry.member)
+
+            if not attendance_data[main_uid] then
+                attendance_data[main_uid] = {
+                    state = nil,
+                    timestamp = nil,
+                    duration = 0,
+                    states = {}
+                }
+            end
+
+            local player = attendance_data[main_uid]
+            if not player.state then
+                -- First occurence in the actual raid
+                player.state = entry.state
+                player.timestamp = entry.time
+            else
+                local state = Attendance:GetState(player.state)
+                local duration = NastrandirRaidTools:GetDuration(player.timestamp, entry.time)
+                player.duration = player.duration + duration
+                player.states[player.state] = {
+                    total = ((player.states[player.state] or {}).total or 0) + duration,
+                    tolerance = ((player.states[player.state] or {}).tolerance or 0) + math.min(duration, state.tolerance)
+                }
+                player.state = entry.state
+                player.timestamp = entry.time
+            end
+        end
+
+        -- Add duration of last state til raid end
+        for main_uid, player in pairs(attendance_data) do
+            if player.state then
+                local state = Attendance:GetState(player.state)
+                local duration = NastrandirRaidTools:GetDuration(player.timestamp, raid.end_time)
+                player.duration = player.duration + duration
+                player.states[player.state] = {
+                    total = ((player.states[player.state] or {}).total or 0) + duration,
+                    tolerance = ((player.states[player.state] or {}).tolerance or 0) + math.min(duration, state.tolerance)
+                }
+                player.state = nil
+                player.timestamp = nil
+            end
+        end
+    end
+
+    return attendance_data
+end
