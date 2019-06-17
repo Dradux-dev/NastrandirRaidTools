@@ -85,6 +85,10 @@ StdUi:RegisterWidget("DynamicContextMenu", function(self, parent, options, stopH
             update(parent, itemFrame, data[i], i);
             itemFrame:Show();
 
+            if data[i].title == "Add Alt" then
+                _G["DraduxAddAlt"] = itemFrame
+            end
+
             totalHeight = totalHeight + itemFrame:GetHeight();
             if i == 1 then
                 -- glue first item to offset
@@ -103,6 +107,7 @@ StdUi:RegisterWidget("DynamicContextMenu", function(self, parent, options, stopH
         local itemFrame;
 
         if data.title then
+            ViragDevTool_AddData(data.title, "Created title")
             itemFrame = parent.stdUi:Frame(parent, nil, 20);
             itemFrame.text = parent.stdUi:Label(itemFrame);
             itemFrame.text:SetTextColor(unpack(context.normalTextColor))
@@ -128,9 +133,12 @@ StdUi:RegisterWidget("DynamicContextMenu", function(self, parent, options, stopH
         end
 
         if not data.isSeparator and data.children then
+            ViragDevTool_AddData(data, "Creating sub menu")
+            ViragDevTool_AddData(i, "Position")
             itemFrame.icon = parent.stdUi:Texture(itemFrame, 10, 10, [[Interface\Buttons\SquareButtonTextures]]);
             itemFrame.icon:SetTexCoord(0.42187500, 0.23437500, 0.01562500, 0.20312500);
             parent.stdUi:GlueRight(itemFrame.icon, itemFrame, -4, 0, true);
+            ViragDevTool_AddData(itemFrame.icon, "Icon created")
 
             itemFrame.childContext = parent.stdUi:DynamicContextMenu(parent, data.children, true, parent.level + 1);
             itemFrame.childContext:SetNormalTextColor(unpack(context.normalTextColor))
@@ -139,33 +147,31 @@ StdUi:RegisterWidget("DynamicContextMenu", function(self, parent, options, stopH
             -- this will keep propagating mainContext thru all children
             itemFrame.mainContext = parent.mainContext;
 
-            itemFrame:HookScript('OnEnter', function(itemFrame, button)
+            ViragDevTool_AddData(itemFrame.childContext, "Child context")
+            ViragDevTool_AddData(itemFrame.parentContext, "Parent context")
+            ViragDevTool_AddData(itemFrame.mainContext, "Main context")
+        end
+
+        if not data.isSeparator then
+            ViragDevTool_AddData(data.title or i, "Hook(1)")
+            itemFrame:SetScript('OnEnter', function(itemFrame, button)
+                ViragDevTool_AddData(itemFrame, "OnEnter(1)")
                 parent:CloseSubMenus();
 
-                itemFrame.childContext:ClearAllPoints();
-                itemFrame.childContext:SetPoint('TOPLEFT', itemFrame, 'TOPRIGHT', 0, 0);
-                itemFrame.childContext:Show();
+                if itemFrame.childContext and itemFrame.data.children then
+                    itemFrame.childContext:SetNormalTextColor(unpack(context.normalTextColor))
+                    itemFrame.childContext:SetHighlightTextColor(unpack(context.highlightTextColor))
+                    itemFrame.childContext:ClearAllPoints();
+                    itemFrame.childContext:SetPoint('TOPLEFT', itemFrame, 'TOPRIGHT', 0, 0);
+                    itemFrame.childContext:Show();
+                end
 
                 if itemFrame.text then
                     itemFrame.text:SetTextColor(unpack(context.highlightTextColor))
                 end
             end);
 
-            itemFrame:HookScript('OnLeave', function(itemFrame, button)
-                if itemFrame.text then
-                    itemFrame.text:SetTextColor(unpack(context.normalTextColor))
-                end
-            end);
-        elseif not data.isSeparator then
-            itemFrame:HookScript('OnEnter', function(itemFrame, button)
-                parent:CloseSubMenus();
-
-                if itemFrame.text then
-                    itemFrame.text:SetTextColor(unpack(context.highlightTextColor))
-                end
-            end);
-
-            itemFrame:HookScript('OnLeave', function(itemFrame, button)
+            itemFrame:SetScript('OnLeave', function(itemFrame, button)
                 if itemFrame.text then
                     itemFrame.text:SetTextColor(unpack(context.normalTextColor))
                 end
@@ -249,16 +255,7 @@ StdUi:RegisterWidget("DynamicContextMenu", function(self, parent, options, stopH
         end
 
         -- Hide Sub menu option
-        if itemFrame.childContext and not data.children then
-            itemFrame.icon:Hide()
-            itemFrame:HookScript('OnEnter', function(itemFrame, button)
-                parent:CloseSubMenus();
-
-                if itemFrame.text then
-                    itemFrame.text:SetTextColor(unpack(context.highlightTextColor))
-                end
-            end);
-        elseif not itemFrame.childContext and data.childContext and not data.isSeparator then
+        if not itemFrame.childContext and data.childContext and not data.isSeparator then
             itemFrame.icon = parent.stdUi:Texture(itemFrame, 10, 10, [[Interface\Buttons\SquareButtonTextures]]);
             itemFrame.icon:SetTexCoord(0.42187500, 0.23437500, 0.01562500, 0.20312500);
             parent.stdUi:GlueRight(itemFrame.icon, itemFrame, -4, 0, true);
@@ -269,24 +266,6 @@ StdUi:RegisterWidget("DynamicContextMenu", function(self, parent, options, stopH
             itemFrame.parentContext = parent;
             -- this will keep propagating mainContext thru all children
             itemFrame.mainContext = parent.mainContext;
-
-            itemFrame:HookScript('OnEnter', function(itemFrame, button)
-                parent:CloseSubMenus();
-
-                itemFrame.childContext:ClearAllPoints();
-                itemFrame.childContext:SetPoint('TOPLEFT', itemFrame, 'TOPRIGHT', 0, 0);
-                itemFrame.childContext:Show();
-
-                if itemFrame.text then
-                    itemFrame.text:SetTextColor(unpack(context.highlightTextColor))
-                end
-            end);
-
-            itemFrame:HookScript('OnLeave', function(itemFrame, button)
-                if itemFrame.text then
-                    itemFrame.text:SetTextColor(unpack(context.normalTextColor))
-                end
-            end);
         end
 
         itemFrame.data = data
@@ -325,8 +304,10 @@ StdUi:RegisterWidget("DynamicContextMenu", function(self, parent, options, stopH
 
     context:SetScript("OnShow", function()
         if context.level == 1 then
-            for _, otherContext in ipairs(contextMenus) do
+            for idx, otherContext in ipairs(contextMenus) do
+                ViragDevTool_AddData(idx, "Closing other menu")
                 if otherContext ~= context then
+                    ViragDevTool_AddData(otherContext, "It's not me, close it!")
                     otherContext:CloseMenu()
                 end
             end

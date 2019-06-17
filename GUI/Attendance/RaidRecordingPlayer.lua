@@ -146,11 +146,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
             callback = function()
                 button.context:CloseMenu()
                 button:EditCharacter()
-            end,
-            events = {
-                OnEnter = newOnEnter,
-                OnLeave = newOnLeave
-            }
+            end
         })
 
         local characters = button:GetCharacterList()
@@ -187,6 +183,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
             end
         end
 
+        ViragDevTool_AddData(alts_options, "Alts")
         if #alts_options >= 1 then
             table.insert(options, {
                 title = "Add Alt",
@@ -209,10 +206,6 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
                             print("Alt 3")
                         end
                     }
-                },
-                events = {
-                    OnEnter = newOnEnter,
-                    OnLeave = newOnLeave
                 }
             })
         end
@@ -225,11 +218,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
             title = "Close",
             callback = function()
                 button.context:CloseMenu()
-            end,
-            events = {
-                OnEnter = newOnEnter,
-                OnLeave = newOnLeave
-            }
+            end
         })
 
         return options
