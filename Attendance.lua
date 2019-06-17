@@ -152,14 +152,20 @@ function Attendance:OnEnable()
                 {
                     title = "Add Raid",
                     close = true,
-                    callback = function()
+                    callback = function(itemFrame)
+                        local context = itemFrame.mainContext or itemFrame:GetParent()
+                        context:CloseMenu()
+
                         Attendance:NewRaid()
                     end
                 },
                 {
                     title = "Edit Raid",
                     close = true,
-                    callback = function()
+                    callback = function(itemFrame)
+                        local context = itemFrame.mainContext or itemFrame:GetParent()
+                        context:CloseMenu()
+
                         local uid = Attendance:GetLastRaid()
                         if uid then
                             Attendance:ShowRaid(uid)
@@ -169,7 +175,10 @@ function Attendance:OnEnable()
                 {
                     title = "Record",
                     close = true,
-                    callback = function()
+                    callback = function(itemFrame)
+                        local context = itemFrame.mainContext or itemFrame:GetParent()
+                        context:CloseMenu()
+
                         local uid = Attendance:GetLastRaid()
                         if uid then
                             Attendance:ShowRaidRecording(uid)
@@ -182,7 +191,10 @@ function Attendance:OnEnable()
                 {
                     title = "Config",
                     close = true,
-                    callback = function()
+                    callback = function(itemFrame)
+                        local context = itemFrame.mainContext or itemFrame:GetParent()
+                        context:CloseMenu()
+
                         Attendance:ShowConfiguration()
                         self.configuration:SelectGeneral()
                     end
@@ -190,7 +202,10 @@ function Attendance:OnEnable()
                 {
                     title = "Config: States",
                     close = true,
-                    callback = function()
+                    callback = function(itemFrame)
+                        local context = itemFrame.mainContext or itemFrame:GetParent()
+                        context:CloseMenu()
+
                         Attendance:ShowConfiguration()
                         self.configuration:SelectStates()
                     end
@@ -198,7 +213,10 @@ function Attendance:OnEnable()
                 {
                     title = "Config: Analytics",
                     close = true,
-                    callback = function()
+                    callback = function(itemFrame)
+                        local context = itemFrame.mainContext or itemFrame:GetParent()
+                        context:CloseMenu()
+
                         Attendance:ShowConfiguration()
                         self.configuration:SelectAnalytics()
                     end
@@ -208,7 +226,10 @@ function Attendance:OnEnable()
                 },
                 {
                     title = "Close",
-                    close = true
+                    callback = function(itemFrame)
+                        local context = itemFrame.mainContext or itemFrame:GetParent()
+                        context:CloseMenu()
+                    end
                 }
             }
         }

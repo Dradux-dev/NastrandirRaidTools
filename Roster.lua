@@ -53,7 +53,10 @@ function Roster:OnEnable()
                 {
                     title = "Add Tank",
                     close = true,
-                    callback = function()
+                    callback = function(itemFrame)
+                        local context = itemFrame.mainContext or itemFrame:GetParent()
+                        context:CloseMenu()
+                        
                         Roster:AddMember(
                                 NastrandirRaidTools:GetFirstKey(NastrandirRaidTools:GetTankClasses(), true),
                                 NastrandirRaidTools.role_types.tank
@@ -63,7 +66,10 @@ function Roster:OnEnable()
                 {
                     title = "Add Melee",
                     close = true,
-                    callback = function()
+                    callback = function(itemFrame)
+                        local context = itemFrame.mainContext or itemFrame:GetParent()
+                        context:CloseMenu()
+
                         Roster:AddMember(
                                 NastrandirRaidTools:GetFirstKey(NastrandirRaidTools:GetMeleeClasses(), true),
                                 NastrandirRaidTools.role_types.melee
@@ -73,7 +79,10 @@ function Roster:OnEnable()
                 {
                     title = "Add Ranged",
                     close = true,
-                    callback = function()
+                    callback = function(itemFrame)
+                        local context = itemFrame.mainContext or itemFrame:GetParent()
+                        context:CloseMenu()
+
                         Roster:AddMember(
                                 NastrandirRaidTools:GetFirstKey(NastrandirRaidTools:GetRangedClasses(), true),
                                 NastrandirRaidTools.role_types.ranged
@@ -83,7 +92,10 @@ function Roster:OnEnable()
                 {
                     title = "Add Healer",
                     close = true,
-                    callback = function()
+                    callback = function(itemFrame)
+                        local context = itemFrame.mainContext or itemFrame:GetParent()
+                        context:CloseMenu()
+
                         Roster:AddMember(
                                 NastrandirRaidTools:GetFirstKey(NastrandirRaidTools:GetHealClasses(), true),
                                 NastrandirRaidTools.role_types.heal
@@ -95,7 +107,10 @@ function Roster:OnEnable()
                 },
                 {
                     title = "Close",
-                    close = true
+                    callback = function(itemFrame)
+                        local context = itemFrame.mainContext or itemFrame:GetParent()
+                        context:CloseMenu()
+                    end
                 },
             }
         }

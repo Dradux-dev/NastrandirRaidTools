@@ -130,14 +130,8 @@ function NastrandirRaidTools:CreateMenu()
             entry.button = StdUi:NastrandirRaidTools_MenuButton(self.window.menu.child, entry.text, function(frame, mouseButton)
                 if mouseButton == "RightButton" and entry.contextMenu then
                     if not entry.context then
-                        entry.context = StdUi:HighlightContextMenu(entry.button, entry.contextMenu)
+                        entry.context = StdUi:DynamicContextMenu(UIParent, entry.contextMenu)
                         entry.context:SetHighlightTextColor(1, 0.431, 0.101, 1)
-                    end
-
-                    for _, otherEntry in ipairs(self.menu) do
-                        if otherEntry.context then
-                            otherEntry.context:CloseMenu()
-                        end
                     end
 
                     entry.context:DrawOptions(entry.contextMenu)
