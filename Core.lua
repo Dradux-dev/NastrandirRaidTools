@@ -69,6 +69,119 @@ NastrandirRaidTools.classes[NastrandirRaidTools.role_types.dps] = NastrandirRaid
 NastrandirRaidTools.classes[NastrandirRaidTools.role_types.damager] = NastrandirRaidTools.classes[NastrandirRaidTools.role_types.all]
 NastrandirRaidTools.classes[NastrandirRaidTools.role_types.none] = NastrandirRaidTools.classes[NastrandirRaidTools.role_types.all]
 
+---------------------- Class roles ----------------------
+NastrandirRaidTools.class_roles = {
+    DEATHKNIGHT = {
+        [NastrandirRaidTools.role_types.tank] = NastrandirRaidTools.role_types.tank,
+        [NastrandirRaidTools.role_types.damager] = NastrandirRaidTools.role_types.melee,
+        [NastrandirRaidTools.role_types.none] = NastrandirRaidTools.role_types.melee,
+        [NastrandirRaidTools.role_types.all] = {
+            NastrandirRaidTools.role_types.tank,
+            NastrandirRaidTools.role_types.melee
+        }
+    },
+    DEMONHUNTER = {
+        [NastrandirRaidTools.role_types.damager] = NastrandirRaidTools.role_types.melee,
+        [NastrandirRaidTools.role_types.none] = NastrandirRaidTools.role_types.melee,
+        [NastrandirRaidTools.role_types.all] = {
+            NastrandirRaidTools.role_types.tank,
+            NastrandirRaidTools.role_types.melee
+        }
+    },
+    DRUID = {
+        [NastrandirRaidTools.role_types.tank] = NastrandirRaidTools.role_types.tank,
+        [NastrandirRaidTools.role_types.damager] = NastrandirRaidTools.role_types.ranged,
+        [NastrandirRaidTools.role_types.heal] = NastrandirRaidTools.role_types.heal,
+        [NastrandirRaidTools.role_types.none] = NastrandirRaidTools.role_types.ranged,
+        [NastrandirRaidTools.role_types.all] = {
+            NastrandirRaidTools.role_types.tank,
+            NastrandirRaidTools.role_types.melee,
+            NastrandirRaidTools.role_types.ranged,
+            NastrandirRaidTools.role_types.heal
+        }
+
+    },
+    HUNTER = {
+        [NastrandirRaidTools.role_types.damager] = NastrandirRaidTools.role_types.ranged,
+        [NastrandirRaidTools.role_types.none] = NastrandirRaidTools.role_types.ranged,
+        [NastrandirRaidTools.role_types.all] = {
+            NastrandirRaidTools.role_types.melee,
+            NastrandirRaidTools.role_types.ranged
+        }
+    },
+    MAGE = {
+        [NastrandirRaidTools.role_types.damager] = NastrandirRaidTools.role_types.ranged,
+        [NastrandirRaidTools.role_types.none] = NastrandirRaidTools.role_types.ranged,
+        [NastrandirRaidTools.role_types.all] = {
+            NastrandirRaidTools.role_types.ranged
+        }
+    },
+    MONK = {
+        [NastrandirRaidTools.role_types.tank] = NastrandirRaidTools.role_types.tank,
+        [NastrandirRaidTools.role_types.damager] = NastrandirRaidTools.role_types.ranged,
+        [NastrandirRaidTools.role_types.heal] = NastrandirRaidTools.role_types.heal,
+        [NastrandirRaidTools.role_types.none] = NastrandirRaidTools.role_types.melee,
+        [NastrandirRaidTools.role_types.all] = {
+            NastrandirRaidTools.role_types.tank,
+            NastrandirRaidTools.role_types.melee,
+            NastrandirRaidTools.role_types.heal
+        }
+    },
+    PALADIN = {
+        [NastrandirRaidTools.role_types.tank] = NastrandirRaidTools.role_types.tank,
+        [NastrandirRaidTools.role_types.damager] = NastrandirRaidTools.role_types.ranged,
+        [NastrandirRaidTools.role_types.heal] = NastrandirRaidTools.role_types.heal,
+        [NastrandirRaidTools.role_types.none] = NastrandirRaidTools.role_types.melee,
+        [NastrandirRaidTools.role_types.all] = {
+            NastrandirRaidTools.role_types.tank,
+            NastrandirRaidTools.role_types.melee,
+            NastrandirRaidTools.role_types.heal
+        }
+    },
+    PRIEST = {
+        [NastrandirRaidTools.role_types.damager] = NastrandirRaidTools.role_types.ranged,
+        [NastrandirRaidTools.role_types.heal] = NastrandirRaidTools.role_types.heal,
+        [NastrandirRaidTools.role_types.none] = NastrandirRaidTools.role_types.ranged,
+        [NastrandirRaidTools.role_types.all] = {
+            NastrandirRaidTools.role_types.ranged,
+            NastrandirRaidTools.role_types.heal
+        }
+    },
+    ROGUE = {
+        [NastrandirRaidTools.role_types.damager] = NastrandirRaidTools.role_types.melee,
+        [NastrandirRaidTools.role_types.none] = NastrandirRaidTools.role_types.melee,
+        [NastrandirRaidTools.role_types.all] = {
+            NastrandirRaidTools.role_types.melee
+        }
+    },
+    SHAMAN = {
+        [NastrandirRaidTools.role_types.damager] = NastrandirRaidTools.role_types.ranged,
+        [NastrandirRaidTools.role_types.heal] = NastrandirRaidTools.role_types.heal,
+        [NastrandirRaidTools.role_types.none] = NastrandirRaidTools.role_types.ranged,
+        [NastrandirRaidTools.role_types.all] = {
+            NastrandirRaidTools.role_types.melee,
+            NastrandirRaidTools.role_types.ranged,
+            NastrandirRaidTools.role_types.heal
+        }
+    },
+    WARLOCK = {
+        [NastrandirRaidTools.role_types.damager] = NastrandirRaidTools.role_types.ranged,
+        [NastrandirRaidTools.role_types.none] = NastrandirRaidTools.role_types.ranged,
+        [NastrandirRaidTools.role_types.all] = {
+            NastrandirRaidTools.role_types.ranged
+        }
+    },
+    WARRIOR = {
+        [NastrandirRaidTools.role_types.tank] = NastrandirRaidTools.role_types.tank,
+        [NastrandirRaidTools.role_types.damager] = NastrandirRaidTools.role_types.melee,
+        [NastrandirRaidTools.role_types.none] = NastrandirRaidTools.role_types.melee,
+        [NastrandirRaidTools.role_types.all] = {
+            NastrandirRaidTools.role_types.tank,
+            NastrandirRaidTools.role_types.melee
+        }
+    }
+}
+
 ---------------------- Class colors ----------------------
 NastrandirRaidTools.class_colors = {
     ["DEATHKNIGHT"] = {

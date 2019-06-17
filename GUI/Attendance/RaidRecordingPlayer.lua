@@ -122,15 +122,43 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
 
         local CurrentGroupRoster = NastrandirRaidTools:GetModule("CurrentGroupRoster")
         for name in CurrentGroupRoster:IterateUnknown() do
+            local class = select(2, UnitClass(name))
+            local role = UnitGroupRolesAssigned(name)
+            local internal_role = NastrandirRaidTools.class_roles[class][role]
+            local roles = NastrandirRaidTools.class_roles[class][NastrandirRaidTools.role_types.all]
+            local role_options
+
+            if #roles > 1 then
+                role_options = {}
+
+                local dict = {
+                    [NastrandirRaidTools.role_types.tank] = "Tank",
+                    [NastrandirRaidTools.role_types.melee] = "Melee",
+                    [NastrandirRaidTools.role_types.ranged] = "Ranged",
+                    [NastrandirRaidTools.role_types.heal] = "Heal"
+                }
+
+                for _, role in ipairs(roles) do
+                    table.insert(role_options, {
+                        title = dict[role],
+                        callback = function()
+                            local Roster = NastrandirRaidTools:GetModule("Roster")
+                            Roster:AddMember(class, role, name, button.uid, true)
+                            button.context:CloseMenu()
+                        end
+                    })
+                end
+            end
+
             table.insert(options, {
                 title = name,
                 callback = function(entry)
-                    print("Adding:", entry.text:GetText())
+                    local skipDetails = #roles == 1
+                    local Roster = NastrandirRaidTools:GetModule("Roster")
+                    Roster:AddMember(class, internal_role, name, button.uid, skipDetails)
+                    button.context:CloseMenu()
                 end,
-                events = {
-                    OnEnter = newOnEnter,
-                    OnLeave = newOnLeave
-                }
+                children = role_options
             })
         end
 
@@ -187,26 +215,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
         if #alts_options >= 1 then
             table.insert(options, {
                 title = "Add Alt",
-                children = {
-                    {
-                        title = "Alt 1",
-                        callback = function()
-                            print("Alt 1")
-                        end
-                    },
-                    {
-                        title = "Alt 2",
-                        callback = function()
-                            print("Alt 2")
-                        end
-                    },
-                    {
-                        title = "Alt 3",
-                        callback = function()
-                            print("Alt 3")
-                        end
-                    }
-                }
+                children = alts_options
             })
         end
 
@@ -312,7 +321,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
     button:SetScript("OnClick", function(frame, mouseButton)
         if mouseButton == "RightButton" then
             if not button.context then
-                button.context = StdUi:DynamicContextMenu(button, button:CreateMenu())
+                button.context = StdUi:DynamicContextMenu(UIParent, button:CreateMenu())
                 button.context:SetHighlightTextColor(1, 0.431, 0.101, 1)
             else
                 button.context:DrawOptions(button:CreateMenu())

@@ -279,7 +279,7 @@ function Roster:GetMainUID(uid)
     return uid
 end
 
-function Roster:AddMember(class, role)
+function Roster:AddMember(class, role, name, main, skipDetails)
     local db = NastrandirRaidTools:GetModuleDB("Roster")
 
     if not db.characters then
@@ -289,14 +289,21 @@ function Roster:AddMember(class, role)
     local uid = Roster:CreateUID()
 
     db.characters[uid] = {
-        name = "New Player",
+        name = name or "New Player",
         raidmember = true,
         class = class,
         role = role,
         alts = {}
     }
 
-    Roster:ShowDetails(uid)
+    if main then
+        db.characters[uid].alts = nil
+        db.characters[uid].main = main
+    end
+
+    if not skipDetails then
+        Roster:ShowDetails(uid)
+    end
 end
 
 function Roster:GetCharacterByName(name)
