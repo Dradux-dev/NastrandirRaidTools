@@ -16,19 +16,54 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationAnalyticsEditS
     widget.delete = delete
     StdUi:GlueRight(delete, widget, -10, 0, true)
 
+    local toleranceOptions = {
+        {text = "Total time", value = "TOTAL"},
+        {text = "Without Tolerance", value = "EXCLUDE_TOLERANCE"},
+        {text = "Only Tolerance", value = "TOLERANCE"}
+    }
+    local tolerance = StdUi:Dropdown(widget, 180, 24, toleranceOptions, toleranceOptions[1].value)
+    widget.tolerance = tolerance
+    StdUi:GlueLeft(tolerance, delete, -5, 0)
+
+    function widget:SetAnalyticUID(uid)
+        widget.analytic_uid = uid
+    end
+
     function widget:SetUID(uid)
-        widget.uid = uid
+        widget.state_uid = uid
     end
 
     function widget:Load()
         local Attendance = NastrandirRaidTools:GetModule("Attendance")
-        local state = Attendance:GetState(widget.uid)
+        local state = Attendance:GetState(widget.state_uid)
         widget.name:SetText(state.Name)
+        local toleranceTime = state.tolerance or 0
+        if toleranceTime == 0 then
+            widget.tolerance:Hide()
+        else
+            local analytic = Attendance:GetAnalytic(widget.analytic_uid)
+            ViragDevTool_AddData(widget.state_uid, "State UID")
+            ViragDevTool_AddData(analytic, "Analytic")
+            if type(analytic.states[widget.state_uid]) == "table" and analytic.states[widget.state_uid].tolerance then
+                ViragDevTool_AddData(analytic.states[widget.state_uid].tolerance, "Setting Tolerance(1)")
+                ViragDevTool_AddData(tolerance:FindValueText(analytic.states[widget.state_uid].tolerance), "Tolerance Text")
+                tolerance:SetValue(analytic.states[widget.state_uid].tolerance, tolerance:FindValueText(analytic.states[widget.state_uid].tolerance))
+            else
+                ViragDevTool_AddData(toleranceOptions[1].value, "Setting Tolerance(2)")
+                ViragDevTool_AddData(tolerance:FindValueText(toleranceOptions[1].value), "Tolerance Text")
+                tolerance:SetValue(toleranceOptions[1].value, tolerance:FindValueText(toleranceOptions[1].value))
+            end
+            widget.tolerance:Show()
+        end
     end
 
     widget.delete:SetScript("OnClick", function()
-        widget:GetParent():GetParent():RemoveState(widget.uid)
+        widget:GetParent():GetParent():RemoveState(widget.state_uid)
     end)
+
+    widget.tolerance.OnValueChanged = function(newValue)
+        widget:GetParent():GetParent():ShowSave()
+    end
 
     return widget
 end)

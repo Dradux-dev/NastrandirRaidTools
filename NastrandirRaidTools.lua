@@ -87,7 +87,7 @@ function NastrandirRaidTools:GetDB()
     return NastrandirRaidTools.db
 end
 
-function NastrandirRaidTools:GetModuleDB(moduleName, categoryName)
+function NastrandirRaidTools:GetModuleDB(moduleName, categoryName, uid)
     if not NastrandirRaidTools.db then
         NastrandirRaidTools.db = LibStub("AceDB-3.0"):New("NastrandirRaidToolsDB", defaultSavedVars)
     end
@@ -105,7 +105,11 @@ function NastrandirRaidTools:GetModuleDB(moduleName, categoryName)
         modules[moduleName][categoryName] = {}
     end
 
-    return modules[moduleName][categoryName]
+    if not uid then
+        return modules[moduleName][categoryName]
+    end
+
+    return modules[moduleName][categoryName][uid]
 end
 
 function NastrandirRaidTools:CreateMenu()

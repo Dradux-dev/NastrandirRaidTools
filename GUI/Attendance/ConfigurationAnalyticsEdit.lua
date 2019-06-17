@@ -71,11 +71,13 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationAnalyticsEdit"
                 states.itemFrames ,
                 function(parent, data, i)
                     local stateFrame = StdUi:NastrandirRaidTools_Attendance_ConfigurationAnalyticsEditState(parent)
+                    stateFrame:SetAnalyticUID(widget.uid)
                     stateFrame:SetUID(data)
                     stateFrame:Load()
                     return stateFrame
                 end,
                 function(parent, stateFrame, data, i)
+                    stateFrame:SetAnalyticUID(widget.uid)
                     stateFrame:SetUID(data)
                     stateFrame:Load()
                 end,
@@ -171,8 +173,13 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationAnalyticsEdit"
             states = {}
         }
 
-        for _, stateUID in ipairs(widget.stateList) do
-            analytic.states[stateUID] = true
+        for _, itemFrame in ipairs(widget.states.itemFrames) do
+            if itemFrame:IsShown() then
+                local uid = itemFrame.state_uid
+                analytic.states[uid] = {
+                    tolerance = itemFrame.tolerance:GetValue()
+                }
+            end
         end
 
         db.analytics[widget.uid] = analytic

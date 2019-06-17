@@ -390,6 +390,10 @@ function Attendance:GetState(uid)
     return db.states[uid]
 end
 
+function Attendance:GetAnalytic(uid)
+    return NastrandirRaidTools:GetModuleDB("Attendance", "analytics", uid)
+end
+
 function Attendance:GetRaidParticipation(raid_uid)
     local db = NastrandirRaidTools:GetModuleDB("Attendance")
 

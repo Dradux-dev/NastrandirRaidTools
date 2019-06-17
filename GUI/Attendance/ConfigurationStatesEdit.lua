@@ -2,7 +2,7 @@ local StdUi = LibStub("StdUi")
 
 StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationStatesEdit", function(self, parent)
     local width = parent:GetWidth()-20 or 800
-    local height = 305
+    local height = 360
 
     local widget = StdUi:Panel(parent, width, height)
     self:InitWidget(widget)
@@ -20,7 +20,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationStatesEdit", f
     widget.delete = delete
     StdUi:GlueLeft(delete, button_up, -5, 0)
 
-    local name = StdUi:EditBox(widget, 0.77 * widget:GetWidth(), 24, "")
+    local name = StdUi:SimpleEditBox(widget, 0.77 * widget:GetWidth(), 24, "")
     widget.name = name
     StdUi:AddLabel(widget, name, "Name", "TOP")
     StdUi:GlueTop(name, widget, 10, -30, "LEFT")
@@ -29,25 +29,30 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationStatesEdit", f
     widget.track_alts = track_alts
     StdUi:GlueRight(track_alts, name, 10, 0)
 
+    local tolerance = StdUi:NumericBox(widget, widget:GetWidth() - 20, 24, "")
+    widget.tolerance = tolerance
+    StdUi:AddLabel(widget, tolerance, "Tolerance (Minutes)", "TOP")
+    StdUi:GlueBelow(tolerance, name, 0, -30, "LEFT")
+
     local messages = StdUi:Panel(widget, widget:GetWidth() - 20, 200)
     widget.messages = messages
-    StdUi:GlueBelow(messages, name, 0, -10, "LEFT")
+    StdUi:GlueBelow(messages, tolerance, 0, -10, "LEFT")
 
     local title = StdUi:Label(messages, "Messages")
     messages.title = title
     StdUi:GlueTop(title, messages, 10, -10, "LEFT")
 
-    local enter = StdUi:EditBox(messages, messages:GetWidth() - 20, 24, "")
+    local enter = StdUi:SimpleEditBox(messages, messages:GetWidth() - 20, 24, "")
     messages.enter = enter
     StdUi:AddLabel(messages, enter, "Enter", "TOP")
     StdUi:GlueTop(enter, messages, 10, -50, "LEFT")
 
-    local swap = StdUi:EditBox(messages, messages:GetWidth() - 20, 24, "")
+    local swap = StdUi:SimpleEditBox(messages, messages:GetWidth() - 20, 24, "")
     messages.swap = swap
     StdUi:AddLabel(messages, swap, "Character Swap", "TOP")
     StdUi:GlueBelow(swap, enter, 0, -30, "LEFT")
 
-    local leave = StdUi:EditBox(messages, messages:GetWidth() - 20, 24, "")
+    local leave = StdUi:SimpleEditBox(messages, messages:GetWidth() - 20, 24, "")
     messages.leave = leave
     StdUi:AddLabel(messages, leave, "Leave", "TOP")
     StdUi:GlueBelow(leave, swap, 0, -30, "LEFT")
@@ -96,6 +101,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationStatesEdit", f
 
         local state = db.states[widget.uid]
         widget.name:SetText(state.Name)
+        widget.tolerance:SetText(state.tolerance or 0)
         widget.track_alts:SetChecked(state.TrackAlts or false)
         widget.messages.enter:SetText(state.LogMessages.Enter)
         widget.messages.swap:SetText(state.LogMessages.Swap)
@@ -114,6 +120,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationStatesEdit", f
 
         db.states[widget.uid] = {
             Name = widget.name:GetText(),
+            tolerance = tonumber(widget.tolerance:GetText()) or 0,
             TrackAlts = widget.track_alts:GetChecked(),
             Order = widget.order,
             LogMessages = {
@@ -260,6 +267,10 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationStatesEdit", f
     widget:SetScript("OnShow", function()
         widget:UpdateOrderButtons()
     end)
+
+    widget.tolerance.OnValueChanged = function(newValue)
+        widget:ShowSave()
+    end
 
     return widget
 end)
