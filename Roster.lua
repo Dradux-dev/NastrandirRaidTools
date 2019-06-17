@@ -49,72 +49,117 @@ function Roster:OnEnable()
             onClick = function(button, mouseButton)
                 Roster:ShowCurrentRoster()
             end,
-            contextMenu = {
-                {
-                    title = "Add Tank",
-                    close = true,
-                    callback = function(itemFrame)
-                        local context = itemFrame.mainContext or itemFrame:GetParent()
-                        context:CloseMenu()
-
-                        Roster:AddMember(
-                                NastrandirRaidTools:GetFirstKey(NastrandirRaidTools:GetTankClasses(), true),
-                                NastrandirRaidTools.role_types.tank
-                        )
-                    end
-                },
-                {
-                    title = "Add Melee",
-                    close = true,
-                    callback = function(itemFrame)
-                        local context = itemFrame.mainContext or itemFrame:GetParent()
-                        context:CloseMenu()
-
-                        Roster:AddMember(
-                                NastrandirRaidTools:GetFirstKey(NastrandirRaidTools:GetMeleeClasses(), true),
-                                NastrandirRaidTools.role_types.melee
-                        )
-                    end
-                },
-                {
-                    title = "Add Ranged",
-                    close = true,
-                    callback = function(itemFrame)
-                        local context = itemFrame.mainContext or itemFrame:GetParent()
-                        context:CloseMenu()
-
-                        Roster:AddMember(
-                                NastrandirRaidTools:GetFirstKey(NastrandirRaidTools:GetRangedClasses(), true),
-                                NastrandirRaidTools.role_types.ranged
-                        )
-                    end
-                },
-                {
-                    title = "Add Healer",
-                    close = true,
-                    callback = function(itemFrame)
-                        local context = itemFrame.mainContext or itemFrame:GetParent()
-                        context:CloseMenu()
-
-                        Roster:AddMember(
-                                NastrandirRaidTools:GetFirstKey(NastrandirRaidTools:GetHealClasses(), true),
-                                NastrandirRaidTools.role_types.heal
-                        )
-                    end
-                },
-                {
-                  isSeparator = true
-                },
-                {
-                    title = "Close",
-                    callback = function(itemFrame)
-                        local context = itemFrame.mainContext or itemFrame:GetParent()
-                        context:CloseMenu()
-                    end
-                },
-            }
+            contextMenu = function()
+                return Roster:GetContextMenu()
+            end
         }
     })
+end
+
+function Roster:GetRoleSubMenu(role)
+    local options = {}
+
+    local CurrentGroupRoster = NastrandirRaidTools:GetModule("CurrentGroupRoster")
+    for name in CurrentGroupRoster:IterateUnknown() do
+        local class = select(2, UnitClass(name))
+        local possible_roles = NastrandirRaidTools.class_roles[class][NastrandirRaidTools.role_types.all]
+        if NastrandirRaidTools:FindInTable(possible_roles, role) then
+            table.insert(options, {
+                title = name,
+                callback = function(itemFrame)
+                    ViragDevTool_AddData(itemFrame, "Item Frame")
+                    local context = itemFrame:GetParent()
+                    context:CloseAllMenus()
+
+                    Roster:AddMember(class, role, name, nil, true)
+                end
+            })
+        end
+    end
+
+    if #options >= 1 then
+        return options
+    end
+
+    return nil
+end
+
+function Roster:GetContextMenu()
+    local options = {}
+
+    table.insert(options, {
+        title = "Add Tank",
+        close = true,
+        callback = function(itemFrame)
+            local context = itemFrame.mainContext or itemFrame:GetParent()
+            context:CloseMenu()
+
+            Roster:AddMember(
+                    NastrandirRaidTools:GetFirstKey(NastrandirRaidTools:GetTankClasses(), true),
+                    NastrandirRaidTools.role_types.tank
+            )
+        end,
+        children = Roster:GetRoleSubMenu(NastrandirRaidTools.role_types.tank)
+    })
+
+    table.insert(options, {
+        title = "Add Melee",
+        close = true,
+        callback = function(itemFrame)
+            local context = itemFrame.mainContext or itemFrame:GetParent()
+            context:CloseMenu()
+
+            Roster:AddMember(
+                    NastrandirRaidTools:GetFirstKey(NastrandirRaidTools:GetMeleeClasses(), true),
+                    NastrandirRaidTools.role_types.melee
+            )
+        end,
+        children = Roster:GetRoleSubMenu(NastrandirRaidTools.role_types.melee)
+    })
+
+    table.insert(options, {
+        title = "Add Ranged",
+        close = true,
+        callback = function(itemFrame)
+            local context = itemFrame.mainContext or itemFrame:GetParent()
+            context:CloseMenu()
+
+            Roster:AddMember(
+                    NastrandirRaidTools:GetFirstKey(NastrandirRaidTools:GetRangedClasses(), true),
+                    NastrandirRaidTools.role_types.ranged
+            )
+        end,
+        children = Roster:GetRoleSubMenu(NastrandirRaidTools.role_types.ranged)
+    })
+
+    table.insert(options, {
+        title = "Add Healer",
+        close = true,
+        callback = function(itemFrame)
+            local context = itemFrame.mainContext or itemFrame:GetParent()
+            context:CloseMenu()
+
+            Roster:AddMember(
+                    NastrandirRaidTools:GetFirstKey(NastrandirRaidTools:GetHealClasses(), true),
+                    NastrandirRaidTools.role_types.heal
+            )
+        end,
+        children = Roster:GetRoleSubMenu(NastrandirRaidTools.role_types.heal)
+    })
+
+    table.insert(options, {
+        isSeparator = true
+    })
+
+    table.insert(options, {
+        title = "Close",
+        callback = function(itemFrame)
+            local context = itemFrame.mainContext or itemFrame:GetParent()
+            context:CloseMenu()
+        end
+    })
+
+    return options
 end
 
 function Roster:ShowCurrentRoster()

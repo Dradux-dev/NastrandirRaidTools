@@ -292,13 +292,17 @@ StdUi:RegisterWidget("DynamicContextMenu", function(self, parent, options, stopH
         context.normalTextColor = {r, g, b, a}
     end
 
+    function context:CloseAllMenus(exception)
+        for idx, otherContext in ipairs(contextMenus) do
+            if not exception or otherContext ~= exception then
+                otherContext:CloseMenu()
+            end
+        end
+    end
+
     context:SetScript("OnShow", function()
         if context.level == 1 then
-            for idx, otherContext in ipairs(contextMenus) do
-                if otherContext ~= context then
-                    otherContext:CloseMenu()
-                end
-            end
+            context:CloseAllMenus(context)
         end
     end)
 
