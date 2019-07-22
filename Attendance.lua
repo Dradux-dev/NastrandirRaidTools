@@ -493,7 +493,9 @@ function Attendance:Analyse(start_raid, end_raid)
     local raid_list = Attendance:GetRaidList(start_date, end_date).order
 
     -- Parse participation
+    local raid_count = 0
     for _, raid_uid in ipairs(raid_list) do
+        raid_count = raid_count + 1
         local raid = Attendance:GetRaid(raid_uid)
 
         for index, entry in ipairs(Attendance:GetRaidParticipation(raid_uid)) do
@@ -519,7 +521,7 @@ function Attendance:Analyse(start_raid, end_raid)
                 player.duration = player.duration + duration
                 player.states[player.state] = {
                     total = ((player.states[player.state] or {}).total or 0) + duration,
-                    tolerance = ((player.states[player.state] or {}).tolerance or 0) + math.min(duration, state.tolerance)
+                    tolerance = ((player.states[player.state] or {}).tolerance or 0) + math.min(duration, state.tolerance or 0)
                 }
                 player.state = entry.state
                 player.timestamp = entry.time
@@ -534,13 +536,15 @@ function Attendance:Analyse(start_raid, end_raid)
                 player.duration = player.duration + duration
                 player.states[player.state] = {
                     total = ((player.states[player.state] or {}).total or 0) + duration,
-                    tolerance = ((player.states[player.state] or {}).tolerance or 0) + math.min(duration, state.tolerance)
+                    tolerance = ((player.states[player.state] or {}).tolerance or 0) + math.min(duration, state.tolerance or 0)
                 }
                 player.state = nil
                 player.timestamp = nil
             end
         end
     end
+
+    print(string.format("Scanned %d raids", raid_count))
 
     return attendance_data
 end

@@ -23,9 +23,27 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationGeneral", func
     StdUi:AddLabel(widget, endTime, "End Time", "TOP")
     StdUi:GlueRight(endTime, startTime, 10, 0)
 
+    local groupIndicator = StdUi:Dropdown(widget, width - 20, 24, {
+        {
+            text = "None",
+            value =" NONE"
+        },
+        {
+            text = "Prefix",
+            value = "PREFIX"
+        },
+        {
+            text = "Suffix",
+            value = "SUFFIX"
+        }
+    })
+    widget.groupIndicator = groupIndicator
+    StdUi:AddLabel(widget, groupIndicator, "Group Indicator Position", "TOP")
+    StdUi:GlueBelow(groupIndicator, startTime, 0, -30, "LEFT")
+
     local save = StdUi:Button(widget, 80, 24, "Save")
     widget.save = save
-    StdUi:GlueBelow(save, endTime, 0, -15, "RIGHT")
+    StdUi:GlueBelow(save, groupIndicator, 0, -15, "RIGHT")
 
     function widget:ShowSave()
         widget.save:Show()
@@ -45,6 +63,10 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationGeneral", func
         widget.name:SetText(db.defaults.name or "")
         widget.startTime:SetText(db.defaults.startTime or 1900)
         widget.endTime:SetText(db.defaults.endTime or 2300)
+        widget.groupIndicator:SetValue(
+                db.defaults.groupIndicator or "PREFIX",
+                widget.groupIndicator:FindValueText(db.defaults.groupIndicator or "PREFIX")
+        )
         widget:HideSave()
     end
 
@@ -58,6 +80,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationGeneral", func
         db.defaults.name = widget.name:GetText()
         db.defaults.startTime = tonumber(widget.startTime:GetText())
         db.defaults.endTime = tonumber(widget.endTime:GetText())
+        db.defaults.groupIndicator = widget.groupIndicator:GetValue()
         widget:HideSave()
     end
 
@@ -82,6 +105,10 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationGeneral", func
     end)
 
     widget.endTime.button:SetScript("OnClick", widget.endTime:GetScript("OnEnterPressed"))
+
+    widget.groupIndicator.OnValueChanged = function(dropdown, value)
+        widget:ShowSave()
+    end
 
     widget.save:SetScript("OnClick", function()
         widget:Save()

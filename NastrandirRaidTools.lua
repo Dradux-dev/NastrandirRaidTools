@@ -132,22 +132,24 @@ function NastrandirRaidTools:CreateMenu()
     for index, entry in ipairs(self.menu) do
         if not entry.button then
             entry.button = StdUi:NastrandirRaidTools_MenuButton(self.window.menu.child, entry.text, function(frame, mouseButton)
-                if mouseButton == "RightButton" and entry.contextMenu then
-                    if not entry.context then
-                        entry.context = StdUi:DynamicContextMenu(UIParent, {})
-                        entry.context:SetHighlightTextColor(1, 0.431, 0.101, 1)
-                    end
+                if entry.button:IsShown() then
+                    if mouseButton == "RightButton" and entry.contextMenu then
+                        if not entry.context then
+                            entry.context = StdUi:DynamicContextMenu(entry.button, {})
+                            entry.context:SetHighlightTextColor(1, 0.431, 0.101, 1)
+                        end
 
-                    if type(entry.contextMenu) == "function" then
-                        entry.context:DrawOptions(entry.contextMenu())
-                    else
-                        entry.context:DrawOptions(entry.contextMenu)
+                        if type(entry.contextMenu) == "function" then
+                            entry.context:DrawOptions(entry.contextMenu())
+                        else
+                            entry.context:DrawOptions(entry.contextMenu)
+                        end
+                        StdUi:GlueBelow(entry.context, entry.button, 10, entry.button:GetHeight() / 2, "LEFT")
+                        entry.context:SetFrameStrata("TOOLTIP")
+                        entry.context:Show()
+                    elseif entry.onClick then
+                        entry.onClick(frame, mouseButton)
                     end
-                    StdUi:GlueBelow(entry.context, entry.button, 10, entry.button:GetHeight() / 2, "LEFT")
-                    entry.context:SetFrameStrata("TOOLTIP")
-                    entry.context:Show()
-                elseif entry.onClick then
-                    entry.onClick(frame, mouseButton)
                 end
             end)
         end

@@ -282,17 +282,31 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
         end
 
         local Roster = NastrandirRaidTools:GetModule("Roster")
+        local db = NastrandirRaidTools:GetModuleDB("Attendance")
         local name = Roster:GetCharacterName(button.uid)
 
 
         local CurrentGroupRoster = NastrandirRaidTools:GetModule("CurrentGroupRoster")
         local entry = CurrentGroupRoster:GetByUID(button.uid)
         if entry then
-            button:SetName(string.format("%s [%d]", name, entry.subgroup))
+            if db.defaults.groupIndicator == "PREFIX" then
+                button:SetName(string.format("[%d] %s", entry.subgroup, name))
+            elseif db.defaults.groupIndicator == "SUFFIX" then
+                button:SetName(string.format("%s [%d]", name, entry.subgroup))
+            else
+                button:SetName(name)
+            end
+
         else
             entry = CurrentGroupRoster:GetAlt(button.uid)
             if entry then
-                button:SetName(string.format("%s [A,%d]", name, entry.subgroup))
+                if db.defaults.groupIndicator == "PREFIX" then
+                    button:SetName(string.format("[A,%d] %s", entry.subgroup, name))
+                elseif db.defaults.groupIndicator == "SUFFIX" then
+                    button:SetName(string.format("%s [A,%d]", name, entry.subgroup))
+                else
+                    button:SetName(name)
+                end
             else
                 button:SetName(name)
             end
@@ -318,19 +332,22 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
     end)
 
     button:SetScript("OnClick", function(frame, mouseButton)
-        if mouseButton == "RightButton" then
-            if not button.context then
-                button.context = StdUi:DynamicContextMenu(UIParent, button:CreateMenu())
-                button.context:SetHighlightTextColor(1, 0.431, 0.101, 1)
-            else
-                button.context:DrawOptions(button:CreateMenu())
+        ViragDevTool_AddData(button:IsShown(), "Is Shown")
+        if button:IsShown() then
+            if mouseButton == "RightButton" then
+                if not button.context then
+                    button.context = StdUi:DynamicContextMenu(button, button:CreateMenu())
+                    button.context:SetHighlightTextColor(1, 0.431, 0.101, 1)
+                else
+                    button.context:DrawOptions(button:CreateMenu())
+                end
+
+                button:CloseAllContextMenus()
+
+                StdUi:GlueBelow(button.context, button, 10, button:GetHeight() / 2, "LEFT")
+                button.context:SetFrameStrata("TOOLTIP")
+                button.context:Show()
             end
-
-            button:CloseAllContextMenus()
-
-            StdUi:GlueBelow(button.context, button, 10, button:GetHeight() / 2, "LEFT")
-            button.context:SetFrameStrata("TOOLTIP")
-            button.context:Show()
         end
     end)
 
