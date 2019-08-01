@@ -213,7 +213,12 @@ StdUi:RegisterWidget("NastrandirRaidTools_Roster_Details", function(self, parent
         if character.main then
             local main = Roster:GetCharacter(character.main)
             local pos = NastrandirRaidTools:FindInTable(main.alts, widget.uid)
-            if pos then
+            ViragDevTool_AddData(pos, "Position")
+            if type(pos) == "table" then
+                for i=#pos, 1, -1 do
+                    table.remove(main.alts, i)
+                end
+            elseif pos then
                 table.remove(main.alts, pos)
             end
 
