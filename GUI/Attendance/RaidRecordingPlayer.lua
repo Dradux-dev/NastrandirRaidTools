@@ -344,6 +344,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
 
                 button:CloseAllContextMenus()
 
+                button.context:ClearAllPoints()
                 StdUi:GlueBelow(button.context, button, 10, button:GetHeight() / 2, "LEFT")
                 button.context:SetFrameStrata("TOOLTIP")
                 button.context:Show()
