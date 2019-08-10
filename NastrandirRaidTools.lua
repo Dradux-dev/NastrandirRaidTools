@@ -301,6 +301,26 @@ function NastrandirRaidTools:GetDuration(start_time, end_time)
     return duration
 end
 
+function NastrandirRaidTools:AddDuration(time, duration)
+    local splitted = NastrandirRaidTools:SplitTime(time)
+    local addHours = math.floor(duration / 60)
+    local addMinutes = (duration % 60)
+    local minSum = addMinutes + splitted.minutes
+
+    splitted.hours = splitted.hours + addHours
+    if minSum >= 60 then
+        splitted.hours = splitted.hours + 1
+        addMinutes = addMinutes - 60
+    end
+
+    splitted.minutes = splitted.minutes + addMinutes
+    if splitted.hours >= 24 then
+        splitted.hours = splitted.hours - 24
+    end
+
+    return NastrandirRaidTools:PackTime(splitted)
+end
+
 function NastrandirRaidTools:CreateUID(type)
     local name = UnitName("player")
     local today = date("%d%m%y")
@@ -451,4 +471,33 @@ function NastrandirRaidTools:IterateGroupMembers(forceParty)
         i = i + 1
         return ret
     end
+end
+
+function NastrandirRaidTools:Clamp(value, min, max)
+    return math.max(math.min(value, max), min)
+end
+
+function NastrandirRaidTools:ToHex(value)
+    local t = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"}
+    value = math.floor(NastrandirRaidTools:Clamp(value, 0, 1) * 255)
+    return t[(math.floor(value / 16) % 16) + 1] .. t[(value % 16) + 1]
+end
+
+function NastrandirRaidTools:ColorText(text, r, g, b)
+    return string.format(
+            "|cFF%s%s%s%s|r",
+            NastrandirRaidTools:ToHex(r),
+            NastrandirRaidTools:ToHex(g),
+            NastrandirRaidTools:ToHex(b),
+            text
+    )
+end
+
+function NastrandirRaidTools:ClassColorText(name, class)
+    if not class then
+        class = select(2, UnitClass(name))
+    end
+
+    local color = NastrandirRaidTools.class_colors[class].background
+    return NastrandirRaidTools:ColorText(name, unpack(color))
 end

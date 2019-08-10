@@ -548,3 +548,114 @@ function Attendance:Analyse(start_raid, end_raid)
 
     return attendance_data
 end
+
+function Attendance:GetRaidTimeEvents(uid)
+    local Roster = NastrandirRaidTools:GetModule("Roster")
+    local raid = NastrandirRaidTools:GetModuleDB(Attendance:GetName(), "raids", uid)
+    local participation = NastrandirRaidTools:GetModuleDB(Attendance:GetName(), "participation", uid)
+    local events = {}
+    local cache = {
+        sections = {},
+        state = {},
+        character = {}
+    }
+
+    local function GetTimeEvent(time)
+        for _, event in ipairs(events) do
+            if time == event.time then
+                return event
+            end
+        end
+    end
+
+    local function ModifyTimeEvent(time, modifier)
+        local add = false
+        local event = GetTimeEvent(time)
+
+        if not event then
+            event = {
+                time = time,
+                data = {}
+            }
+
+            add = true
+        end
+
+        if modifier then
+            modifier(event)
+        end
+
+        if add then
+            table.insert(events, event)
+        end
+    end
+
+    local function CompareTimeOrder(a, b)
+        if a.time < b.time then
+            return true
+        elseif a.time > b.time then
+            return false
+        end
+
+        return a.order < b.order
+    end
+
+    if raid and raid["sections"] then
+        table.sort(raid["sections"], CompareTimeOrder)
+        for _, entry in ipairs(raid["sections"]) do
+            ModifyTimeEvent(entry.time, function(event)
+                table.insert(event.data, {
+                    event = "section_changed",
+                    section = entry.section,
+                    old = cache.sections[entry.section],
+                    new = entry.value,
+                    order = table.getn(event.data) + 1
+                })
+
+                cache.sections[entry.section] = entry.value
+            end)
+        end
+    end
+
+    if participation then
+        table.sort(participation, CompareTimeOrder)
+        for _, entry in ipairs(participation) do
+            ModifyTimeEvent(entry.time, function(event)
+                local main_uid = Roster:GetMainUID(entry.member)
+                local old_state = cache.state[main_uid]
+                local old_character = cache.character[main_uid]
+
+                if old_state ~= entry.state then
+                    table.insert(event.data, {
+                        event = "state_changed",
+                        main = main_uid,
+                        old = old_state,
+                        new = entry.state,
+                        order = table.getn(event.data) + 1
+                    })
+                end
+
+                if old_character and old_character ~= entry.member then
+                    table.insert(event.data, {
+                        event = "character_changed",
+                        main = main_uid,
+                        old = old_character,
+                        new = entry.member,
+                        order = table.getn(event.data) + 1
+                    })
+                end
+
+                cache.state[main_uid] = entry.state
+                cache.character[main_uid] = entry.member
+            end)
+        end
+    end
+
+    -- Sort events by time
+    table.sort(events, function(a, b)
+        return a.time < b.time
+    end)
+
+    ViragDevTool_AddData(events, "Time Events")
+    return events
+end

@@ -29,6 +29,9 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
     minutes:SetMax(59)
     StdUi:GlueTop(minutes, widget, 57, -15)
 
+    local timeline = StdUi:NastrandirRaidTools_Attendance_RaidRecordingTimeline(widget, width - 10)
+    widget.timeline = timeline
+
     function widget:HideChildren()
         for index, child in ipairs(widget.content_group) do
             child:Hide()
@@ -249,6 +252,16 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
                 StdUi:GlueRight(state, lastColumn, 0, 0)
             else
                 StdUi:GlueTop(state, state:GetParent(), 5, -70, "LEFT")
+
+                -- ToDo: Timeline is below, just for testing purposes
+                widget.timeline:ClearAllPoints()
+                StdUi:GlueBelow(widget.timeline, state, 0, -10, "LEFT")
+
+                widget.timeline:SetRaidTimes(1915, 2245)
+
+                local Attendance = NastrandirRaidTools:GetModule("Attendance")
+                widget.time_events = Attendance:GetRaidTimeEvents(widget:GetUID())
+                widget.timeline:CreateTimeEvents(widget.time_events)
             end
 
             lastColumn = state

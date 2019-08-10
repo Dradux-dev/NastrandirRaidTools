@@ -33,6 +33,9 @@ GUI\Attendance\RaidRecording.lua
 GUI\Attendance\RaidRecordingPlayer.lua
 GUI\Attendance\RaidRecordingRoster.lua
 GUI\Attendance\RaidRecordingStateColumn.lua
+GUI\Attendance\RaidRecordingTimeline.lua
+GUI\Attendance\RaidRecordingTimelineEventMarker.lua
+GUI\Attendance\RaidRecordingTimelineNow.lua
 GUI\Attendance\Raids.lua
 GUI\Attendance\RaidsRaid.lua
 GUI\MainFrame.lua
