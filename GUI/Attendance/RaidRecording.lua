@@ -17,7 +17,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
     widget.content_group = {}
 
     -- Top Bar
-    local hours = StdUi:NastrandirRaidTools_SpinBox(widget)
+    --[[local hours = StdUi:NastrandirRaidTools_SpinBox(widget)
     widget.hours = hours
     hours:SetMin(0)
     hours:SetMax(23)
@@ -27,10 +27,11 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
     widget.minutes = minutes
     minutes:SetMin(0)
     minutes:SetMax(59)
-    StdUi:GlueTop(minutes, widget, 57, -15)
+    StdUi:GlueTop(minutes, widget, 57, -15)--]]
 
     local timeline = StdUi:NastrandirRaidTools_Attendance_RaidRecordingTimeline(widget, width - 10)
     widget.timeline = timeline
+    StdUi:GlueTop(timeline, widget, 5, -15, "LEFT")
 
     function widget:HideChildren()
         for index, child in ipairs(widget.content_group) do
@@ -113,26 +114,38 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
     end
 
     function widget:GetTime()
-        local time = {
+        --[[local time = {
             hours = widget.hours:GetValue(),
             minutes = widget.minutes:GetValue()
         }
 
-        return NastrandirRaidTools:PackTime(time)
+        if widget.timeline then
+            print("Timeline", widget.timeline:GetTime())
+        end
+
+        return NastrandirRaidTools:PackTime(time)]]
+        return widget.timeline:GetTime()
+    end
+
+    function widget:GetRaidTimes()
+        local raid = NastrandirRaidTools:GetModuleDB("Attendance", "raids", widget.uid)
+        return raid.start_time, raid.end_time
     end
 
     function widget:GetRaidStartTime()
-        local db = NastrandirRaidTools:GetModuleDB("Attendance")
+        local time = widget:GetRaidTimes()
+        return time
+    end
 
-        if not db.raids then
-            db.raids = {}
-        end
+    function widget:GetRaidEndTime()
+        local _, time = widget:GetRaidTimes()
+        return time
+    end
 
-        if not db.raids[widget.uid] then
-            return 1900
-        end
-
-        return db.raids[widget.uid].start_time
+    function widget:GetRaidTimeEvents()
+        local Attendance = NastrandirRaidTools:GetModule("Attendance")
+        widget.time_events = Attendance:GetRaidTimeEvents(widget:GetUID())
+        widget.timeline:CreateTimeEvents(widget.time_events)
     end
 
     function widget:GetRoster()
@@ -153,9 +166,10 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
     end
 
     function widget:SetTime(time)
-        local time = NastrandirRaidTools:SplitTime(time)
+        --[[local time = NastrandirRaidTools:SplitTime(time)
         widget.hours:SetValue(time.hours)
-        widget.minutes:SetValue(time.minutes)
+        widget.minutes:SetValue(time.minutes)]]
+        widget.timeline:SetTime(time)
     end
 
     function widget:GetStateColumn(state_uid)
@@ -229,10 +243,10 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
                 end
 
                 table.insert(db.participation[widget.uid], {
-                member = player_uid,
-                time = widget:GetTime(),
-                state = state_uid,
-                order = table.getn(db.participation[widget.uid]) + 1
+                    member = player_uid,
+                    time = widget:GetTime(),
+                    state = state_uid,
+                    order = table.getn(db.participation[widget.uid]) + 1
                 })
 
                 table.sort(db.participation[widget.uid], function(a, b)
@@ -244,6 +258,8 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
 
                     return a.order < b.order
                 end)
+
+                widget:GetRaidTimeEvents()
             end)
 
             state:ClearAllPoints()
@@ -252,16 +268,9 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
                 StdUi:GlueRight(state, lastColumn, 0, 0)
             else
                 StdUi:GlueTop(state, state:GetParent(), 5, -70, "LEFT")
-
-                -- ToDo: Timeline is below, just for testing purposes
-                widget.timeline:ClearAllPoints()
-                StdUi:GlueBelow(widget.timeline, state, 0, -10, "LEFT")
-
-                widget.timeline:SetRaidTimes(1915, 2245)
-
-                local Attendance = NastrandirRaidTools:GetModule("Attendance")
-                widget.time_events = Attendance:GetRaidTimeEvents(widget:GetUID())
-                widget.timeline:CreateTimeEvents(widget.time_events)
+                
+                widget.timeline:SetRaidTimes(widget:GetRaidTimes())
+                widget:GetRaidTimeEvents()
             end
 
             lastColumn = state
