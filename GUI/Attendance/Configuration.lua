@@ -3,7 +3,8 @@ local StdUi = LibStub("StdUi")
 local KEY = {
     GENERAL = "GENERAL",
     STATES = "STATES",
-    ANALYTICS = "ANALYTICS"
+    ANALYTICS = "ANALYTICS",
+    SECTIONS = "SECTIONS"
 }
 
 StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Configuration", function(self, parent)
@@ -18,15 +19,31 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Configuration", function(se
     local dropdown = StdUi:Dropdown(widget, 300, 24, {
         {
             text = "General",
-            value = KEY.GENERAL
+            value = KEY.GENERAL,
+            show = function()
+                widget:ShowGeneral()
+            end
         },
         {
             text = "States",
-            value = KEY.STATES
+            value = KEY.STATES,
+            show = function()
+                widget:ShowStates()
+            end
         },
         {
             text = "Analytics",
-            value = KEY.ANALYTICS
+            value = KEY.ANALYTICS,
+            show = function()
+                widget:ShowAnalytics()
+            end
+        },
+        {
+            text = "Sections",
+            value = KEY.SECTIONS,
+            show = function()
+                widget:ShowSections()
+            end
         }
     })
     widget.dropdown = dropdown
@@ -57,6 +74,10 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Configuration", function(se
 
     function widget:SelectAnalytics()
         widget.dropdown:SetValue(KEY.ANALYTICS, widget.dropdown:FindValueText(KEY.ANALYTICS))
+    end
+
+    function widget:SelectSections()
+        widget.dropdown:SetValue(KEY.SECTIONS, widget.dropdown:FindValueText(KEY.SECTIONS))
     end
 
     function widget:ShowGeneral()
@@ -97,8 +118,26 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Configuration", function(se
         widget:ShowTab(widget.analytics)
     end
 
+    function widget:ShowSections()
+        print("ShowSections()")
+        if not widget.sections then
+            local sections = StdUi:NastrandirRaidTools_Attendance_ConfigurationSections(widget)
+            widget.sections = sections
+            sections:Hide()
+            table.insert(widget.tabs, sections)
+        end
+
+        widget:ShowTab(widget.sections)
+    end
+
     widget.dropdown.OnValueChanged = function(dropdown, key)
-        if key == KEY.GENERAL then
+        for _, entry in ipairs(widget.dropdown.options) do
+            if entry.value == key and entry.show then
+                entry.show()
+                return
+            end
+        end
+        --[[if key == KEY.GENERAL then
             widget:ShowGeneral()
             return
         end
@@ -112,6 +151,11 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Configuration", function(se
             widget:ShowAnalytics()
             return
         end
+
+        if key == KEY.SECTIONS then
+            widget:ShowSections()
+            return
+        end]]
     end
 
     widget.dropdown:SetValue(KEY.GENERAL)

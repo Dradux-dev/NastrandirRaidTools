@@ -268,7 +268,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
                 StdUi:GlueRight(state, lastColumn, 0, 0)
             else
                 StdUi:GlueTop(state, state:GetParent(), 5, -70, "LEFT")
-                
+
                 widget.timeline:SetRaidTimes(widget:GetRaidTimes())
                 widget:GetRaidTimeEvents()
             end

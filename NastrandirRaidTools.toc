@@ -26,6 +26,9 @@ GUI\Attendance\ConfigurationAnalyticsEdit.lua
 GUI\Attendance\ConfigurationAnalyticsEditState.lua
 GUI\Attendance\ConfigurationStates.lua
 GUI\Attendance\ConfigurationStatesEdit.lua
+GUI\Attendance\ConfigurationSections.lua
+GUI\Attendance\ConfigurationSectionsEdit.lua
+GUI\Attendance\ConfigurationSectionsEditValue.lua
 GUI\Attendance\PlayerDetails.lua
 GUI\Attendance\RaidDetails.lua
 GUI\Attendance\RaidLogEntry.lua

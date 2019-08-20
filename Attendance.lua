@@ -222,6 +222,17 @@ function Attendance:OnEnable()
                     end
                 },
                 {
+                    title = "Config: Sections",
+                    close = true,
+                    callback = function(itemFrame)
+                        local context = itemFrame.mainContext or itemFrame:GetParent()
+                        context:CloseMenu()
+
+                        Attendance:ShowConfiguration()
+                        self.configuration:SelectSections()
+                    end
+                },
+                {
                     isSeparator = true
                 },
                 {
