@@ -47,6 +47,13 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingTimelineEventM
         for index, entry in ipairs(data) do
             if entry.event == "section_changed" then
                 add_empty_line = true
+
+                local section = NastrandirRaidTools:GetModuleDB("Attendance", "sections", entry.section)
+                if entry.old then
+                    text = text .. NastrandirRaidTools:ColorText(string.format("%s: %s -> %s\n", section.name, entry.old, entry.new), unpack({1,1,1,1}))
+                else
+                    text = text .. NastrandirRaidTools:ColorText(string.format("%s: %s\n", section.name, entry.new), unpack({1,1,1,1}))
+                end
             elseif entry.event == "state_changed" then
                 if add_empty_line then
                     text = text .. "\n"

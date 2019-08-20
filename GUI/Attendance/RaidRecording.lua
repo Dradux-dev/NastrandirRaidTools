@@ -10,6 +10,7 @@ local role_values = {
 StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(self, parent)
     local width = parent:GetWidth() or 800
     local height = 300
+    local column_height = 400
 
     local widget = StdUi:Frame(parent, width, height)
     self:InitWidget(widget)
@@ -31,7 +32,11 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
 
     local timeline = StdUi:NastrandirRaidTools_Attendance_RaidRecordingTimeline(widget, width - 10)
     widget.timeline = timeline
-    StdUi:GlueTop(timeline, widget, 5, -15, "LEFT")
+    StdUi:GlueTop(timeline, widget, 5, -40, "LEFT")
+
+    local section = StdUi:Button(widget, 80, 24, "Section")
+    widget.section = section
+    StdUi:GlueTop(section, widget, 5, -5, "LEFT")
 
     function widget:HideChildren()
         for index, child in ipairs(widget.content_group) do
@@ -108,7 +113,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
         end
 
         -- create new column: no unused column available
-        local column = StdUi:NastrandirRaidTools_Attendance_RaidRecordingStateColumn(widget, 200, 450)
+        local column = StdUi:NastrandirRaidTools_Attendance_RaidRecordingStateColumn(widget, 200, column_height)
         table.insert(widget.content_group, column)
         return column
     end
@@ -267,7 +272,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
             if lastColumn then
                 StdUi:GlueRight(state, lastColumn, 0, 0)
             else
-                StdUi:GlueTop(state, state:GetParent(), 5, -70, "LEFT")
+                StdUi:GlueBelow(state, widget.timeline, 0, -10, "LEFT")
 
                 widget.timeline:SetRaidTimes(widget:GetRaidTimes())
                 widget:GetRaidTimeEvents()
@@ -279,7 +284,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
         -- Create roster
         local roster
         if not widget.roster then
-            roster = StdUi:NastrandirRaidTools_Attendance_RaidRecordingRoster(widget, column_width, 450)
+            roster = StdUi:NastrandirRaidTools_Attendance_RaidRecordingRoster(widget, column_width, column_height)
             widget.roster = roster
         else
             roster = widget.roster
@@ -324,6 +329,90 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
 
         widget.roster:RemovePlayerByMain(player_uid)
     end
+
+    function widget:SectionChanged(uid, value)
+        local raid = NastrandirRaidTools:GetModuleDB("Attendance", "raids", widget.uid)
+        raid.sections = raid.sections or {}
+        table.insert(raid.sections, {
+            time = widget.timeline:GetTime(),
+            section = uid,
+            value = value,
+            order = #raid.sections + 1
+        })
+
+        widget:GetRaidTimeEvents()
+    end
+
+    function widget:GetSectionMenu()
+        local db = NastrandirRaidTools:GetModuleDB("Attendance", "sections")
+        ViragDevTool_AddData(db, "DB")
+        local sections = {}
+        for uid, section in pairs(db) do
+            if section.usable then
+                table.insert(sections, uid)
+            end
+        end
+
+        ViragDevTool_AddData(sections, "Sections")
+
+        table.sort(sections, function(a, b)
+            return db[a].name < db[b].name
+        end)
+
+        ViragDevTool_AddData(sections, "Sorted Sections")
+
+        local menu = {}
+        for _, uid in ipairs(sections) do
+            local section = db[uid]
+            local children = {}
+
+            for _, value in ipairs(section.values) do
+                table.insert(children, {
+                    radio = value,
+                    radioGroup = uid,
+                    checked = false,
+                    callback = function()
+                        widget:SectionChanged(uid, value)
+                    end
+                })
+            end
+
+            table.insert(menu, {
+                title = section.name,
+                children = children
+            })
+        end
+
+        table.insert(menu, {
+            isSeparator = true
+        })
+        table.insert(menu, {
+            title = "Close",
+            callback = function()
+                widget.section_menu:CloseMenu()
+            end
+        })
+
+        ViragDevTool_AddData(menu, "Menu")
+        return menu
+    end
+
+    widget.section:SetScript("OnClick", function()
+        if not widget.section_menu then
+            widget.section_menu = StdUi:DynamicContextMenu(parent, widget:GetSectionMenu())
+            widget.section_menu:SetHighlightTextColor(1, 0.431, 0.101, 1)
+        else
+            widget.section_menu:DrawOptions(widget:GetSectionMenu())
+        end
+
+        local menu = widget.section_menu
+        menu:SetFrameStrata("TOOLTIP")
+
+        menu:ClearAllPoints()
+        StdUi:GlueBelow(widget.section_menu, widget.section, 0, 0, "LEFT")
+
+        menu:Show()
+    end)
 
     return widget
 end)

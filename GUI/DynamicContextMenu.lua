@@ -119,9 +119,11 @@ StdUi:RegisterWidget("DynamicContextMenu", function(self, parent, options, stopH
             itemFrame.texture:SetPoint('LEFT');
             itemFrame.texture:SetPoint('RIGHT');
         elseif data.checkbox then
-            itemFrame = parent.stdUi:Checkbox(parent, '');
+            itemFrame = parent.stdUi:Checkbox(parent, data.checkbox);
+            itemFrame:SetChecked(data.checked or false)
         elseif data.radio then
-            itemFrame = parent.stdUi:Radio(parent, '', data.radioGroup);
+            itemFrame = parent.stdUi:Radio(parent, data.radio, data.radioGroup);
+            itemFrame:SetChecked(data.checked or false)
         elseif data.text then
             itemFrame = parent.stdUi:HighlightButton(parent, nil, 20);
         end
