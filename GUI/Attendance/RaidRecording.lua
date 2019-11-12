@@ -345,7 +345,6 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
 
     function widget:GetSectionMenu()
         local db = NastrandirRaidTools:GetModuleDB("Attendance", "sections")
-        ViragDevTool_AddData(db, "DB")
         local sections = {}
         for uid, section in pairs(db) do
             if section.usable then
@@ -353,13 +352,9 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
             end
         end
 
-        ViragDevTool_AddData(sections, "Sections")
-
         table.sort(sections, function(a, b)
             return db[a].name < db[b].name
         end)
-
-        ViragDevTool_AddData(sections, "Sorted Sections")
 
         local menu = {}
         for _, uid in ipairs(sections) do
@@ -393,7 +388,6 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
             end
         })
 
-        ViragDevTool_AddData(menu, "Menu")
         return menu
     end
 

@@ -332,7 +332,6 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingPlayer", funct
     end)
 
     button:SetScript("OnClick", function(frame, mouseButton)
-        ViragDevTool_AddData(button:IsShown(), "Is Shown")
         if button:IsShown() then
             if mouseButton == "RightButton" then
                 if not button.context then

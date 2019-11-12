@@ -67,7 +67,6 @@ function Roster:GetRoleSubMenu(role)
             table.insert(options, {
                 title = name,
                 callback = function(itemFrame)
-                    ViragDevTool_AddData(itemFrame, "Item Frame")
                     local context = itemFrame:GetParent()
                     context:CloseAllMenus()
 

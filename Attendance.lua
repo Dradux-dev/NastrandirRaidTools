@@ -292,8 +292,19 @@ function Attendance:ShowRaid(uid)
     self.details:Show()
 end
 
-function Attendance:ShowRaidLog(raid_id)
+function Attendance:ShowRaidLog(uid)
+    local content = NastrandirRaidTools:GetContent()
 
+    if not self.log then
+        self.log = StdUi:NastrandirRaidTools_Attendance_RaidLog(content.child)
+        table.insert(content.children, self.log)
+        self.log:Hide()
+    end
+
+    NastrandirRaidTools:ReleaseContent()
+    StdUi:GlueTop(self.log, content.child, 0, 0, "LEFT")
+    self.log:SetRaid(uid)
+    self.log:Show()
 end
 
 function Attendance:ShowConfiguration()
@@ -308,11 +319,6 @@ function Attendance:ShowConfiguration()
     NastrandirRaidTools:ReleaseContent()
     StdUi:GlueTop(self.configuration, content.child, 0, 0, "LEFT")
     self.configuration:Show()
-end
-
-
-function Attendance:ShowRaidLog(uid)
-    print("Showing raid log", uid)
 end
 
 function Attendance:ShowRaidRecording(uid)
@@ -399,6 +405,10 @@ function Attendance:GetState(uid)
     end
 
     return db.states[uid]
+end
+
+function Attendance:GetSection(uid)
+    return NastrandirRaidTools:GetModuleDB("Attendance", "sections", uid)
 end
 
 function Attendance:GetAnalytic(uid)
@@ -640,6 +650,7 @@ function Attendance:GetRaidTimeEvents(uid)
                     table.insert(event.data, {
                         event = "state_changed",
                         main = main_uid,
+                        character = entry.member,
                         old = old_state,
                         new = entry.state,
                         order = table.getn(event.data) + 1
@@ -650,6 +661,7 @@ function Attendance:GetRaidTimeEvents(uid)
                     table.insert(event.data, {
                         event = "character_changed",
                         main = main_uid,
+                        state = cache.state[main_uid],
                         old = old_character,
                         new = entry.member,
                         order = table.getn(event.data) + 1
@@ -667,6 +679,134 @@ function Attendance:GetRaidTimeEvents(uid)
         return a.time < b.time
     end)
 
-    ViragDevTool_AddData(events, "Time Events")
     return events
+end
+
+function Attendance:GetRaidLog(uid)
+    local Roster = NastrandirRaidTools:GetModule("Roster")
+
+    local events = Attendance:GetRaidTimeEvents(uid)
+    local log = {}
+
+    for _, event in ipairs(events) do
+        for _, entry in ipairs(event.data) do
+            if entry.event == "section_changed" then
+                local section_uid = entry.section
+                local section = Attendance:GetSection(section_uid)
+                local old_value = entry.old
+                local new_value = entry.new
+
+                if old_value then
+                    table.insert(log, {
+                        time = event.time,
+                        message = string.format("%s: %s -> %s", section.name, old_value, new_value)
+                    })
+                else
+                    table.insert(log, {
+                        time = event.time,
+                        message = string.format("%s: %s", section.name, new_value)
+                    })
+                end
+            elseif entry.event == "state_changed" then
+                local uid = {
+                    main = entry.main,
+                    character = entry.character,
+                    old_state = entry.old,
+                    new_state = entry.new
+                }
+                local main = Roster:GetCharacter(uid.main)
+                local character = Roster:GetCharacter(uid.character)
+                local new_state = Attendance:GetState(uid.new_state)
+
+                if uid.old_state then
+                    local old_state = Attendance:GetState(uid.old_state)
+                    table.insert(log, {
+                        time = event.time,
+                        member = uid.main,
+                        message = old_state.LogMessages.Leave,
+                        replacer = {
+                            Main = {
+                                text = main.name,
+                                click = function()
+                                    Roster:ShowDetails(uid.main)
+                                end
+                            },
+                            Character = {
+                                text = character.name,
+                                click = function()
+                                    Roster:ShowDetails(uid.character)
+                                end
+                            }
+                        }
+                    })
+                end
+
+                table.insert(log, {
+                    time = event.time,
+                    member = uid.main,
+                    message = new_state.LogMessages.Enter,
+                    replacer = {
+                        Main = {
+                            text = main.name,
+                            click = function()
+                                Roster:ShowDetails(uid.main)
+                            end
+                        },
+                        Character = {
+                            text = character.name,
+                            click = function()
+                                Roster:ShowDetails(uid.character)
+                            end
+                        }
+                    }
+                })
+            elseif entry.event == "character_changed" then
+                local uid = {
+                    main = entry.main,
+                    state = entry.state,
+                    old_character = entry.old,
+                    new_character = entry.new
+                }
+
+                local state = Attendance:GetState(uid.state)
+                local main = Roster:GetCharacter(uid.main)
+                local new_character = Roster:GetCharacter(uid.new)
+
+                local logMessage =  {
+                    time = event.time,
+                    member = uid.main,
+                    message = state.LogMessages.Swap,
+                    replacer = {
+                        Main = {
+                            text = main.name,
+                            click = function()
+                                Roster:ShowDetails(uid.main)
+                            end
+                        },
+                        Character = {
+                            text = new_character.name,
+                            click = function()
+                                Roster:ShowDetails(uid.new_character)
+                            end
+                        }
+                    }
+                }
+
+                if uid.old_character then
+                    local old_character = Roster:GetCharacter(uid.old_character)
+
+                    logMessage.replacer.OldCharacter = {
+                        text = old_character.name,
+                        click = function()
+                            Roster:ShowDetails(uid.old_character)
+                        end
+                    }
+                end
+
+                table.insert(log, logMessage)
+            end
+        end
+    end
+
+    return log
 end

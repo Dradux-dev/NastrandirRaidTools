@@ -31,6 +31,7 @@ GUI\Attendance\ConfigurationSectionsEdit.lua
 GUI\Attendance\ConfigurationSectionsEditValue.lua
 GUI\Attendance\PlayerDetails.lua
 GUI\Attendance\RaidDetails.lua
+GUI\Attendance\RaidLog.lua
 GUI\Attendance\RaidLogEntry.lua
 GUI\Attendance\RaidRecording.lua
 GUI\Attendance\RaidRecordingPlayer.lua
