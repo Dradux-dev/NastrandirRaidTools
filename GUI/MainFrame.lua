@@ -52,30 +52,31 @@ end
 StdUi:RegisterWidget("NastrandirRaidTools_MainFrame", function(self)
     local config = getWindowConfiguration()
 
-    local window = StdUi:Window(UIParent, "Nastrandir Raid Tools", config.width, config.height)
+    local window = StdUi:Window(UIParent, config.width, config.height, "Nastrandir Raid Tools")
     self:InitWidget(window)
     self:SetObjSize(window, config.width, config.height)
     window:SetPoint("CENTER")
     window:SetFrameLevel(7)
 
-    local menuPanel, menuFrame, menuChild, menuBar = StdUi:ScrollFrame(window, config.side_panel.width, config.side_panel.height)
+    local menuPanel = StdUi:ScrollFrame(window, config.side_panel.width, config.side_panel.height)
     window.menu = {
         panel = menuPanel,
-        frame = menuFrame,
-        child = menuChild,
-        bar = menuBar,
+        frame = menuPanel.scrollFrame,
+        child = menuPanel.scrollChild,
+        bar = menuPanel.scrollBar,
         children = {}
     }
     StdUi:GlueTop(menuPanel, window, config.side_panel.x, config.side_panel.y, "LEFT")
 
-    local contentPanel, contentFrame, contentChild, contentBar = StdUi:ScrollFrame(window, config.content.width, config.content.height)
+    local contentPanel = StdUi:ScrollFrame(window, config.content.width, config.content.height)
     window.content = {
         panel = contentPanel,
-        frame = contentFrame,
-        child = contentChild,
-        bar = contentBar,
+        frame = contentPanel.scrollFrame,
+        child = contentPanel.scrollChild,
+        bar = contentPanel.scrollBar,
         children = {}
     }
+
     StdUi:GlueTop(contentPanel, window, config.content.x, config.content.y, "LEFT")
 
     local versionLabel = window:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -83,7 +84,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_MainFrame", function(self)
     versionLabel:SetJustifyH("CENTER")
     versionLabel:SetJustifyV("CENTER")
     versionLabel:SetTextColor(1, 1, 1, 1)
-    versionLabel:SetText("0.3.0")
+    versionLabel:SetText("0.3.1")
     StdUi:GlueBottom(versionLabel, window, config.version.x, config.version.y, config.version.inside)
 
     window:SetScript("OnShow", function()

@@ -29,6 +29,8 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingTimelineEventM
 
     local tooltip = StdUi:FrameTooltip(button, "|cFFFF0000Title|r\nFirst line of text.\nSecond line of text.", "RaidRecordingTimelineEventMarker"..count .. "_Tooltip", "TOPRIGHT", false)
     button.tooltip = tooltip
+    tooltip:SetParent(NastrandirRaidTools.window)
+    tooltip:SetFrameLevel(10)
     tooltip:Hide()
 
     function button:SetTime(time)
@@ -50,7 +52,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingTimelineEventM
 
                 local section = NastrandirRaidTools:GetModuleDB("Attendance", "sections", entry.section)
                 if entry.old then
-                    text = text .. NastrandirRaidTools:ColorText(string.format("%s: %s -> %s\n", section.name, entry.old, entry.new), unpack({1,1,1,1}))
+                    text = text .. NastrandirRaidTools:ColorText(string.format("%s: %s > %s\n", section.name, entry.old, entry.new), unpack({1,1,1,1}))
                 else
                     text = text .. NastrandirRaidTools:ColorText(string.format("%s: %s\n", section.name, entry.new), unpack({1,1,1,1}))
                 end
@@ -65,7 +67,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingTimelineEventM
                     local old_state = Attendance:GetState(entry.old)
                     local new_state = Attendance:GetState(entry.new)
 
-                    text = text .. string.format("%s: %s -> %s\n",
+                    text = text .. string.format("%s: %s > %s\n",
                             NastrandirRaidTools:ClassColorText(main.name, main.class),
                             NastrandirRaidTools:ColorText(old_state.Name, unpack(old_state.color or {1, 1,1 ,1, 1})),
                             NastrandirRaidTools:ColorText(new_state.Name, unpack(new_state.color or {1, 1,1 ,1, 1}))
@@ -73,7 +75,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingTimelineEventM
                 else
                     local new_state = Attendance:GetState(entry.new)
 
-                    text = text .. string.format("%s: -> %s\n",
+                    text = text .. string.format("%s: > %s\n",
                             NastrandirRaidTools:ClassColorText(main.name, main.class),
                             NastrandirRaidTools:ColorText(new_state.Name, unpack(new_state.color or {1, 1,1 ,1, 1}))
                     )

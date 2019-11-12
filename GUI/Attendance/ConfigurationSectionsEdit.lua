@@ -173,9 +173,9 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_ConfigurationSectionEdit", 
     widget.delete:SetScript("OnClick", function()
         NastrandirRaidTools:GetUserPermission(widget, {
             callbackYes = function()
-                local db = NastrandirRaidTools:GetModuleDB("Attendance", "states")
+                local db = NastrandirRaidTools:GetModuleDB("Attendance", "sections")
                 db[widget.uid] = nil
-                widget:GetParent():DrawStates()
+                widget:GetParent():DrawSections()
             end
         })
     end)

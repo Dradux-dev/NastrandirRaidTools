@@ -16,12 +16,12 @@ StdUi:RegisterWidget("NastrandirRaidTools_Roster_ColumnFrame", function(self, pa
     title:SetJustifyV("CENTER")
     StdUi:GlueTop(title, widget, 0, 0)
 
-    local contentPanel, contentFrame, contentChild, contentBar = StdUi:ScrollFrame(widget, widget:GetWidth(), height - (16 + 24))
+    local contentPanel = StdUi:ScrollFrame(widget, widget:GetWidth(), height - (16 + 24))
     widget.content = {
         panel = contentPanel,
-        frame = contentFrame,
-        child = contentChild,
-        bar = contentBar,
+        frame = contentPanel.scrollFrame,
+        child = contentPanel.scrollChild,
+        bar = contentPanel.scrollBar,
         children = {}
     }
     StdUi:GlueTop(contentPanel, widget, 0, -16, "LEFT")
