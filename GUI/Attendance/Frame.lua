@@ -71,6 +71,52 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance", function(self, parent)
         return options
     end
 
+    function widget:AddTooltipData(row, column, text)
+        if not widget.tooltip_data then
+            widget.tooltip_data = {}
+        end
+
+        local key = row .. "_" .. column
+        if not widget.tooltip_data[key] then
+            widget.tooltip_data[key] = {}
+        end
+
+        table.insert(widget.tooltip_data[key], text)
+    end
+
+    function widget:SortTooltipData(row, column)
+        if not widget.tooltip_data then
+            widget.tooltip_data = {}
+        end
+
+        local key = row .. "_" .. column
+        if not widget.tooltip_data[key] then
+            widget.tooltip_data[key] = {}
+        end
+
+        table.sort(widget.tooltip_data[key], function(a, b)
+            return a.order < b.order
+        end)
+    end
+
+    function widget:GetTooltipText(row, column)
+        if not widget.tooltip_data then
+            widget.tooltip_data = {}
+        end
+
+        local key = row .. "_" .. column
+        if not widget.tooltip_data[key] then
+            return
+        end
+
+        local text = ""
+        for _, line in ipairs(widget.tooltip_data[key]) do
+            text = text .. line.text .. "\n"
+        end
+
+        return text
+    end
+
     function widget:Analyse()
         local Attendance = NastrandirRaidTools:GetModule("Attendance")
         local Roster = NastrandirRaidTools:GetModule("Roster")
@@ -116,13 +162,14 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance", function(self, parent)
         end
 
         -- Fill table
+        widget.tooltip_data = {}
         local data = {}
-        for _, player_uid in ipairs(widget.roster) do
+        for player_index, player_uid in ipairs(widget.roster) do
             local row = {
                 name = Roster:GetCharacterName(player_uid)
             }
 
-            for _, analytic_uid in ipairs(widget.analytics) do
+            for analytic_index, analytic_uid in ipairs(widget.analytics) do
                 local analytic = Attendance:GetAnalytic(analytic_uid)
                 local str = "0%"
                 if attendance_data[player_uid] then
@@ -130,23 +177,32 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance", function(self, parent)
                     local time = 0
 
                     for state_uid, state_config in pairs(analytic.states) do
+                        local addTime = 0
                         if type(state_config) == "boolean" and state_config then
                             if attendance_data[player_uid].states[state_uid] then
-                                time = time + attendance_data[player_uid].states[state_uid].total
+                                addTime = attendance_data[player_uid].states[state_uid].total
                             end
                         elseif type(state_config) == "table" then
                             local toleranceType = state_config.tolerance
                             if toleranceType == "TOTAL" then
-                                time = time + attendance_data[player_uid].states[state_uid].total
+                                addTime = attendance_data[player_uid].states[state_uid].total
                             elseif toleranceType == "TOLERANCE" then
-                                time = time + attendance_data[player_uid].states[state_uid].tolerance
+                                addTime = attendance_data[player_uid].states[state_uid].tolerance
                             elseif toleranceType == "EXCLUDE_TOLERANCE" then
-                                time = time + (attendance_data[player_uid].states[state_uid].total - attendance_data[player_uid].states[state_uid].tolerance)
+                                addTime = (attendance_data[player_uid].states[state_uid].total - attendance_data[player_uid].states[state_uid].tolerance)
                             end
                         end
+
+                        time = time + addTime
+                        local state = Attendance:GetState(state_uid)
+                        widget:AddTooltipData(player_index, analytic_index + 1, {
+                            text = string.format("%s %d%%", state.Name, ((addTime / total) * 100) + 0.5),
+                            order = state.Order
+                        })
                     end
 
                     str = string.format("%d%%", ((time / total) * 100) + 0.5)
+                    widget:SortTooltipData(player_index, analytic_index)
                 end
 
                 row[analytic_uid] = str
@@ -222,6 +278,38 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance", function(self, parent)
     widget.configuration:SetScript("OnClick", function()
         local Attendance  = NastrandirRaidTools:GetModule("Attendance")
         Attendance:ShowConfiguration()
+    end)
+
+    widget.data:SetScript("OnUpdate", function()
+        if widget.data:IsMouseOver() then
+            for rowIndex, row in ipairs(widget.data.rows) do
+                for columnIndex, cell in pairs(row) do
+                    if cell.text:IsMouseOver() then
+                        if not widget.tooltip then
+                            widget.tooltip = StdUi:FrameTooltip(widget, "", "Attendance_Tooltip", "TOPRIGHT", false, true)
+                            widget.tooltip:SetParent(NastrandirRaidTools.window)
+                            widget.tooltip:SetFrameLevel(10)
+                        end
+
+                        local text = widget:GetTooltipText(rowIndex, columnIndex)
+                        if text and text ~= "" then
+                            widget.tooltip:SetText(text)
+                            widget.tooltip:ClearAllPoints()
+                            StdUi:GlueBelow(widget.tooltip, cell.text, widget.tooltip:GetWidth() / 2, -2)
+                            widget.tooltip:Show()
+                        else
+                            widget.tooltip:Hide()
+                        end
+
+                        return
+                    end
+                end
+            end
+        end
+
+        if widget.tooltip and widget.tooltip:IsShown() then
+            widget.tooltip:Hide()
+        end
     end)
 
     return widget
