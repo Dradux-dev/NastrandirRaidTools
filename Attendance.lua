@@ -407,6 +407,25 @@ function Attendance:GetState(uid)
     return db.states[uid]
 end
 
+function Attendance:GetAnalytics()
+    local db = NastrandirRaidTools:GetModuleDB("Attendance")
+
+    if not db.analytics then
+        db.analytics = {}
+    end
+
+    local t = {}
+    for uid, data in pairs(db.analytics) do
+        table.insert(t, uid)
+    end
+
+    return t
+end
+
+function Attendance:GetAnalytic(uid)
+    return NastrandirRaidTools:GetModuleDB("Attendance", "analytics", uid)
+end
+
 function Attendance:GetSection(uid)
     return NastrandirRaidTools:GetModuleDB("Attendance", "sections", uid)
 end

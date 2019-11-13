@@ -80,7 +80,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance", function(self, parent)
         local attendance_data = Attendance:Analyse(start_raid, end_raid)
 
         -- Build table
-        widget.states = Attendance:GetStates()
+        widget.analytics = Attendance:GetAnalytics()
         widget.roster = Roster:GetRaidmember()
         table.sort(widget.roster, function(a, b)
             local name_a = Roster:GetCharacterName(a)
@@ -89,28 +89,29 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance", function(self, parent)
             return name_a < name_b
         end)
 
-        table.sort(widget.states, function(a, b)
-            local order_a = Attendance:GetState(a).Order
-            local order_b = Attendance:GetState(b).Order
+        table.sort(widget.analytics, function(a, b)
+            local order_a = Attendance:GetAnalytic(a).order
+            local order_b = Attendance:GetAnalytic(b).order
 
             return order_a < order_b
         end)
 
+        local column_count = table.getn(widget.analytics) + 1
         local columns = {
             {
                 header = "Raid member",
                 index = "name",
                 align = "LEFT",
-                width = widget.data:GetWidth() / (table.getn(widget.states) + 1)
+                width = widget.data:GetWidth() / (column_count)
             }
         }
-        for _, state_uid in ipairs(widget.states) do
-            local state = Attendance:GetState(state_uid)
+        for _, analytic_uid in ipairs(widget.analytics) do
+            local analytic = Attendance:GetAnalytic(analytic_uid)
             table.insert(columns, {
-                header = state.Name,
-                index = state_uid,
+                header = analytic.name,
+                index = analytic_uid,
                 align = "CENTER",
-                width = widget.data:GetWidth() / (table.getn(widget.states) + 1)
+                width = widget.data:GetWidth() / (column_count)
             })
         end
 
@@ -121,21 +122,34 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance", function(self, parent)
                 name = Roster:GetCharacterName(player_uid)
             }
 
-            for _, state_uid in ipairs(widget.states) do
+            for _, analytic_uid in ipairs(widget.analytics) do
+                local analytic = Attendance:GetAnalytic(analytic_uid)
                 local str = "0%"
                 if attendance_data[player_uid] then
                     local total = attendance_data[player_uid].duration
                     local time = 0
-                    if attendance_data[player_uid].states[state_uid] then
-                        time = attendance_data[player_uid].states[state_uid].total
-                    else
-                        --print("State not found", self.data:GetText(1, s+1), ":", self.data:GetData(1, s+1))
+
+                    for state_uid, state_config in pairs(analytic.states) do
+                        if type(state_config) == "boolean" and state_config then
+                            if attendance_data[player_uid].states[state_uid] then
+                                time = time + attendance_data[player_uid].states[state_uid].total
+                            end
+                        elseif type(state_config) == "table" then
+                            local toleranceType = state_config.tolerance
+                            if toleranceType == "TOTAL" then
+                                time = time + attendance_data[player_uid].states[state_uid].total
+                            elseif toleranceType == "TOLERANCE" then
+                                time = time + attendance_data[player_uid].states[state_uid].tolerance
+                            elseif toleranceType == "EXCLUDE_TOLERANCE" then
+                                time = time + (attendance_data[player_uid].states[state_uid].total - attendance_data[player_uid].states[state_uid].tolerance)
+                            end
+                        end
                     end
 
                     str = string.format("%d%%", ((time / total) * 100) + 0.5)
                 end
 
-                row[state_uid] = str
+                row[analytic_uid] = str
             end
 
             table.insert(data, row)
