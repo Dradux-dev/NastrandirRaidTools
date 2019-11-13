@@ -20,6 +20,7 @@ GUI\Roster\Frame.lua
 GUI\Attendance\Frame.lua
 GUI\Attendance\Configuration.lua
 GUI\Attendance\ConfigurationGeneral.lua
+GUI\Attendance\ConfigurationAutoRecord.lua
 GUI\Attendance\ConfigurationAnalytics.lua
 GUI\Attendance\ConfigurationAnalyticsColor.lua
 GUI\Attendance\ConfigurationAnalyticsEdit.lua

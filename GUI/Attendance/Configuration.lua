@@ -2,6 +2,7 @@ local StdUi = LibStub("StdUi")
 
 local KEY = {
     GENERAL = "GENERAL",
+    AUTORECORD = "AUTORECORD",
     STATES = "STATES",
     ANALYTICS = "ANALYTICS",
     SECTIONS = "SECTIONS"
@@ -22,6 +23,13 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Configuration", function(se
             value = KEY.GENERAL,
             show = function()
                 widget:ShowGeneral()
+            end
+        },
+        {
+            text = "Auto Record",
+            value = KEY.AUTORECORD,
+            show = function()
+                widget:ShowAutoRecord()
             end
         },
         {
@@ -68,6 +76,10 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Configuration", function(se
         widget.dropdown:SetValue(KEY.GENERAL, widget.dropdown:FindValueText(KEY.GENERAL))
     end
 
+    function widget:SelectAutoRecord()
+        widget.dropdown:SetValue(KEY.AUTORECORD, widget.dropdown:FindValueText(KEY.AUTORECORD))
+    end
+
     function widget:SelectStates()
         widget.dropdown:SetValue(KEY.STATES, widget.dropdown:FindValueText(KEY.STATES))
     end
@@ -81,7 +93,6 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Configuration", function(se
     end
 
     function widget:ShowGeneral()
-        print("ShowGeneral()")
         if not widget.general then
             local general = StdUi:NastrandirRaidTools_Attendance_ConfigurationGeneral(widget)
             widget.general = general
@@ -93,8 +104,19 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Configuration", function(se
         widget:ShowTab(widget.general)
     end
 
+    function widget:ShowAutoRecord()
+        if not widget.autorecord then
+            local autorecord = StdUi:NastrandirRaidTools_Attendance_ConfigurationAutoRecord(widget)
+            widget.autorecord = autorecord
+            autorecord:Hide()
+            table.insert(widget.tabs, autorecord)
+        end
+
+
+        widget:ShowTab(widget.autorecord)
+    end
+
     function widget:ShowStates()
-        print("ShowStates()")
         if not widget.states then
             local states = StdUi:NastrandirRaidTools_Attendance_ConfigurationStates(widget)
             widget.states = states
@@ -107,7 +129,6 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Configuration", function(se
     end
 
     function widget:ShowAnalytics()
-        print("ShowAnalytics()")
         if not widget.analytics then
             local analytics = StdUi:NastrandirRaidTools_Attendance_ConfigurationAnalytics(widget)
             widget.analytics = analytics
@@ -119,7 +140,6 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Configuration", function(se
     end
 
     function widget:ShowSections()
-        print("ShowSections()")
         if not widget.sections then
             local sections = StdUi:NastrandirRaidTools_Attendance_ConfigurationSections(widget)
             widget.sections = sections

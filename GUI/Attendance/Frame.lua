@@ -178,11 +178,11 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance", function(self, parent)
 
                     for state_uid, state_config in pairs(analytic.states) do
                         local addTime = 0
-                        if type(state_config) == "boolean" and state_config then
+                        if type(state_config) == "boolean" and state_config and attendance_data[player_uid].states[state_uid] then
                             if attendance_data[player_uid].states[state_uid] then
                                 addTime = attendance_data[player_uid].states[state_uid].total
                             end
-                        elseif type(state_config) == "table" then
+                        elseif type(state_config) == "table" and attendance_data[player_uid].states[state_uid] then
                             local toleranceType = state_config.tolerance
                             if toleranceType == "TOTAL" then
                                 addTime = attendance_data[player_uid].states[state_uid].total

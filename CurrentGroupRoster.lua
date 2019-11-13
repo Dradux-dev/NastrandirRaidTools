@@ -38,6 +38,7 @@ function CurrentGroupRoster:Scan()
             end
 
             self.groupRoster.uid[uid] = {
+                uid = uid,
                 name = name,
                 class = Roster:GetCharacterClass(uid),
                 role = Roster:GetCharacterRole(uid),

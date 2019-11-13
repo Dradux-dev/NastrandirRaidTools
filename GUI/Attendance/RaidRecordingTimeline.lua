@@ -89,7 +89,15 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingTimeline", fun
         end
     end
 
-    function widget:SetTime(time)
+    function widget:SetTime(time, fix)
+        if not widget:IsInRaidTime(time) and fix then
+            if time < widget.start_time then
+                time = widget.start_time
+            elseif time > widget.end_time then
+                time = widget.end_time
+            end
+        end
+
         if widget:IsInRaidTime(time) then
             local duration = NastrandirRaidTools:GetDuration(widget.start_time, time)
             widget.slider:SetValue(duration)

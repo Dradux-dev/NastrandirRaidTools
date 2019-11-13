@@ -17,19 +17,6 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
     self:SetObjSize(widget, width, height)
     widget.content_group = {}
 
-    -- Top Bar
-    --[[local hours = StdUi:NastrandirRaidTools_SpinBox(widget)
-    widget.hours = hours
-    hours:SetMin(0)
-    hours:SetMax(23)
-    StdUi:GlueTop(hours, widget, -57, -15)
-
-    local minutes = StdUi:NastrandirRaidTools_SpinBox(widget)
-    widget.minutes = minutes
-    minutes:SetMin(0)
-    minutes:SetMax(59)
-    StdUi:GlueTop(minutes, widget, 57, -15)--]]
-
     local timeline = StdUi:NastrandirRaidTools_Attendance_RaidRecordingTimeline(widget, width - 10)
     widget.timeline = timeline
     StdUi:GlueTop(timeline, widget, 5, -40, "LEFT")
@@ -37,6 +24,10 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
     local section = StdUi:Button(widget, 80, 24, "Section")
     widget.section = section
     StdUi:GlueTop(section, widget, 5, -5, "LEFT")
+
+    local auto = StdUi:Button(widget, 24, 24, "A")
+    widget.auto = auto
+    StdUi:GlueTop(auto, widget, -5, -5, "RIGHT")
 
     function widget:HideChildren()
         for index, child in ipairs(widget.content_group) do
@@ -233,6 +224,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
             state:SetUID(uid)
             state:SetName(widget:GetStateName(uid))
             state:SetWidth(column_width)
+            state:ReleaseAllMember()
             state:SetSortCallback(function(a, b)
                 return widget:SortCompare(a, b)
             end)
@@ -391,6 +383,48 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
         return menu
     end
 
+    function widget:IsMemberInGroup(uid)
+        local CurrentGroupRoster = NastrandirRaidTools:GetModule("CurrentGroupRoster")
+        local info = CurrentGroupRoster:GetAlt(uid)
+        if info then
+            return true, info.uid
+        end
+
+        return false
+    end
+
+    function widget:AutoRecord(columns)
+        -- Copy actual member list
+        local member = {}
+        for index, column in ipairs(columns) do
+            if column then
+                for _, entry in ipairs(column.members) do
+                    table.insert(member, entry.uid)
+                end
+            end
+        end
+
+        local autorecord = NastrandirRaidTools:GetModuleDB("Attendance", "autorecord")
+        local group_state = widget:GetStateColumn(autorecord.in_group)
+        local missing_state = widget:GetStateColumn(autorecord.missing)
+        for _, member_uid in ipairs(member) do
+            local state, actual_uid = widget:IsMemberInGroup(member_uid)
+            if state then
+                -- Is in current group
+                if group_state and not group_state:FindPlayer(actual_uid) then
+                    widget:RemovePlayerByMain(actual_uid)
+                    group_state:AddPlayer(actual_uid)
+                end
+            else
+                -- Is not in current group
+                if missing_state and not missing_state:FindPlayer(member_uid) then
+                    widget:RemovePlayerByMain(member_uid)
+                    missing_state:AddPlayer(member_uid)
+                end
+            end
+        end
+    end
+
     widget.section:SetScript("OnClick", function()
         if not widget.section_menu then
             widget.section_menu = StdUi:DynamicContextMenu(parent, widget:GetSectionMenu())
@@ -406,6 +440,18 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
         StdUi:GlueBelow(widget.section_menu, widget.section, 0, 0, "LEFT")
 
         menu:Show()
+    end)
+
+    widget.auto:SetScript("OnClick", function()
+        local now = tonumber(date("%H%M"))
+        widget.timeline:SetTime(now, true)
+
+        local autorecord = NastrandirRaidTools:GetModuleDB("Attendance", "autorecord")
+        widget:AutoRecord({
+            widget:GetStateColumn(autorecord.in_group),
+            widget:GetStateColumn(autorecord.missing),
+            widget.roster
+        })
     end)
 
     return widget

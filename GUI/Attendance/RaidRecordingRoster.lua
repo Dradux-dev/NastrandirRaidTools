@@ -5,6 +5,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingRoster", funct
     self:InitWidget(widget)
     self:SetObjSize(widget, width, height)
     widget:HideAddButton()
+    widget.members = {}
 
     function widget:AddPlayer(player)
         if not widget:FindPlayer(player) then
@@ -128,7 +129,15 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingRoster", funct
 
         if pos then
             local member = widget.members[pos]
-            widget:RemovePlayer(member.uid)
+            if member.button then
+                table.insert(widget.unusedButtons, member.button)
+                member.button:ClearAllPoints()
+                member.button:Hide()
+                member.button = nil
+            end
+            table.remove(widget.members, pos)
+
+            widget:CreatePlayerButtons()
         end
     end
 
@@ -156,6 +165,19 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingRoster", funct
                 member.button:CloseContextMenu()
             end
         end
+    end
+
+    function widget:ReleaseAllMember()
+        local member_list = {}
+        for _, member in ipairs(widget.members or {}) do
+            table.insert(member_list, member.uid)
+        end
+
+        widget:lockButtons()
+        for _, uid in ipairs(member_list) do
+            widget:RemovePlayer(uid)
+        end
+        widget:unlockButtons()
     end
 
     widget:SetName("Roster")

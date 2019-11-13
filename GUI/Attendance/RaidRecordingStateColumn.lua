@@ -5,6 +5,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingStateColumn", 
     self:InitWidget(widget)
     self:SetObjSize(widget, width, height)
     widget:HideAddButton()
+    widget.members = {}
 
     function widget:SetUID(uid)
         widget.uid = uid
@@ -33,6 +34,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingStateColumn", 
             if not silently then
                 widget:OnPlayerAdded(player)
             end
+
             widget:CreatePlayerButtons()
         end
     end
@@ -161,18 +163,18 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingStateColumn", 
     function widget:RemovePlayerByMain(player_uid)
         local pos = widget:FindPlayerByMain(widget:GetMainUID(player_uid))
 
-        if pos then
-            local member = widget.members[pos]
-            if member.button then
-                table.insert(widget.unusedButtons, member.button)
-                member.button:ClearAllPoints()
-                member.button:Hide()
-                member.button = nil
-            end
-            table.remove(widget.members, pos)
+            if pos then
+                local member = widget.members[pos]
+                if member.button then
+                    table.insert(widget.unusedButtons, member.button)
+                    member.button:ClearAllPoints()
+                    member.button:Hide()
+                    member.button = nil
+                end
+                table.remove(widget.members, pos)
 
-            widget:CreatePlayerButtons()
-        end
+                widget:CreatePlayerButtons()
+            end
     end
 
     function widget:GetMainUID(player_uid)
@@ -206,6 +208,19 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingStateColumn", 
                 end
             end
         end
+    end
+
+    function widget:ReleaseAllMember()
+        local member_list = {}
+        for _, member in ipairs(widget.members or {}) do
+            table.insert(member_list, member.uid)
+        end
+
+        widget:lockButtons()
+        for _, uid in ipairs(member_list) do
+            widget:RemovePlayer(uid)
+        end
+        widget:unlockButtons()
     end
 
     return widget
