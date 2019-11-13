@@ -55,7 +55,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidLogEntry", function(sel
         end
 
         if data.click then
-            fs:SetText("|cFF0000FF[" .. data.text .. "]|r")
+            fs:SetText("|cFF4487F2[" .. data.text .. "]|r")
             fs.click = data.click
         else
             fs:SetText("|cFFFFFFFF" .. data.text .. "|r")
