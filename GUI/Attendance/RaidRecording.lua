@@ -25,8 +25,18 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
     widget.section = section
     StdUi:GlueTop(section, widget, 5, -5, "LEFT")
 
-    local auto = StdUi:Button(widget, 24, 24, "A")
+    local auto = StdUi:Button(widget, 24, 24, "")
     widget.auto = auto
+    local icon = auto:CreateTexture(nil, "OVERLAY")
+    auto.icon = icon
+    icon:SetBlendMode("BLEND")
+    icon:SetWidth(auto:GetWidth())
+    icon:SetHeight(auto:GetHeight())
+    icon:SetPoint("LEFT", auto, "LEFT", 0, 0)
+    icon:SetTexture("Interface\\AddOns\\NastrandirRaidTools\\media\\icons\\gear")
+    local tooltip = StdUi:FrameTooltip(auto, "Auto Record", "AutoRecord_Tooltip", "BOTTOMLEFT", false)
+    auto.tooltip = tooltip
+    tooltip:Hide()
     StdUi:GlueTop(auto, widget, -5, -5, "RIGHT")
 
     function widget:HideChildren()
@@ -387,7 +397,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
         local CurrentGroupRoster = NastrandirRaidTools:GetModule("CurrentGroupRoster")
         local info = CurrentGroupRoster:GetAlt(uid)
         if info then
-            return true, info.uid
+            return true, info.uid, info.subgroup
         end
 
         return false
@@ -408,8 +418,14 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
         local group_state = widget:GetStateColumn(autorecord.in_group)
         local missing_state = widget:GetStateColumn(autorecord.missing)
         for _, member_uid in ipairs(member) do
-            local state, actual_uid = widget:IsMemberInGroup(member_uid)
+            local state, actual_uid, subgroup = widget:IsMemberInGroup(member_uid)
             if state then
+                -- Move players of group 5-8 to missing, if you are in a mythic raid
+                local _, type, difficulty = GetInstanceInfo()
+                if state and type and type == "raid"  and difficulty and difficulty == 16 and subgroup >= 5 then
+                    state = false
+                end
+
                 -- Is in current group
                 if group_state and not group_state:FindPlayer(actual_uid) then
                     widget:RemovePlayerByMain(actual_uid)
@@ -424,6 +440,15 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
             end
         end
     end
+
+    widget:SetScript("OnShow", function()
+        local autorecord = NastrandirRaidTools:GetModuleDB("Attendance", "autorecord")
+        if not autorecord.in_group or not autorecord.missing then
+            widget.auto:Hide()
+        else
+            widget.auto:Show()
+        end
+    end)
 
     widget.section:SetScript("OnClick", function()
         if not widget.section_menu then
@@ -452,6 +477,14 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
             widget:GetStateColumn(autorecord.missing),
             widget.roster
         })
+    end)
+
+    widget.auto:SetScript("OnEnter", function()
+        widget.auto.tooltip:Show()
+    end)
+
+    widget.auto:SetScript("OnLeave", function()
+        widget.auto.tooltip:Hide()
     end)
 
     return widget
