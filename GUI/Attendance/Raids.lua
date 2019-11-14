@@ -57,6 +57,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Raids", function(self, pare
             return (child:GetUID() == uid)
         end)
 
+        ViragDevTool_AddData(pos, "Position #1")
         if pos then
             -- Reuse widget, that had already this UID
             raid = widget.unused[pos]
@@ -76,6 +77,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_Raids", function(self, pare
             end)
 
             if pos then
+                ViragDevTool_AddData(pos, "Position #2")
                 raid = widget.unused[pos]
                 table.remove(widget.unused, pos)
                 raid:SetUID(uid)

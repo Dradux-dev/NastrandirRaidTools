@@ -201,7 +201,12 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
         local participation = db.participation[widget.uid]
 
         if not end_time then
-            end_time = participation[#participation].time
+            local count = #participation
+            if count > 0 then
+                end_time = participation[#participation].time
+            else
+                end_time = db.raids[widget.uid].start_time
+            end
             widget:SetTime(end_time)
         end
 
