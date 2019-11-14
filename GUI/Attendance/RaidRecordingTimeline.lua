@@ -160,6 +160,10 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecordingTimeline", fun
             widget.oldValue = newValue
             widget:UpdateTimeDisplay()
             widget:UpdateNowIcon()
+
+            if widget.OnValueChanged then
+                widget.OnValueChanged(widget, widget:GetTime())
+            end
         end
     end
 

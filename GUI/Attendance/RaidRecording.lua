@@ -187,7 +187,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
         end
     end
 
-    function widget:ParseLog()
+    function widget:ParseLog(end_time)
         local db = NastrandirRaidTools:GetModuleDB("Attendance")
 
         if not db.participation then
@@ -200,8 +200,19 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
 
         local participation = db.participation[widget.uid]
 
+        if not end_time then
+            end_time = participation[#participation].time
+            widget:SetTime(end_time)
+        end
+
+        widget.autoParseLog = false
         for index, entry in ipairs(participation) do
-            widget:SetTime(entry.time)
+            if entry.time > end_time then
+                -- do not parse over the end of the
+                -- log or a specified end
+                break
+            end
+
             widget:RemovePlayerByMain(entry.member)
 
             local column = widget:GetStateColumn(entry.state)
@@ -214,6 +225,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
                 end
             end
         end
+        widget.autoParseLog = true
     end
 
     function widget:Load()
@@ -317,6 +329,7 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
         end
 
         -- Set time to start time
+        widget.autoParseLog = false
         widget:SetTime(widget:GetRaidStartTime())
 
         -- Parse already done log
@@ -486,6 +499,12 @@ StdUi:RegisterWidget("NastrandirRaidTools_Attendance_RaidRecording", function(se
     widget.auto:SetScript("OnLeave", function()
         widget.auto.tooltip:Hide()
     end)
+
+    widget.timeline.OnValueChanged = function(timeline, newTime)
+        if widget.autoParseLog then
+            widget:ParseLog(newTime)
+        end
+    end
 
     return widget
 end)
