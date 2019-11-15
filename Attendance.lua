@@ -739,10 +739,34 @@ function Attendance:GetRaidLog(uid)
 
                 if uid.old_state then
                     local old_state = Attendance:GetState(uid.old_state)
+                    if old_state.LogMessages.Leave ~= "" then
+                        table.insert(log, {
+                            time = event.time,
+                            member = uid.main,
+                            message = old_state.LogMessages.Leave,
+                            replacer = {
+                                Main = {
+                                    text = main.name,
+                                    click = function()
+                                        Roster:ShowDetails(uid.main)
+                                    end
+                                },
+                                Character = {
+                                    text = character.name,
+                                    click = function()
+                                        Roster:ShowDetails(uid.character)
+                                    end
+                                }
+                            }
+                        })
+                    end
+                end
+
+                if new_state.LogMessages.Enter ~= "" then
                     table.insert(log, {
                         time = event.time,
                         member = uid.main,
-                        message = old_state.LogMessages.Leave,
+                        message = new_state.LogMessages.Enter,
                         replacer = {
                             Main = {
                                 text = main.name,
@@ -759,26 +783,6 @@ function Attendance:GetRaidLog(uid)
                         }
                     })
                 end
-
-                table.insert(log, {
-                    time = event.time,
-                    member = uid.main,
-                    message = new_state.LogMessages.Enter,
-                    replacer = {
-                        Main = {
-                            text = main.name,
-                            click = function()
-                                Roster:ShowDetails(uid.main)
-                            end
-                        },
-                        Character = {
-                            text = character.name,
-                            click = function()
-                                Roster:ShowDetails(uid.character)
-                            end
-                        }
-                    }
-                })
             elseif entry.event == "character_changed" then
                 local uid = {
                     main = entry.main,
@@ -791,38 +795,40 @@ function Attendance:GetRaidLog(uid)
                 local main = Roster:GetCharacter(uid.main)
                 local new_character = Roster:GetCharacter(uid.new)
 
-                local logMessage =  {
-                    time = event.time,
-                    member = uid.main,
-                    message = state.LogMessages.Swap,
-                    replacer = {
-                        Main = {
-                            text = main.name,
-                            click = function()
-                                Roster:ShowDetails(uid.main)
-                            end
-                        },
-                        Character = {
-                            text = new_character.name,
-                            click = function()
-                                Roster:ShowDetails(uid.new_character)
-                            end
+                if state.LogMessages.Swap ~= "" then
+                    local logMessage =  {
+                        time = event.time,
+                        member = uid.main,
+                        message = state.LogMessages.Swap,
+                        replacer = {
+                            Main = {
+                                text = main.name,
+                                click = function()
+                                    Roster:ShowDetails(uid.main)
+                                end
+                            },
+                            Character = {
+                                text = new_character.name,
+                                click = function()
+                                    Roster:ShowDetails(uid.new_character)
+                                end
+                            }
                         }
                     }
-                }
 
-                if uid.old_character then
-                    local old_character = Roster:GetCharacter(uid.old_character)
+                    if uid.old_character then
+                        local old_character = Roster:GetCharacter(uid.old_character)
 
-                    logMessage.replacer.OldCharacter = {
-                        text = old_character.name,
-                        click = function()
-                            Roster:ShowDetails(uid.old_character)
-                        end
-                    }
+                        logMessage.replacer.OldCharacter = {
+                            text = old_character.name,
+                            click = function()
+                                Roster:ShowDetails(uid.old_character)
+                            end
+                        }
+                    end
+
+                    table.insert(log, logMessage)
                 end
-
-                table.insert(log, logMessage)
             end
         end
     end
